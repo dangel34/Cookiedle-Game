@@ -90,16 +90,30 @@ def give_feedback(guess, selected_cookie):
     if not check_cookie_guess(guess, selected_cookie):
         feedback.append("Incorrect guess for the cookie name.")
 
-    for attribute in ['rarity', 'type', 'position']:
+    for attribute in ['primary_color', 'secondary_color', 'rarity', 'type', 'position']:
         correct_cookie_value = selected_cookie[attribute]
         guess_cookie_value = guess[attribute]
 
         if str(correct_cookie_value).strip().lower() == str(guess_cookie_value).strip().lower():
-            feedback.append(f"The {guess[f'{attribute}']} {attribute} matches!")
-            feedback.append(guess[f'{attribute}'])
+            if attribute == 'primary_color':
+                feedback.append(f"The Primary Color {guess[f'{attribute}']} matches!")
+                feedback.append(guess[f'{attribute}'])
+            elif attribute == 'secondary_color':
+                feedback.append(f"The Secondary Color {guess[f'{attribute}']} matches!")
+                feedback.append(guess[f'{attribute}'])
+            else:
+                feedback.append(f"The {guess[f'{attribute}']} {attribute} matches!")
+                feedback.append(guess[f'{attribute}'])
         else:
-            feedback.append(f"The {guess[f'{attribute}']} {attribute} does not match.")
-            feedback.append(guess[f'{attribute}'])
+            if attribute == 'primary_color':
+                feedback.append(f"The Primary Color {guess[f'{attribute}']} does not match.")
+                feedback.append(guess[f'{attribute}'])
+            elif attribute == 'secondary_color':
+                feedback.append(f"The Secondary Color {guess[f'{attribute}']} does not match.")
+                feedback.append(guess[f'{attribute}'])
+            else:
+                feedback.append(f"The {guess[f'{attribute}']} {attribute} does not match.")
+                feedback.append(guess[f'{attribute}'])
 
     return '\n'.join(feedback)
 
@@ -126,8 +140,9 @@ def play_game(selected_cookie, cookies_df):
 
         if check_cookie_guess(guessed_cookie, selected_cookie):
             print(f"Correct! You've guessed the cookie in {guesses} guesses!")
-            print(f"{selected_cookie['cookie_name']}, {selected_cookie['rarity']}, {selected_cookie['type']}, "
-                  f"{selected_cookie['position']}, {selected_cookie['skill_name'], int(selected_cookie['skill_cooldown'])}")
+            print(f"{selected_cookie['cookie_name']}, {selected_cookie['primary_color']}, {selected_cookie['secondary_color']}, "
+                  f"{selected_cookie['rarity']}, {selected_cookie['type']}, {selected_cookie['position']}, "
+                  f"{selected_cookie['skill_name'], int(selected_cookie['skill_cooldown'])}")
             correct = True
         else:
             feedback = give_feedback(guessed_cookie, selected_cookie)
