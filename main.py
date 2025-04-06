@@ -1,10 +1,12 @@
-import random
-import pandas as pd
-from functions import play_game
+from gui import CookiedleApp
+import tkinter as tk
 
-cookies_df = pd.read_csv('cookies_rows(1).csv')
+# Create the main application window
+root = tk.Tk()
 
-selected_cookie = cookies_df.sample(n=1).iloc[0]
-# print(selected_cookie)
+# Show the main screen
+app = CookiedleApp(root)
+app.show_main_screen()
 
-play_game(selected_cookie, cookies_df)
+# Run the Tkinter event loop
+root.mainloop()
