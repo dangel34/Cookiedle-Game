@@ -267,7 +267,8 @@ class CookiedleApp:
         # Compare each trait with the selected cookie
         traits = [
             {"value": guessed_cookie['cookie_name'], 
-             "correct": guessed_cookie['cookie_name'].lower() == self.selected_cookie['cookie_name'].lower()},
+             "correct": False,
+             "is_name": True},
             {"value": guessed_cookie['primary_color'],
              "correct": guessed_cookie['primary_color'].lower() == self.selected_cookie['primary_color'].lower(),
              "partial": guessed_cookie['primary_color'].lower() == self.selected_cookie['secondary_color'].lower()},
@@ -285,18 +286,24 @@ class CookiedleApp:
         border_frames = []
         labels = []
         for index, trait in enumerate(traits):
-            # Default to red (wrong)
-            bg_color = "#f44336"
-            
-            # If it's a color trait (has 'partial' key)
-            if 'partial' in trait:
-                if trait["correct"]:
+            # For the name field, always use white background
+            if 'is_name' in trait:
+                bg_color = "white"
+                fg_color = "black"  # Use black text for better contrast on white background
+            else:
+                # Default to red (wrong)
+                bg_color = "#f44336"
+                fg_color = "white"
+                
+                # If it's a color trait (has 'partial' key)
+                if 'partial' in trait:
+                    if trait["correct"]:
+                        bg_color = "#4CAF50"  # Green for correct
+                    elif trait["partial"]:
+                        bg_color = "#FFA500"  # Orange/Yellow for color in wrong position
+                # For non-color traits
+                elif trait["correct"]:
                     bg_color = "#4CAF50"  # Green for correct
-                elif trait["partial"]:
-                    bg_color = "#FFA500"  # Orange/Yellow for color in wrong position
-            # For non-color traits
-            elif trait["correct"]:
-                bg_color = "#4CAF50"  # Green for correct
 
             # Determine width based on trait index
             width = 25 if index == 0 else 15  # First trait (cookie name) gets wider label
@@ -310,7 +317,7 @@ class CookiedleApp:
             # Create the label inside the border frame
             label = tk.Label(trait_border_frame, 
                            text=trait["value"],
-                           fg="white",
+                           fg=fg_color,
                            bg=bg_color,
                            font=("Helvetica", 10),
                            width=width,
@@ -327,24 +334,69 @@ class CookiedleApp:
                     border_frame.pack(side=tk.LEFT, padx=2)
                     self.root.after(700, lambda: show_next_label(index + 1))
                 elif guess_name.lower() == self.selected_cookie['cookie_name'].lower():
-                    # Show victory message only after animation completes
-                    self.root.after(200, self.show_victory_message)
+                    # Show victory screen after a short delay
+                    self.root.after(1000, self.show_victory_screen)
             
             show_next_label()
 
-    def show_victory_message(self):
-        """Show victory message and reset game"""
-        messagebox.showinfo("Congratulations!", 
-                          f"You've found the cookie in {self.guesses} guesses!\n"
-                          f"The cookie was: {self.selected_cookie['cookie_name']}")
+    def show_victory_screen(self):
+        """Show victory screen in the GUI"""
+        self.clear_window()
         
-        # Reset game state
+        # Victory title
+        title_label = tk.Label(self.root, 
+                            text="Congratulations!",
+                            fg="#4CAF50",  # Green text
+                            bg="#2E2E2E",
+                            font=("Helvetica", 36, "bold"))
+        title_label.pack(pady=30)
+
+        # Victory message
+        message_label = tk.Label(self.root,
+                              text=f"You've found the cookie in {self.guesses} guesses!",
+                              fg="white",
+                              bg="#2E2E2E",
+                              font=("Helvetica", 24))
+        message_label.pack(pady=10)
+
+        # Show the cookie that was guessed
+        cookie_label = tk.Label(self.root,
+                             text=f"The cookie was: {self.selected_cookie['cookie_name']}",
+                             fg="white",
+                             bg="#2E2E2E",
+                             font=("Helvetica", 20))
+        cookie_label.pack(pady=30)
+
+        # Play Again button
+        play_again_button = tk.Button(self.root,
+                                   text="Play Again",
+                                   command=self.start_new_game,
+                                   font=("Helvetica", 16),
+                                   bg="#4CAF50",  # Green
+                                   fg="white",
+                                   padx=30,
+                                   pady=15,
+                                   width=20)
+        play_again_button.pack(pady=20)
+
+        # Main Menu button
+        main_menu_button = tk.Button(self.root,
+                                  text="Main Menu",
+                                  command=self.show_main_screen,
+                                  font=("Helvetica", 16),
+                                  bg="#2196F3",  # Blue
+                                  fg="white",
+                                  padx=30,
+                                  pady=15,
+                                  width=20)
+        main_menu_button.pack(pady=20)
+
+    def start_new_game(self):
+        """Reset game state and start a new game"""
         self.guesses = 0
         self.guess_history = []
         self.selected_cookie = self.df.iloc[random.randint(0, len(self.df)-1)]
-        
-        # Return to main screen
-        self.show_main_screen()
+        self.show_game_screen()
 
     def clear_window(self):
         """Removes all widgets from the root window to switch views."""
