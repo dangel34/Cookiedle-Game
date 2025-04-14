@@ -15,7 +15,7 @@ class CookiedleApp:
             self.df = pd.read_csv('cookies_rows(1).csv')
             # Select a random cookie as the target
             self.selected_cookie = self.df.iloc[random.randint(0, len(self.df)-1)]
-            print(f"Debug - Selected cookie: {self.selected_cookie['cookie_name']}")  # For testing
+            # print(f"Debug - Selected cookie: {self.selected_cookie['cookie_name']}")  # For testing
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load cookie data: {e}")
             self.quit_app()
