@@ -1,6 +1,7 @@
 cookie_name,primary_color,secondary_color,rarity,type,position,skill_name,skill_cooldown
 Adventurer Cookie,Brown,White,Rare,Ambush,Middle,Rope Master,12
 Affogato Cookie,Purple,Brown,Epic,Bomber,Middle,Sweet Scheme,15
+Agar Agar Cookie,Gray,Red,Epic,Ambush,Middle,Ravenous Mirror,15
 Alchemist Cookie,Purple,Brown,Rare,Bomber,Middle,Unstable Formula,16
 Almond Cookie,Brown,White,Epic,Support,Rear,Almond Handcuffs,15
 Angel Cookie,Yellow,White,Common,Healing,Rear,Celestial Light,15
@@ -47,9 +48,11 @@ Devil Cookie,Red,Black,Rare,Magic,Middle,Devilish Rune,18
 Eclair Cookie,Green,White,Epic,Support,Middle,Book of History,16
 Elder Faerie Cookie,Gray,White,Super Epic,Defense,Front,Guardians Valor,12
 Espresso Cookie,Black,Brown,Epic,Magic,Middle,Grinding,15
+Eternal Sugar Cookie,Pink,Purple,Beast,Bomber,Middle,Eternal Enchantment,12
 Fettuccine Cookie,Yellow,Brown,Epic,Defense,Front,Unstable Fettuccine,12
 Fig Cookie,Purple,Brown,Epic,Support,Middle,Jelly Horn,15
 Financier Cookie,Yellow,White,Epic,Defense,Front,Paladin Protection,15
+Fire Spirit Cookie,Red,Yellow,Legendary,Magic,Rear,Ever-Burning Flames,14
 Frilled Jellyfish Cookie,White,Blue,Epic,Support,Middle,Frilled Snare,12
 Frost Queen Cookie,White,Blue,Legendary,Magic,Middle,Freezing Squall,18
 GingerBrave,Brown,Blue,Common,Charge,Front,Brave Dash,8
@@ -90,6 +93,7 @@ Oyster Cookie,White,Gray,Super Epic,Support,Rear,Might of Oyster House,17
 Pancake Cookie,Brown,White,Rare,Ambush,Rear,Take an Acorn!,15
 Parfait Cookie,White,Pink,Epic,Support,Rear,Para-Paru-Parfait!★,17
 Pastry Cookie,White,Purple,Epic,Ranged,Rear,Battle Prayer,13
+Pavlova Cookie,Pink,Red,Epic,Ranged,Rear,Heart-Piercing Arrow,6
 Peach Blossom Cookie,Pink,White,Epic,Support,Middle,Heavenly Fruit,12
 Peppermint Cookie,Blue,White,Epic,Support,Rear,Freshness of the Sea,17
 Pinecone Cookie,Brown,Green,Epic,Bomber,Front,Pinecone Bomb,12
@@ -130,13 +134,14 @@ Stormbringer Cookie,Yellow,Black,Legendary,Charge,Front,Lightning Blitzstorm,13
 Strawberry Cookie,Pink,Brown,Common,Defense,Front,Dont Come Near!,10
 Strawberry Crepe Cookie,Pink,Brown,Epic,Defense,Front,Crepe Thrust,15
 Street Urchin Cookie,Black,Brown,Epic,Bomber,Middle,Ride or Crumble,12
+Sugarfly Cookie,Yellow,Blue,Epic,Support,Rear,Butterfly's Whisper,6
 Tails Cookie,Orange,White,Special,Ambush,Middle,Tails Spin Dash,17
 Tarte Tatin Cookie,Red,Gray,Epic,Ranged,Rear,Cannonade,12
 Tea Knight Cookie,Gray,Blue,Epic,Charge,Front,Battlemaster,18
 Tiger Lily Cookie,Blue,Orange,Epic,Ranged,Rear,Tiger Rider,13
 Twizzly Gummy Cookie,Blue,Pink,Epic,Ranged,Rear,Twizzly Beam,16
 Vampire Cookie,Red,Black,Epic,Ambush,Rear,Vampirism,13
-Wedding Cookie,Pink,White,Epic,Magic,Middle,Anything for the Bride!,15
+Wedding Cake Cookie,Pink,White,Epic,Magic,Middle,Anything for the Bride!,15
 Werewolf Cookie,Gray,White,Epic,Charge,Front,Transformation,11
 White Lily Cookie,Green,White,Ancient,Bomber,Middle,Lily Bud,15
 Wildberry Cookie,White,Red,Epic,Defense,Front,Wild Punch,10
