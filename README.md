@@ -67,7 +67,7 @@ Guess the mystery cookie in as few attempts as possible by analyzing the feedbac
 ### Required Files
 - `main.py` - Main entry point
 - `gui.py` - GUI implementation
-- `cookies_rows(1).csv` - Cookie database
+- `cookies_rows.csv` - Cookie database
 - `functions.py` - Game logic functions
 - `scraper.py` - Data collection tool (optional)
 
@@ -126,7 +126,7 @@ Cookiedle/
 ├── gui.py               # GUI implementation
 ├── functions.py         # Game logic and functions
 ├── scraper.py           # Data collection tool
-├── cookies_rows(1).csv  # Cookie database
+├── cookies_rows.csv  # Cookie database
 └── README.md           # This file
 ```
 
