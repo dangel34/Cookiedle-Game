@@ -57,7 +57,7 @@ class CookiedleApp:
         # Start game button
         start_button = tk.Button(self.root, text="Start Game",
                                command=self.show_game_screen,
-                               font=("Helvetica", 16),
+                               font=("Helvetica", 16, "bold"),
                                bg="#4CAF50",  # Green
                                fg="white",
                                padx=30, pady=15,
@@ -67,7 +67,7 @@ class CookiedleApp:
         # Quit button
         quit_button = tk.Button(self.root, text="Quit",
                               command=self.quit_app,
-                              font=("Helvetica", 16),
+                              font=("Helvetica", 16, "bold"),
                               bg="#f44336",  # Red
                               fg="white",
                               padx=30, pady=15,
@@ -122,7 +122,7 @@ class CookiedleApp:
         entry_container.pack(side=tk.LEFT, padx=5)
 
         # Guess entry
-        guess_entry = tk.Entry(entry_container, font=("Helvetica", 14), width=30)
+        guess_entry = tk.Entry(entry_container, font=("Helvetica", 14, "bold"), width=30)
         guess_entry.pack()
 
         # Create suggestion listbox with matching width
@@ -131,7 +131,7 @@ class CookiedleApp:
         char_width = entry_width_pixels // 14  # Approximate character width for Helvetica 12
 
         suggestion_list = tk.Listbox(entry_container,
-                                   font=("Helvetica", 12),
+                                   font=("Helvetica", 12, "bold"),
                                    width=char_width,  # Match entry width
                                    bg="white",
                                    fg="black",
@@ -219,7 +219,7 @@ class CookiedleApp:
         # Submit button
         submit_button = tk.Button(guess_frame, text="Submit",
                                 command=make_guess,
-                                font=("Helvetica", 14),
+                                font=("Helvetica", 14, "bold"),
                                 bg="#4CAF50",
                                 fg="white")
         submit_button.pack(side=tk.LEFT, padx=5)
@@ -227,7 +227,7 @@ class CookiedleApp:
         # Back button
         back_button = tk.Button(self.root, text="Back to Main",
                               command=self.show_main_screen,
-                              font=("Helvetica", 16),
+                              font=("Helvetica", 16, "bold"),
                               bg="#2196F3",
                               fg="white",
                               width=15)
@@ -319,7 +319,7 @@ class CookiedleApp:
                            text=trait["value"],
                            fg=fg_color,
                            bg=bg_color,
-                           font=("Helvetica", 10),
+                           font=("Helvetica", 10, "bold"),
                            width=width,
                            wraplength=200 if index == 0 else 100,  # Allow wrapping for long names
                            padx=2,
@@ -356,7 +356,7 @@ class CookiedleApp:
                               text=f"You've found the cookie in {self.guesses} guesses!",
                               fg="white",
                               bg="#2E2E2E",
-                              font=("Helvetica", 24))
+                              font=("Helvetica", 24, "bold"))
         message_label.pack(pady=10)
 
         # Show the cookie that was guessed
@@ -364,14 +364,14 @@ class CookiedleApp:
                              text=f"The cookie was: {self.selected_cookie['cookie_name']}",
                              fg="white",
                              bg="#2E2E2E",
-                             font=("Helvetica", 20))
+                             font=("Helvetica", 20, "bold"))
         cookie_label.pack(pady=30)
 
         # Play Again button
         play_again_button = tk.Button(self.root,
                                    text="Play Again",
                                    command=self.start_new_game,
-                                   font=("Helvetica", 16),
+                                   font=("Helvetica", 16, "bold"),
                                    bg="#4CAF50",  # Green
                                    fg="white",
                                    padx=30,
@@ -383,7 +383,7 @@ class CookiedleApp:
         main_menu_button = tk.Button(self.root,
                                   text="Main Menu",
                                   command=self.show_main_screen,
-                                  font=("Helvetica", 16),
+                                  font=("Helvetica", 16, "bold"),
                                   bg="#2196F3",  # Blue
                                   fg="white",
                                   padx=30,
