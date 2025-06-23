@@ -12,7 +12,7 @@ class CookiedleApp:
         self.root = root
         # Load the CSV data at startup
         try:
-            self.df = pd.read_csv('cookies_rows(1).csv')
+            self.df = pd.read_csv('cookies_rows.csv')
             # Select a random cookie as the target
             self.selected_cookie = self.df.iloc[random.randint(0, len(self.df)-1)]
             # print(f"Debug - Selected cookie: {self.selected_cookie['cookie_name']}")  # For testing
