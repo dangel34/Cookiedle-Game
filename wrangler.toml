@@ -1,0 +1,8 @@
+name = "cookiedle-worker"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Do NOT put COOKIE_SECRET here — set it in the Cloudflare dashboard
+# under Workers > cookiedle-worker > Settings > Variables
+# as an encrypted secret so it never appears in your repo
