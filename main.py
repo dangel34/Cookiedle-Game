@@ -1,3 +1,5 @@
+# main.py
+
 from gui import CookiedleApp
 import tkinter as tk
 
