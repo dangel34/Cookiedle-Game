@@ -290,6 +290,12 @@ export default {
       return jsonResponse({ trait, value: target[trait] }, 200, origin);
     }
 
+    // GET /cookies — returns full cookie list for autocomplete/display
+    // Safe to expose: no target info, just the cookie attributes
+    if (url.pathname === '/cookies' && request.method === 'GET') {
+      return jsonResponse(COOKIES, 200, origin);
+    }
+
     // GET /cookie-count — how many cookies total (for debugging)
     if (url.pathname === '/cookie-count') {
       return jsonResponse({ count: COOKIES.length }, 200, origin);
