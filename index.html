@@ -4,21 +4,21 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Cookiedle</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
   :root {
-    --bg:        #1a1a2e;
-    --surface:   #16213e;
-    --card:      #0f3460;
-    --accent:    #e94560;
-    --gold:      #f5a623;
-    --green:     #4caf50;
-    --orange:    #ff9800;
-    --red:       #e94560;
-    --text:      #e0e0e0;
-    --muted:     #7a8aa0;
-    --border:    rgba(255,255,255,0.08);
-    --glow:      0 0 20px rgba(233,69,96,0.3);
+    --bg:      #1a1a2e;
+    --surface: #16213e;
+    --card:    #0f3460;
+    --accent:  #e94560;
+    --gold:    #f5a623;
+    --green:   #4caf50;
+    --orange:  #ff9800;
+    --red:     #c0392b;
+    --text:    #e0e0e0;
+    --muted:   #7a8aa0;
+    --border:  rgba(255,255,255,0.08);
+    --glow:    0 0 20px rgba(233,69,96,0.3);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,7 +31,6 @@
     overflow-x: hidden;
   }
 
-  /* Animated background stars */
   body::before {
     content: '';
     position: fixed;
@@ -53,7 +52,7 @@
     z-index: 1;
     max-width: 960px;
     margin: 0 auto;
-    padding: 0 16px 60px;
+    padding: 0 16px 80px;
   }
 
   /* ── HEADER ── */
@@ -65,43 +64,20 @@
   }
 
   .logo {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(2rem, 6vw, 3.6rem);
-    font-weight: 900;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--accent) 60%, #c44dff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: none;
-    letter-spacing: 2px;
-    animation: logoGlow 3s ease-in-out infinite alternate;
-  }
-
-  @keyframes logoGlow {
-    from { filter: drop-shadow(0 0 8px rgba(245,166,35,0.5)); }
-    to   { filter: drop-shadow(0 0 20px rgba(233,69,96,0.6)); }
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: 0.5px;
   }
 
   .subtitle {
     color: var(--muted);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 3px;
     text-transform: uppercase;
     margin-top: 6px;
-  }
-
-  .daily-badge {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 4px 14px;
-    border-radius: 20px;
-    background: rgba(245,166,35,0.12);
-    border: 1px solid rgba(245,166,35,0.3);
-    color: var(--gold);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 1px;
   }
 
   /* ── HOW TO PLAY ── */
@@ -139,9 +115,7 @@
   }
 
   /* ── GUESS INPUT ── */
-  .guess-section {
-    margin-bottom: 28px;
-  }
+  .guess-section { margin-bottom: 28px; }
 
   .input-wrap {
     position: relative;
@@ -168,6 +142,7 @@
     box-shadow: var(--glow);
   }
 
+  .guess-input:disabled { opacity: 0.5; cursor: not-allowed; }
   .guess-input::placeholder { color: var(--muted); font-weight: 600; }
 
   .submit-btn {
@@ -186,10 +161,11 @@
     transition: background 0.15s, transform 0.1s;
   }
 
-  .submit-btn:hover { background: #c73650; }
+  .submit-btn:hover  { background: #c73650; }
   .submit-btn:active { transform: translateY(-50%) scale(0.96); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* Autocomplete dropdown */
+  /* Autocomplete */
   .suggestions {
     position: absolute;
     top: calc(100% + 4px);
@@ -214,16 +190,28 @@
   }
 
   .suggestion-item:last-child { border-bottom: none; }
-  .suggestion-item:hover, .suggestion-item.active { background: rgba(233,69,96,0.2); color: #fff; }
+  .suggestion-item:hover,
+  .suggestion-item.active { background: rgba(233,69,96,0.2); color: #fff; }
+  .suggestion-item.used   { opacity: 0.4; text-decoration: line-through; }
 
-  /* ── GUESS COUNT ── */
+  /* ── STATUS BAR ── */
+  .already-guessed {
+    font-size: 0.75rem;
+    color: var(--accent);
+    text-align: center;
+    margin-top: 6px;
+    min-height: 16px;
+    font-weight: 700;
+  }
+
   .guess-meta {
     text-align: center;
-    margin-top: 10px;
+    margin-top: 6px;
     font-size: 0.8rem;
     color: var(--muted);
     font-weight: 600;
     letter-spacing: 1px;
+    min-height: 18px;
   }
 
   /* ── TABLE HEADER ── */
@@ -255,12 +243,6 @@
     display: grid;
     grid-template-columns: 2fr 1.2fr 1.2fr 1fr 1fr 1fr;
     gap: 4px;
-    animation: rowSlide 0.3s ease-out;
-  }
-
-  @keyframes rowSlide {
-    from { opacity: 0; transform: translateY(-10px); }
-    to   { opacity: 1; transform: translateY(0); }
   }
 
   .cell {
@@ -274,10 +256,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    word-break: break-word;
     opacity: 0;
     transform: rotateY(90deg);
-    transition: transform 0.35s ease, opacity 0.35s ease, background 0.2s;
-    word-break: break-word;
+    transition: transform 0.35s ease, opacity 0.35s ease;
   }
 
   .cell.revealed {
@@ -285,37 +267,49 @@
     transform: rotateY(0deg);
   }
 
-  .cell:first-child { text-align: left; justify-content: flex-start; padding-left: 10px; font-size: 0.82rem; }
+  /* instant = no animation, for restored sessions */
+  .cell.instant {
+    opacity: 1;
+    transform: rotateY(0deg);
+    transition: none;
+  }
+
+  .cell:first-child {
+    text-align: left;
+    justify-content: flex-start;
+    padding-left: 10px;
+    font-size: 0.82rem;
+  }
 
   .cell-name    { background: #1e2d4a; border: 1px solid var(--border); color: var(--text); }
-  .cell-correct { background: var(--green); color: #fff; }
+  .cell-correct { background: var(--green);  color: #fff; }
   .cell-partial { background: var(--orange); color: #fff; }
-  .cell-wrong   { background: #c0392b; color: #fff; }
+  .cell-wrong   { background: var(--red);    color: #fff; }
 
-  /* ── VICTORY BANNER ── */
+  /* ── VICTORY ── */
   .victory {
     display: none;
     text-align: center;
     padding: 36px 24px;
     background: linear-gradient(135deg, #0f3460, #16213e);
-    border: 1px solid rgba(245,166,35,0.35);
+    border: 1px solid rgba(245,166,35,0.3);
     border-radius: 16px;
     margin-top: 32px;
     animation: victoryPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   @keyframes victoryPop {
-    from { opacity: 0; transform: scale(0.8); }
+    from { opacity: 0; transform: scale(0.85); }
     to   { opacity: 1; transform: scale(1); }
   }
 
   .victory.show { display: block; }
 
-  .victory-emoji { font-size: 3rem; margin-bottom: 8px; }
+  .victory-emoji  { font-size: 3rem; margin-bottom: 8px; }
 
   .victory-title {
-    font-family: 'Cinzel Decorative', serif;
     font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 900;
     color: var(--gold);
     margin-bottom: 10px;
   }
@@ -331,8 +325,17 @@
     font-size: 1.3rem;
     font-weight: 800;
     color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .victory-skill {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 600;
     margin-bottom: 20px;
   }
+
+  .victory-skill span { color: var(--gold); font-weight: 800; }
 
   .share-btn {
     display: inline-block;
@@ -350,18 +353,9 @@
     margin: 4px;
   }
 
-  .share-btn:hover { background: #e0941a; }
+  .share-btn:hover  { background: #e0941a; }
   .share-btn:active { transform: scale(0.97); }
 
-  .share-btn.secondary {
-    background: transparent;
-    border: 2px solid var(--muted);
-    color: var(--muted);
-  }
-
-  .share-btn.secondary:hover { border-color: var(--text); color: var(--text); }
-
-  /* Next cookie timer */
   .next-timer {
     margin-top: 16px;
     font-size: 0.8rem;
@@ -371,7 +365,91 @@
 
   .next-timer span { color: var(--gold); font-weight: 800; }
 
-  /* Error toast */
+  /* ── HINT ── */
+  .hint-section {
+    display: none;
+    text-align: center;
+    margin: 4px auto 20px;
+    max-width: 480px;
+  }
+
+  .hint-section.show { display: block; }
+
+  .hint-btn {
+    padding: 10px 28px;
+    background: transparent;
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    color: var(--gold);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, color 0.15s, transform 0.1s;
+  }
+
+  .hint-btn:hover  { background: rgba(245,166,35,0.12); }
+  .hint-btn:active { transform: scale(0.97); }
+  .hint-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .hint-picker {
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 14px;
+  }
+
+  .hint-picker.show { display: flex; }
+
+  .hint-choice {
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+
+  .hint-choice:hover { background: var(--card); border-color: var(--gold); color: var(--gold); }
+
+  .hint-reveal {
+    display: none;
+    margin-top: 14px;
+    padding: 12px 20px;
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.35);
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .hint-reveal.show { display: block; }
+
+  /* ── EASTER EGG ── */
+  .easter-egg {
+    position: fixed;
+    bottom: 20px;
+    right: 24px;
+    color: rgba(255,255,255,0.12);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: color 0.4s;
+    user-select: none;
+    z-index: 10;
+  }
+
+  .easter-egg:hover { color: rgba(255,255,255,0.45); }
+
+  /* ── TOAST ── */
   .toast {
     position: fixed;
     bottom: 30px;
@@ -396,27 +474,18 @@
     opacity: 1;
   }
 
-  /* Already guessed indicator */
-  .already-guessed {
-    font-size: 0.7rem;
-    color: var(--muted);
-    text-align: center;
-    margin-top: 6px;
-    min-height: 16px;
-  }
-
-  /* Scrollbar */
+  /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--card); border-radius: 3px; }
 
-  /* Mobile tweaks */
+  /* ── MOBILE ── */
   @media (max-width: 600px) {
     .table-header, .guess-row {
       grid-template-columns: 1.8fr 1fr 1fr 0.9fr 0.9fr 0.9fr;
     }
-    .cell { font-size: 0.68rem; padding: 8px 4px; min-height: 46px; }
-    .col-head { font-size: 0.6rem; letter-spacing: 0.8px; }
+    .cell          { font-size: 0.68rem; padding: 8px 4px; min-height: 46px; }
+    .col-head      { font-size: 0.6rem; letter-spacing: 0.8px; }
     .cell:first-child { font-size: 0.7rem; }
   }
 </style>
@@ -427,15 +496,14 @@
   <header>
     <div class="logo">Cookiedle</div>
     <div class="subtitle">Cookie Run Kingdom · Guessing Game</div>
-    <div class="daily-badge">🍪 Daily Cookie</div>
   </header>
 
   <div class="how-to">
-    <strong>How to play:</strong> Guess today's Cookie Run Kingdom cookie! After each guess, tiles reveal how close you are.
+    <strong>How to play:</strong> Guess today's Cookie Run Kingdom cookie! Each guess reveals how close you are across 5 traits.
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Correct</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Color is swapped (primary ↔ secondary)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div> Wrong</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Color swapped (primary ↔ secondary)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Wrong</div>
     </div>
   </div>
 
@@ -467,248 +535,325 @@
 
   <div class="guess-history" id="guessHistory"></div>
 
+  <div class="hint-section" id="hintSection">
+    <button class="hint-btn" id="hintBtn">💡 Get Hint</button>
+    <div class="hint-picker" id="hintPicker">
+      <button class="hint-choice" data-trait="primary_color">Primary Color</button>
+      <button class="hint-choice" data-trait="secondary_color">Secondary Color</button>
+      <button class="hint-choice" data-trait="rarity">Rarity</button>
+      <button class="hint-choice" data-trait="type">Type</button>
+      <button class="hint-choice" data-trait="position">Position</button>
+    </div>
+    <div class="hint-reveal" id="hintReveal"></div>
+  </div>
+
   <div class="victory" id="victoryBanner">
     <div class="victory-emoji">🎉</div>
     <div class="victory-title">You got it!</div>
     <div class="victory-sub" id="victoryGuessCount"></div>
     <div class="victory-cookie" id="victoryCookieName"></div>
+    <div class="victory-skill" id="victorySkill"></div>
     <button class="share-btn" id="shareBtn">Share Result 📋</button>
-    <button class="share-btn secondary" id="revealBtn" style="display:none">Reveal Answer</button>
     <div class="next-timer" id="nextTimer"></div>
   </div>
 
 </div>
 
+<a class="easter-egg" href="secret.html">psst...</a>
 <div class="toast" id="toast"></div>
 
 <script>
 // ─────────────────────────────────────────
-// COOKIE DATA
+// COOKIE DATA (from cookies_rows.csv)
 // ─────────────────────────────────────────
 const COOKIES = [
-  {cookie_name:"Adventurer Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Ambush",position:"Middle"},
-  {cookie_name:"Affogato Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Middle"},
-  {cookie_name:"Agar Agar Cookie",primary_color:"Gray",secondary_color:"Red",rarity:"Epic",type:"Ambush",position:"Middle"},
-  {cookie_name:"Alchemist Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Rare",type:"Bomber",position:"Middle"},
-  {cookie_name:"Almond Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Angel Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Common",type:"Healing",position:"Rear"},
-  {cookie_name:"Avocado Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Rare",type:"Defense",position:"Front"},
-  {cookie_name:"Beet Cookie",primary_color:"Pink",secondary_color:"Green",rarity:"Common",type:"Ranged",position:"Rear"},
-  {cookie_name:"Blackberry Cookie",primary_color:"Purple",secondary_color:"Black",rarity:"Rare",type:"Magic",position:"Rear"},
-  {cookie_name:"Black Forest Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Black Lemonade Cookie",primary_color:"Yellow",secondary_color:"Black",rarity:"Epic",type:"Bomber",position:"Middle"},
-  {cookie_name:"Black Pearl Cookie",primary_color:"Black",secondary_color:"White",rarity:"Legendary",type:"Ambush",position:"Middle"},
-  {cookie_name:"Black Raisin Cookie",primary_color:"Black",secondary_color:"Purple",rarity:"Epic",type:"Ambush",position:"Middle"},
-  {cookie_name:"Black Sapphire Cookie",primary_color:"Black",secondary_color:"Purple",rarity:"Epic",type:"Support",position:"Middle"},
-  {cookie_name:"Blueberry Pie Cookie",primary_color:"Blue",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Burning Spice Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Beast",type:"Charge",position:"Front"},
-  {cookie_name:"Burnt Cheese Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Butter Roll Cookie",primary_color:"White",secondary_color:"Red",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Camellia Cookie",primary_color:"Green",secondary_color:"White",rarity:"Super Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Candy Apple Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Epic",type:"Bomber",position:"Middle"},
-  {cookie_name:"Candy Diver Cookie",primary_color:"Red",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Capsaicin Cookie",primary_color:"Orange",secondary_color:"Black",rarity:"Super Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Captain Caviar Cookie",primary_color:"Black",secondary_color:"Yellow",rarity:"Epic",type:"Bomber",position:"Middle"},
-  {cookie_name:"Caramel Arrow Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Ranged",position:"Front"},
-  {cookie_name:"Caramel Choux Cookie",primary_color:"Brown",secondary_color:"Yellow",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Carol Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Healing",position:"Rear"},
-  {cookie_name:"Carrot Cookie",primary_color:"Orange",secondary_color:"Brown",rarity:"Rare",type:"Support",position:"Middle"},
-  {cookie_name:"Cherry Blossom Cookie",primary_color:"Pink",secondary_color:"Brown",rarity:"Epic",type:"Ambush",position:"Rear"},
-  {cookie_name:"Cherry Cookie",primary_color:"Red",secondary_color:"White",rarity:"Rare",type:"Bomber",position:"Rear"},
-  {cookie_name:"Chili Pepper Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Epic",type:"Ambush",position:"Middle"},
-  {cookie_name:"Choco Drizzle Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Ambush",position:"Middle"},
-  {cookie_name:"Clotted Cream Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Super Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Cloud Haetae Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Clover Cookie",primary_color:"Green",secondary_color:"White",rarity:"Rare",type:"Support",position:"Rear"},
-  {cookie_name:"Cocoa Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Cotton Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Cream Ferret Cookie",primary_color:"White",secondary_color:"Yellow",rarity:"Special",type:"Support",position:"Rear"},
-  {cookie_name:"Cream Puff Cookie",primary_color:"Brown",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Cream Unicorn Cookie",primary_color:"White",secondary_color:"Pink",rarity:"Epic",type:"Healing",position:"Rear"},
-  {cookie_name:"Crème Brûlée Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Epic",type:"Ranged",position:"Rear"},
-  {cookie_name:"Crimson Coral Cookie",primary_color:"Red",secondary_color:"Pink",rarity:"Super Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Crunchy Chip Cookie",primary_color:"White",secondary_color:"Black",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Custard Cookie III",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Healing",position:"Rear"},
-  {cookie_name:"Dark Cacao Cookie",primary_color:"Black",secondary_color:"Purple",rarity:"Ancient",type:"Charge",position:"Front"},
-  {cookie_name:"Dark Choco Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Devil Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Rare",type:"Magic",position:"Middle"},
-  {cookie_name:"Eclair Cookie",primary_color:"Green",secondary_color:"White",rarity:"Epic",type:"Support",position:"Middle"},
-  {cookie_name:"Elder Faerie Cookie",primary_color:"Gray",secondary_color:"White",rarity:"Super Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Espresso Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Eternal Sugar Cookie",primary_color:"Pink",secondary_color:"Purple",rarity:"Beast",type:"Bomber",position:"Middle"},
-  {cookie_name:"Fettuccine Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Fig Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Middle"},
-  {cookie_name:"Financier Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Fire Spirit Cookie",primary_color:"Red",secondary_color:"Yellow",rarity:"Legendary",type:"Magic",position:"Rear"},
-  {cookie_name:"Frilled Jellyfish Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Middle"},
-  {cookie_name:"Frost Queen Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Legendary",type:"Magic",position:"Middle"},
-  {cookie_name:"GingerBrave",primary_color:"Brown",secondary_color:"Blue",rarity:"Common",type:"Charge",position:"Front"},
-  {cookie_name:"Golden Cheese Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Ancient",type:"Ranged",position:"Middle"},
-  {cookie_name:"Golden Osmanthus Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Epic",type:"Bomber",position:"Middle"},
-  {cookie_name:"Green Tea Mousse Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Gumball Cookie",primary_color:"Blue",secondary_color:"Red",rarity:"Rare",type:"Bomber",position:"Rear"},
-  {cookie_name:"Herb Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Healing",position:"Rear"},
-  {cookie_name:"Hollyberry Cookie",primary_color:"Pink",secondary_color:"Red",rarity:"Ancient",type:"Defense",position:"Front"},
-  {cookie_name:"Icicle Yeti Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Special",type:"Healing",position:"Front"},
-  {cookie_name:"Knight Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Rare",type:"Defense",position:"Front"},
-  {cookie_name:"Kouign-Amann Cookie",primary_color:"Pink",secondary_color:"Yellow",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Kumiho Cookie",primary_color:"Red",secondary_color:"Blue",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Latte Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Licorice Cookie",primary_color:"Black",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Lilac Cookie",primary_color:"Purple",secondary_color:"White",rarity:"Epic",type:"Support",position:"Middle"},
-  {cookie_name:"Linzer Cookie",primary_color:"Red",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Macaron Cookie",primary_color:"Red",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Madeleine Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Mala Sauce Cookie",primary_color:"Red",secondary_color:"Gray",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Mango Cookie",primary_color:"Orange",secondary_color:"Green",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Matcha Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Mercurial Knight Cookie",primary_color:"Gray",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Milk Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Milky Way Cookie",primary_color:"Black",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Mint Choco Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Moonlight Cookie",primary_color:"Blue",secondary_color:"Black",rarity:"Legendary",type:"Magic",position:"Middle"},
-  {cookie_name:"Moon Rabbit Cookie",primary_color:"White",secondary_color:"Pink",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Mozzarella Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Muscle Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Common",type:"Charge",position:"Front"},
-  {cookie_name:"Mystic Flour Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Beast",type:"Healing",position:"Rear"},
-  {cookie_name:"Ninja Cookie",primary_color:"Blue",secondary_color:"Brown",rarity:"Common",type:"Ambush",position:"Middle"},
-  {cookie_name:"Nutmeg Tiger Cookie",primary_color:"Red",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Front"},
-  {cookie_name:"Okchun Cookie",primary_color:"White",secondary_color:"Red",rarity:"Epic",type:"Healing",position:"Middle"},
-  {cookie_name:"Olive Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Onion Cookie",primary_color:"Purple",secondary_color:"White",rarity:"Rare",type:"Support",position:"Middle"},
-  {cookie_name:"Oyster Cookie",primary_color:"White",secondary_color:"Gray",rarity:"Super Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Pancake Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Ambush",position:"Rear"},
-  {cookie_name:"Parfait Cookie",primary_color:"White",secondary_color:"Pink",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Pastry Cookie",primary_color:"White",secondary_color:"Purple",rarity:"Epic",type:"Ranged",position:"Rear"},
-  {cookie_name:"Pavlova Cookie",primary_color:"Pink",secondary_color:"Red",rarity:"Epic",type:"Ranged",position:"Rear"},
-  {cookie_name:"Peach Blossom Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Epic",type:"Support",position:"Middle"},
-  {cookie_name:"Peppermint Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Pinecone Cookie",primary_color:"Brown",secondary_color:"Green",rarity:"Epic",type:"Bomber",position:"Front"},
-  {cookie_name:"Pitaya Dragon Cookie",primary_color:"Red",secondary_color:"White",rarity:"Dragon",type:"Charge",position:"Front"},
-  {cookie_name:"Poison Mushroom Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Middle"},
-  {cookie_name:"Pomegranate Cookie",primary_color:"Red",secondary_color:"Green",rarity:"Epic",type:"Support",position:"Middle"},
-  {cookie_name:"Princess Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Rare",type:"Charge",position:"Front"},
-  {cookie_name:"Prophet Cookie",primary_color:"Brown",secondary_color:"Purple",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Prune Juice Cookie",primary_color:"Purple",secondary_color:"Black",rarity:"Epic",type:"Bomber",position:"Middle"},
-  {cookie_name:"Pudding à la Mode Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Rear"},
-  {cookie_name:"Pumpkin Pie Cookie",primary_color:"Orange",secondary_color:"Black",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Pure Vanilla Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Ancient",type:"Healing",position:"Rear"},
-  {cookie_name:"Purple Yam Cookie",primary_color:"Purple",secondary_color:"Pink",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Raspberry Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Rebel Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Ambush",position:"Front"},
-  {cookie_name:"Red Osmanthus Cookie",primary_color:"Red",secondary_color:"White",rarity:"Epic",type:"Ranged",position:"Middle"},
-  {cookie_name:"Red Velvet Cookie",primary_color:"Red",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Rockstar Cookie",primary_color:"Red",secondary_color:"Gray",rarity:"Epic",type:"Healing",position:"Middle"},
-  {cookie_name:"Royal Margarine Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Ambush",position:"Middle"},
-  {cookie_name:"Rye Cookie",primary_color:"Brown",secondary_color:"Red",rarity:"Epic",type:"Ranged",position:"Rear"},
-  {cookie_name:"Schwarzwälder",primary_color:"Brown",secondary_color:"Red",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Sea Fairy Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Legendary",type:"Bomber",position:"Middle"},
-  {cookie_name:"Shadow Milk Cookie",primary_color:"Blue",secondary_color:"Black",rarity:"Beast",type:"Magic",position:"Middle"},
-  {cookie_name:"Sherbet Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Super Epic",type:"Ranged",position:"Middle"},
-  {cookie_name:"Shining Glitter Cookie",primary_color:"Pink",secondary_color:"Black",rarity:"Super Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Silverbell Cookie",primary_color:"White",secondary_color:"Gray",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Smoked Cheese Cookie",primary_color:"Red",secondary_color:"Yellow",rarity:"Epic",type:"Magic",position:"Rear"},
-  {cookie_name:"Snapdragon Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Special",type:"Support",position:"Rear"},
-  {cookie_name:"Snow Sugar Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Sonic Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Special",type:"Ambush",position:"Middle"},
-  {cookie_name:"Sorbet Shark Cookie",primary_color:"Brown",secondary_color:"Blue",rarity:"Epic",type:"Ambush",position:"Middle"},
-  {cookie_name:"Space Doughnut",primary_color:"Pink",secondary_color:"Brown",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Sparkling Cookie",primary_color:"Yellow",secondary_color:"Black",rarity:"Epic",type:"Healing",position:"Rear"},
-  {cookie_name:"Squid Ink Cookie",primary_color:"Black",secondary_color:"Blue",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Star Coral Cookie",primary_color:"Black",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Stardust Cookie",primary_color:"Blue",secondary_color:"Black",rarity:"Super Epic",type:"Ambush",position:"Middle"},
-  {cookie_name:"Stormbringer Cookie",primary_color:"Yellow",secondary_color:"Black",rarity:"Legendary",type:"Charge",position:"Front"},
-  {cookie_name:"Strawberry Cookie",primary_color:"Pink",secondary_color:"Brown",rarity:"Common",type:"Defense",position:"Front"},
-  {cookie_name:"Strawberry Crepe Cookie",primary_color:"Pink",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Street Urchin Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Middle"},
-  {cookie_name:"Sugarfly Cookie",primary_color:"Yellow",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear"},
-  {cookie_name:"Tails Cookie",primary_color:"Orange",secondary_color:"White",rarity:"Special",type:"Ambush",position:"Middle"},
-  {cookie_name:"Tarte Tatin Cookie",primary_color:"Red",secondary_color:"Gray",rarity:"Epic",type:"Ranged",position:"Rear"},
-  {cookie_name:"Tea Knight Cookie",primary_color:"Gray",secondary_color:"Blue",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"Tiger Lily Cookie",primary_color:"Blue",secondary_color:"Orange",rarity:"Epic",type:"Ranged",position:"Rear"},
-  {cookie_name:"Twizzly Gummy Cookie",primary_color:"Blue",secondary_color:"Pink",rarity:"Epic",type:"Ranged",position:"Rear"},
-  {cookie_name:"Vampire Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Epic",type:"Ambush",position:"Rear"},
-  {cookie_name:"Wedding Cake Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle"},
-  {cookie_name:"Werewolf Cookie",primary_color:"Gray",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
-  {cookie_name:"White Lily Cookie",primary_color:"Green",secondary_color:"White",rarity:"Ancient",type:"Bomber",position:"Middle"},
-  {cookie_name:"Wildberry Cookie",primary_color:"White",secondary_color:"Red",rarity:"Epic",type:"Defense",position:"Front"},
-  {cookie_name:"Wind Archer Cookie",primary_color:"Green",secondary_color:"White",rarity:"Legendary",type:"Ranged",position:"Rear"},
-  {cookie_name:"Wizard Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Common",type:"Magic",position:"Middle"},
+{cookie_name:"Adventurer Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Ambush",position:"Middle",skill_name:"Rope Master",skill_cooldown:12},
+  {cookie_name:"Affogato Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Middle",skill_name:"Sweet Scheme",skill_cooldown:15},
+  {cookie_name:"Agar Agar Cookie",primary_color:"Gray",secondary_color:"Red",rarity:"Epic",type:"Ambush",position:"Middle",skill_name:"Ravenous Mirror",skill_cooldown:15},
+  {cookie_name:"Alchemist Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Rare",type:"Bomber",position:"Middle",skill_name:"Unstable Formula",skill_cooldown:16},
+  {cookie_name:"Almond Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Almond Handcuffs",skill_cooldown:15},
+  {cookie_name:"Angel Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Common",type:"Healing",position:"Rear",skill_name:"Celestial Light",skill_cooldown:15},
+  {cookie_name:"Avocado Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Rare",type:"Defense",position:"Front",skill_name:"Battle Smithing",skill_cooldown:13},
+  {cookie_name:"Beet Cookie",primary_color:"Pink",secondary_color:"Green",rarity:"Common",type:"Ranged",position:"Rear",skill_name:"Hunters Sense",skill_cooldown:12},
+  {cookie_name:"Black Forest Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front",skill_name:"For the Creators!",skill_cooldown:8},
+  {cookie_name:"Black Lemonade Cookie",primary_color:"Yellow",secondary_color:"Black",rarity:"Epic",type:"Bomber",position:"Middle",skill_name:"Electrifying Rock!",skill_cooldown:10},
+  {cookie_name:"Black Pearl Cookie",primary_color:"Black",secondary_color:"White",rarity:"Legendary",type:"Ambush",position:"Middle",skill_name:"Duskglooms Sovereign",skill_cooldown:15},
+  {cookie_name:"Black Raisin Cookie",primary_color:"Black",secondary_color:"Purple",rarity:"Epic",type:"Ambush",position:"Middle",skill_name:"Shadow Watcher",skill_cooldown:14},
+  {cookie_name:"Black Sapphire Cookie",primary_color:"Black",secondary_color:"Purple",rarity:"Epic",type:"Support",position:"Middle",skill_name:"It's Showtime",skill_cooldown:15},
+  {cookie_name:"Blackberry Cookie",primary_color:"Purple",secondary_color:"Black",rarity:"Rare",type:"Magic",position:"Rear",skill_name:"Ghost Servants",skill_cooldown:15},
+  {cookie_name:"Blueberry Pie Cookie",primary_color:"Blue",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Cursed Tome",skill_cooldown:15},
+  {cookie_name:"Burning Spice Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Beast",type:"Charge",position:"Front",skill_name:"Tyrants Wrath",skill_cooldown:9},
+  {cookie_name:"Burnt Cheese Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Keeper of the Gates",skill_cooldown:10},
+  {cookie_name:"Butter Roll Cookie",primary_color:"White",secondary_color:"Red",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Dough Experiment",skill_cooldown:12},
+  {cookie_name:"Camellia Cookie",primary_color:"Green",secondary_color:"White",rarity:"Super Epic",type:"Charge",position:"Front",skill_name:"Battle Scene Painting",skill_cooldown:13},
+  {cookie_name:"Candy Apple Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Epic",type:"Bomber",position:"Middle",skill_name:"Apple of My Eye!",skill_cooldown:12},
+  {cookie_name:"Candy Diver Cookie",primary_color:"Red",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Deep-sea Diver",skill_cooldown:15},
+  {cookie_name:"Capsaicin Cookie",primary_color:"Orange",secondary_color:"Black",rarity:"Super Epic",type:"Charge",position:"Front",skill_name:"Capsaicin Magma",skill_cooldown:15},
+  {cookie_name:"Captain Caviar Cookie",primary_color:"Black",secondary_color:"Yellow",rarity:"Epic",type:"Bomber",position:"Middle",skill_name:"Black Shark Torpedo",skill_cooldown:15},
+  {cookie_name:"Caramel Arrow Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Ranged",position:"Front",skill_name:"Arrow of Resolution",skill_cooldown:10},
+  {cookie_name:"Caramel Choux Cookie",primary_color:"Brown",secondary_color:"Yellow",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Ive Got Choux",skill_cooldown:15},
+  {cookie_name:"Carol Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Healing",position:"Rear",skill_name:"Magic Songs",skill_cooldown:16},
+  {cookie_name:"Carrot Cookie",primary_color:"Orange",secondary_color:"Brown",rarity:"Rare",type:"Support",position:"Middle",skill_name:"Carrot Harvest",skill_cooldown:19},
+  {cookie_name:"Charcoal Cookie",primary_color:"Black",secondary_color:"Gray",rarity:"Epic",type:"Magic",position:"Rear",skill_name:"Tombkeeper's Rite",skill_cooldown:12},
+  {cookie_name:"Cherry Blossom Cookie",primary_color:"Pink",secondary_color:"Brown",rarity:"Epic",type:"Ambush",position:"Rear",skill_name:"Cherry Blossom Rain",skill_cooldown:17},
+  {cookie_name:"Cherry Cookie",primary_color:"Red",secondary_color:"White",rarity:"Rare",type:"Bomber",position:"Rear",skill_name:"Huge Cherry Bomb",skill_cooldown:16},
+  {cookie_name:"Chess Choco Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Rear",skill_name:"Chess Time!",skill_cooldown:14},
+  {cookie_name:"Chili Pepper Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Epic",type:"Ambush",position:"Middle",skill_name:"Cheap Shot",skill_cooldown:12},
+  {cookie_name:"Choco Drizzle Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Ambush",position:"Middle",skill_name:"Choco Penumbra",skill_cooldown:12},
+  {cookie_name:"Clotted Cream Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Super Epic",type:"Magic",position:"Middle",skill_name:"Consuls Orders",skill_cooldown:15},
+  {cookie_name:"Cloud Haetae Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Haetae Charge",skill_cooldown:11},
+  {cookie_name:"Clover Cookie",primary_color:"Green",secondary_color:"White",rarity:"Rare",type:"Support",position:"Rear",skill_name:"Bards Song",skill_cooldown:17},
+  {cookie_name:"Cocoa Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Cocoa is Love",skill_cooldown:15},
+  {cookie_name:"Cotton Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Rear",skill_name:"A Warm Light",skill_cooldown:17},
+  {cookie_name:"Cream Ferret Cookie",primary_color:"White",secondary_color:"Yellow",rarity:"Special",type:"Support",position:"Rear",skill_name:"Snuggly Ferret",skill_cooldown:18},
+  {cookie_name:"Cream Puff Cookie",primary_color:"Brown",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Jellius Extremus!",skill_cooldown:16},
+  {cookie_name:"Cream Soda Cookie",primary_color:"Blue",secondary_color:"Pink",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Cream Soda Blade",skill_cooldown:14},
+  {cookie_name:"Cream Unicorn Cookie",primary_color:"White",secondary_color:"Pink",rarity:"Epic",type:"Healing",position:"Rear",skill_name:"Midsummer Nights Dream",skill_cooldown:17},
+  {cookie_name:"Crimson Coral Cookie",primary_color:"Red",secondary_color:"Pink",rarity:"Super Epic",type:"Defense",position:"Front",skill_name:"Somber Affection",skill_cooldown:12},
+  {cookie_name:"Crunchy Chip Cookie",primary_color:"White",secondary_color:"Black",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Wolf Squadron",skill_cooldown:15},
+  {cookie_name:"Crème Brûlée Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Epic",type:"Ranged",position:"Rear",skill_name:"Accelerando",skill_cooldown:9},
+  {cookie_name:"Custard Cookie III",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Healing",position:"Rear",skill_name:"Kings Favor",skill_cooldown:16},
+  {cookie_name:"Dark Cacao Cookie",primary_color:"Black",secondary_color:"Purple",rarity:"Ancient",type:"Charge",position:"Front",skill_name:"Solemn Judgment",skill_cooldown:16},
+  {cookie_name:"Dark Choco Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Sword of Darkness",skill_cooldown:13},
+  {cookie_name:"Dark Enchantress Cookie",primary_color:"Red",secondary_color:"White",rarity:"Witch",type:"Magic",position:"Middle",skill_name:"Visions of Doom",skill_cooldown:16},
+  {cookie_name:"Devil Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Rare",type:"Magic",position:"Middle",skill_name:"Devilish Rune",skill_cooldown:18},
+  {cookie_name:"Doughael Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Super Epic",type:"Healing",position:"Middle",skill_name:"Consecrated Vow",skill_cooldown:15},
+  {cookie_name:"Eclair Cookie",primary_color:"Green",secondary_color:"White",rarity:"Epic",type:"Support",position:"Middle",skill_name:"Book of History",skill_cooldown:16},
+  {cookie_name:"Elder Faerie Cookie",primary_color:"Gray",secondary_color:"White",rarity:"Super Epic",type:"Defense",position:"Front",skill_name:"Guardians Valor",skill_cooldown:12},
+  {cookie_name:"Elphaba Cookie",primary_color:"Black",secondary_color:"Green",rarity:"Special",type:"Magic",position:"Rear",skill_name:"Unlimited!",skill_cooldown:14},
+  {cookie_name:"Espresso Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Grinding",skill_cooldown:15},
+  {cookie_name:"Eternal Sugar Cookie",primary_color:"Pink",secondary_color:"Purple",rarity:"Beast",type:"Bomber",position:"Middle",skill_name:"Eternal Enchantment",skill_cooldown:12},
+  {cookie_name:"Fettuccine Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Unstable Fettuccine",skill_cooldown:12},
+  {cookie_name:"Fig Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Middle",skill_name:"Jelly Horn",skill_cooldown:15},
+  {cookie_name:"Financier Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Paladin Protection",skill_cooldown:15},
+  {cookie_name:"Fire Spirit Cookie",primary_color:"Red",secondary_color:"Yellow",rarity:"Legendary",type:"Magic",position:"Rear",skill_name:"Ever-Burning Flames",skill_cooldown:14},
+  {cookie_name:"Frilled Jellyfish Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Middle",skill_name:"Frilled Snare",skill_cooldown:12},
+  {cookie_name:"Frost Queen Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Legendary",type:"Magic",position:"Middle",skill_name:"Freezing Squall",skill_cooldown:18},
+  {cookie_name:"GingerBrave",primary_color:"Brown",secondary_color:"Blue",rarity:"Common",type:"Charge",position:"Front",skill_name:"Brave Dash",skill_cooldown:8},
+  {cookie_name:"Glinda Cookie",primary_color:"Pink",secondary_color:"Yellow",rarity:"Special",type:"Magic",position:"Rear",skill_name:"Dazzling Presence",skill_cooldown:14},
+  {cookie_name:"Golden Cheese Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Ancient",type:"Ranged",position:"Middle",skill_name:"Brilliance of the Absolute",skill_cooldown:13},
+  {cookie_name:"Golden Osmanthus Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Epic",type:"Bomber",position:"Middle",skill_name:"Incense of Affection",skill_cooldown:13},
+  {cookie_name:"Grapefruit Cookie",primary_color:"Red",secondary_color:"Green",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Catch Me If You Can!",skill_cooldown:13},
+  {cookie_name:"Green Tea Mousse Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Mousse Shield",skill_cooldown:11},
+  {cookie_name:"Gumball Cookie",primary_color:"Blue",secondary_color:"Red",rarity:"Rare",type:"Bomber",position:"Rear",skill_name:"Art-illery",skill_cooldown:0},
+  {cookie_name:"Herb Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Healing",position:"Rear",skill_name:"Sunny Garden",skill_cooldown:17},
+  {cookie_name:"Hollyberry Cookie",primary_color:"Pink",secondary_color:"Red",rarity:"Ancient",type:"Defense",position:"Front",skill_name:"Oath on the Shield",skill_cooldown:18},
+  {cookie_name:"Icicle Yeti Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Special",type:"Healing",position:"Front",skill_name:"Lets Be Friends!",skill_cooldown:12},
+  {cookie_name:"Jagae Cookie",primary_color:"Purple",secondary_color:"White",rarity:"Epic",type:"Support",position:"Front",skill_name:"Iridescent Storm",skill_cooldown:13},
+  {cookie_name:"Knight Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Rare",type:"Defense",position:"Front",skill_name:"Calvary Charge",skill_cooldown:13},
+  {cookie_name:"Kouign-Amann Cookie",primary_color:"Pink",secondary_color:"Yellow",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Paladins Way",skill_cooldown:12},
+  {cookie_name:"Kumiho Cookie",primary_color:"Red",secondary_color:"Blue",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Somersault",skill_cooldown:14},
+  {cookie_name:"Latte Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Care for a Latte?",skill_cooldown:15},
+  {cookie_name:"Lemon Cookie",primary_color:"Yellow",secondary_color:"Blue",rarity:"Epic",type:"Ambush",position:"Middle",skill_name:"Lightning Dash",skill_cooldown:12},
+  {cookie_name:"Licorice Cookie",primary_color:"Black",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Licorice Servants",skill_cooldown:14},
+  {cookie_name:"Lilac Cookie",primary_color:"Purple",secondary_color:"White",rarity:"Epic",type:"Support",position:"Middle",skill_name:"Chakram Throw",skill_cooldown:13},
+  {cookie_name:"Lime Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Beach Ball Surprise",skill_cooldown:15},
+  {cookie_name:"Linzer Cookie",primary_color:"Red",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Rear",skill_name:"The Culprit... is YOU!",skill_cooldown:16},
+  {cookie_name:"Macaron Cookie",primary_color:"Red",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Mighty Macaron Parade",skill_cooldown:15},
+  {cookie_name:"Madeleine Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Commanders Honor",skill_cooldown:13},
+  {cookie_name:"Mala Sauce Cookie",primary_color:"Red",secondary_color:"Gray",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Spicy Mala Strike",skill_cooldown:15},
+  {cookie_name:"Mango Cookie",primary_color:"Orange",secondary_color:"Green",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Mango Juice Wave",skill_cooldown:15},
+  {cookie_name:"Manju Cookie",primary_color:"Brown",secondary_color:"Red",rarity:"Epic",type:"Ambush",position:"Rear",skill_name:"Flash Strike",skill_cooldown:17},
+  {cookie_name:"Marshmallow Bunny Cookie",primary_color:"Pink",secondary_color:"Blue",rarity:"Special",type:"Support",position:"Rear",skill_name:"Let's Go Bunny Tunnel!",skill_cooldown:18},
+  {cookie_name:"Matcha Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Sinister Scheme",skill_cooldown:12},
+  {cookie_name:"Menthol Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Bomber",position:"Rear",skill_name:"Menthol Censer",skill_cooldown:15},
+  {cookie_name:"Mercurial Knight Cookie",primary_color:"Gray",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Mercury Knights Oath",skill_cooldown:11},
+  {cookie_name:"Milk Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Noble Sacrifice",skill_cooldown:12},
+  {cookie_name:"Milky Way Cookie",primary_color:"Black",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Sugarcloud Express",skill_cooldown:15},
+  {cookie_name:"Millenial Tree Cookie",primary_color:"Brown",secondary_color:"Green",rarity:"Legendary",type:"Support",position:"Front",skill_name:"Millenial Tree",skill_cooldown:8},
+  {cookie_name:"Mint Choco Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Battlefield Symphony",skill_cooldown:16},
+  {cookie_name:"Mold Dough Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Order: Eliminate",skill_cooldown:10},
+  {cookie_name:"Moon Rabbit Cookie",primary_color:"White",secondary_color:"Pink",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Giant Rice Cake Bunny",skill_cooldown:14},
+  {cookie_name:"Moonlight Cookie",primary_color:"Blue",secondary_color:"Black",rarity:"Legendary",type:"Magic",position:"Middle",skill_name:"Dream of the Night Sky",skill_cooldown:15},
+  {cookie_name:"Mozzarella Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Bat Attack",skill_cooldown:11},
+  {cookie_name:"Muscle Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Common",type:"Charge",position:"Front",skill_name:"Muscle King Power",skill_cooldown:10},
+  {cookie_name:"Mystic Flour Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Beast",type:"Healing",position:"Rear",skill_name:"Whispers of Apathy",skill_cooldown:15},
+  {cookie_name:"Ninja Cookie",primary_color:"Blue",secondary_color:"Brown",rarity:"Common",type:"Ambush",position:"Middle",skill_name:"Swift Strike",skill_cooldown:11},
+  {cookie_name:"Nutmeg Tiger Cookie",primary_color:"Red",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Front",skill_name:"The Great General",skill_cooldown:12},
+  {cookie_name:"Okchun Cookie",primary_color:"White",secondary_color:"Red",rarity:"Epic",type:"Healing",position:"Middle",skill_name:"Okchun Pouch",skill_cooldown:15},
+  {cookie_name:"Olive Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Bat Attack",skill_cooldown:15},
+  {cookie_name:"Onion Cookie",primary_color:"Purple",secondary_color:"White",rarity:"Rare",type:"Support",position:"Middle",skill_name:"Unstoppable Tears",skill_cooldown:19},
+  {cookie_name:"Orange Cookie",primary_color:"Orange",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Rear",skill_name:"Juicy Serve!",skill_cooldown:12},
+  {cookie_name:"Oyster Cookie",primary_color:"White",secondary_color:"Gray",rarity:"Super Epic",type:"Support",position:"Rear",skill_name:"Might of Oyster House",skill_cooldown:17},
+  {cookie_name:"Pancake Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Ambush",position:"Rear",skill_name:"Take an Acorn!",skill_cooldown:15},
+  {cookie_name:"Parfait Cookie",primary_color:"White",secondary_color:"Pink",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Para-Paru-Parfait!",skill_cooldown:17},
+  {cookie_name:"Pastry Cookie",primary_color:"White",secondary_color:"Purple",rarity:"Epic",type:"Ranged",position:"Rear",skill_name:"Battle Prayer",skill_cooldown:13},
+  {cookie_name:"Pavlova Cookie",primary_color:"Pink",secondary_color:"Red",rarity:"Epic",type:"Ranged",position:"Rear",skill_name:"Heart-Piercing Arrow",skill_cooldown:6},
+  {cookie_name:"Peach Blossom Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Epic",type:"Support",position:"Middle",skill_name:"Heavenly Fruit",skill_cooldown:12},
+  {cookie_name:"Peppermint Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Freshness of the Sea",skill_cooldown:17},
+  {cookie_name:"Pinecone Cookie",primary_color:"Brown",secondary_color:"Green",rarity:"Epic",type:"Bomber",position:"Front",skill_name:"Pinecone Bomb",skill_cooldown:12},
+  {cookie_name:"Pitaya Dragon Cookie",primary_color:"Red",secondary_color:"White",rarity:"Dragon",type:"Charge",position:"Front",skill_name:"Draconic Bladestorm",skill_cooldown:13},
+  {cookie_name:"Poison Mushroom Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Middle",skill_name:"Poison Cloud",skill_cooldown:15},
+  {cookie_name:"Pom-pom Dough Cookie",primary_color:"White",secondary_color:"Green",rarity:"Epic",type:"Support",position:"Middle",skill_name:"Pom-pom Spores!",skill_cooldown:15},
+  {cookie_name:"Pomegranate Cookie",primary_color:"Red",secondary_color:"Green",rarity:"Epic",type:"Support",position:"Middle",skill_name:"Pomegranate Magic",skill_cooldown:15},
+  {cookie_name:"Princess Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Rare",type:"Charge",position:"Front",skill_name:"Royal Swing",skill_cooldown:13},
+  {cookie_name:"Prophet Cookie",primary_color:"Brown",secondary_color:"Purple",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Seven Prophecies",skill_cooldown:19},
+  {cookie_name:"Prune Juice Cookie",primary_color:"Purple",secondary_color:"Black",rarity:"Epic",type:"Bomber",position:"Middle",skill_name:"Prune Juice Potion",skill_cooldown:15},
+  {cookie_name:"Pudding à la Mode Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Rear",skill_name:"Plasma Cannon",skill_cooldown:11},
+  {cookie_name:"Pumpkin Pie Cookie",primary_color:"Orange",secondary_color:"Black",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Pompon help!",skill_cooldown:18},
+  {cookie_name:"Pure Vanilla Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Ancient",type:"Healing",position:"Rear",skill_name:"Love & Peace",skill_cooldown:19},
+  {cookie_name:"Purple Yam Cookie",primary_color:"Purple",secondary_color:"Pink",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Purple Tornado",skill_cooldown:12},
+  {cookie_name:"Raspberry Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Raspberry Reprise",skill_cooldown:14},
+  {cookie_name:"Rebel Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Ambush",position:"Front",skill_name:"Here There Everywhere!",skill_cooldown:13},
+  {cookie_name:"Red Osmanthus Cookie",primary_color:"Red",secondary_color:"White",rarity:"Epic",type:"Ranged",position:"Middle",skill_name:"The Pipas Song",skill_cooldown:10},
+  {cookie_name:"Red Velvet Cookie",primary_color:"Red",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Crimson Hand",skill_cooldown:15},
+  {cookie_name:"Rockstar Cookie",primary_color:"Red",secondary_color:"Gray",rarity:"Epic",type:"Healing",position:"Middle",skill_name:"Legend of Rock",skill_cooldown:15},
+  {cookie_name:"Royal Margarine Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Ambush",position:"Middle",skill_name:"Buttercream Blast",skill_cooldown:12},
+  {cookie_name:"Rye Cookie",primary_color:"Brown",secondary_color:"Red",rarity:"Epic",type:"Ranged",position:"Rear",skill_name:"Final Showdown",skill_cooldown:15},
+  {cookie_name:"Salt Cellar Cookie",primary_color:"White",secondary_color:"Gray",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Knight of Solidarity",skill_cooldown:14},
+  {cookie_name:"Schwarzwälder",primary_color:"Brown",secondary_color:"Red",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Choco Chip Hammer",skill_cooldown:12},
+  {cookie_name:"Sea Fairy Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Legendary",type:"Bomber",position:"Middle",skill_name:"Soaring Compassion",skill_cooldown:17},
+  {cookie_name:"Seltzer Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Bubble Rain",skill_cooldown:12},
+  {cookie_name:"Shadow Milk Cookie",primary_color:"Blue",secondary_color:"Black",rarity:"Beast",type:"Magic",position:"Middle",skill_name:"Act 1: Lies",skill_cooldown:11},
+  {cookie_name:"Sherbet Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Super Epic",type:"Ranged",position:"Middle",skill_name:"Frost Shards",skill_cooldown:13},
+  {cookie_name:"Shining Glitter Cookie",primary_color:"Pink",secondary_color:"Black",rarity:"Super Epic",type:"Magic",position:"Middle",skill_name:"All Eyes on the Stage!",skill_cooldown:12},
+  {cookie_name:"Silent Salt Cookie",primary_color:"Black",secondary_color:"Gray",rarity:"Beast",type:"Ambush",position:"Front",skill_name:"End of Silence",skill_cooldown:14},
+  {cookie_name:"Silverbell Cookie",primary_color:"White",secondary_color:"Gray",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Gleeful Chime",skill_cooldown:15},
+  {cookie_name:"Smoked Cheese Cookie",primary_color:"Red",secondary_color:"Yellow",rarity:"Epic",type:"Magic",position:"Rear",skill_name:"Get Smoked!",skill_cooldown:15},
+  {cookie_name:"Snapdragon Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Special",type:"Support",position:"Rear",skill_name:"Arcane Blossom",skill_cooldown:17},
+  {cookie_name:"Snow Sugar Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Blizzard",skill_cooldown:20},
+  {cookie_name:"Sonic Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Special",type:"Ambush",position:"Middle",skill_name:"Sonics Spin Dash",skill_cooldown:16},
+  {cookie_name:"Sorbet Shark Cookie",primary_color:"Brown",secondary_color:"Blue",rarity:"Epic",type:"Ambush",position:"Middle",skill_name:"Shark Splash",skill_cooldown:17},
+  {cookie_name:"Space Doughnut",primary_color:"Pink",secondary_color:"Brown",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Doughnut Beam",skill_cooldown:12},
+  {cookie_name:"Sparkling Cookie",primary_color:"Yellow",secondary_color:"Black",rarity:"Epic",type:"Healing",position:"Rear",skill_name:"Sparkling Cocktail",skill_cooldown:13},
+  {cookie_name:"Squid Ink Cookie",primary_color:"Black",secondary_color:"Blue",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Ink Tentacle Slap",skill_cooldown:16},
+  {cookie_name:"Star Coral Cookie",primary_color:"Black",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Twinkling Coral",skill_cooldown:14},
+  {cookie_name:"Stardust Cookie",primary_color:"Blue",secondary_color:"Black",rarity:"Super Epic",type:"Ambush",position:"Middle",skill_name:"Wrath of the Stars",skill_cooldown:13},
+  {cookie_name:"Stormbringer Cookie",primary_color:"Yellow",secondary_color:"Black",rarity:"Legendary",type:"Charge",position:"Front",skill_name:"Lightning Blitzstorm",skill_cooldown:13},
+  {cookie_name:"Strawberry Cookie",primary_color:"Pink",secondary_color:"Brown",rarity:"Common",type:"Defense",position:"Front",skill_name:"Dont Come Near!",skill_cooldown:10},
+  {cookie_name:"Strawberry Crepe Cookie",primary_color:"Pink",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Crepe Thrust",skill_cooldown:15},
+  {cookie_name:"Street Urchin Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Middle",skill_name:"Ride or Crumble",skill_cooldown:12},
+  {cookie_name:"Sugarfly Cookie",primary_color:"Yellow",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear",skill_name:"Butterflys Whisper",skill_cooldown:6},
+  {cookie_name:"Tails Cookie",primary_color:"Orange",secondary_color:"White",rarity:"Special",type:"Ambush",position:"Middle",skill_name:"Tails Spin Dash",skill_cooldown:17},
+  {cookie_name:"Tarte Tatin Cookie",primary_color:"Red",secondary_color:"Gray",rarity:"Epic",type:"Ranged",position:"Rear",skill_name:"Cannonade",skill_cooldown:12},
+  {cookie_name:"Tea Knight Cookie",primary_color:"Gray",secondary_color:"Blue",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Battlemaster",skill_cooldown:18},
+  {cookie_name:"Tiger Lily Cookie",primary_color:"Blue",secondary_color:"Orange",rarity:"Epic",type:"Ranged",position:"Rear",skill_name:"Tiger Rider",skill_cooldown:13},
+  {cookie_name:"Twizzly Gummy Cookie",primary_color:"Blue",secondary_color:"Pink",rarity:"Epic",type:"Ranged",position:"Rear",skill_name:"Twizzly Beam",skill_cooldown:16},
+  {cookie_name:"Vampire Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Epic",type:"Ambush",position:"Rear",skill_name:"Vampirism",skill_cooldown:13},
+  {cookie_name:"Venom Dough Cookie",primary_color:"White",secondary_color:"Purple",rarity:"Super Epic",type:"Bomber",position:"Rear",skill_name:"Mind Venom",skill_cooldown:14},
+  {cookie_name:"Wedding Cake Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle",skill_name:"Anything for the Bride!",skill_cooldown:15},
+  {cookie_name:"Werewolf Cookie",primary_color:"Gray",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front",skill_name:"Transformation",skill_cooldown:11},
+  {cookie_name:"White Lily Cookie",primary_color:"Green",secondary_color:"White",rarity:"Ancient",type:"Bomber",position:"Middle",skill_name:"Lily Bud",skill_cooldown:15},
+  {cookie_name:"Wildberry Cookie",primary_color:"White",secondary_color:"Red",rarity:"Epic",type:"Defense",position:"Front",skill_name:"Wild Punch",skill_cooldown:10},
+  {cookie_name:"Wind Archer Cookie",primary_color:"Green",secondary_color:"White",rarity:"Legendary",type:"Ranged",position:"Rear",skill_name:"Last Wind",skill_cooldown:6},
+  {cookie_name:"Wizard Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Common",type:"Magic",position:"Middle",skill_name:"Magic Storm",skill_cooldown:13},
 ];
 
 // ─────────────────────────────────────────
-// DAILY COOKIE SELECTION
-// Uses date string as a deterministic seed
+// WORKER URL — update this after you deploy
 // ─────────────────────────────────────────
-function getDailyIndex() {
-  const now = new Date();
-  const dateStr = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
-  let hash = 0;
-  for (let i = 0; i < dateStr.length; i++) {
-    hash = (hash * 31 + dateStr.charCodeAt(i)) >>> 0;
-  }
-  return hash % COOKIES.length;
+const WORKER_URL = 'https://cookiedle.YOUR_SUBDOMAIN.workers.dev';
+
+// ─────────────────────────────────────────
+// SESSION PERSISTENCE via localStorage
+// Keyed by date so it resets each new day.
+// Stores guesses + results (not the target).
+// ─────────────────────────────────────────
+const TODAY_KEY = (() => {
+  const d = new Date();
+  return `cookiedle-${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+})();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(TODAY_KEY);
+    return raw ? JSON.parse(raw) : { guesses: [], results: {}, won: false, hintUsed: false, hintTrait: null, hintValue: null, victoryData: null };
+  } catch { return { guesses: [], results: {}, won: false, hintUsed: false, hintTrait: null, hintValue: null, victoryData: null }; }
 }
 
-const TARGET = COOKIES[getDailyIndex()];
+function saveState() {
+  try {
+    localStorage.setItem(TODAY_KEY, JSON.stringify({ guesses, results, won, hintUsed, hintTrait, hintValue, victoryData }));
+  } catch {}
+}
 
 // ─────────────────────────────────────────
 // STATE
+// results = { [cookieName]: [...traits] }
+// stored locally so restoring is instant
 // ─────────────────────────────────────────
-let guesses = [];
-let won = false;
+const saved     = loadState();
+let guesses     = saved.guesses     || [];
+let results     = saved.results     || {};
+let won         = saved.won         || false;
+let hintUsed    = saved.hintUsed    || false;
+let hintTrait   = saved.hintTrait   || null;
+let hintValue   = saved.hintValue   || null;
+let victoryData = saved.victoryData || null;
 let activeSuggestion = -1;
 
 // ─────────────────────────────────────────
 // DOM REFS
 // ─────────────────────────────────────────
-const input        = document.getElementById('guessInput');
-const suggestBox   = document.getElementById('suggestions');
-const historyEl    = document.getElementById('guessHistory');
-const metaEl       = document.getElementById('guessMeta');
-const alreadyEl    = document.getElementById('alreadyGuessed');
-const victoryEl    = document.getElementById('victoryBanner');
-const vicCountEl   = document.getElementById('victoryGuessCount');
-const vicNameEl    = document.getElementById('victoryCookieName');
-const submitBtn    = document.getElementById('submitBtn');
-const shareBtn     = document.getElementById('shareBtn');
-const nextTimerEl  = document.getElementById('nextTimer');
-const toastEl      = document.getElementById('toast');
+const input       = document.getElementById('guessInput');
+const suggestBox  = document.getElementById('suggestions');
+const historyEl   = document.getElementById('guessHistory');
+const metaEl      = document.getElementById('guessMeta');
+const alreadyEl   = document.getElementById('alreadyGuessed');
+const victoryEl   = document.getElementById('victoryBanner');
+const vicCountEl  = document.getElementById('victoryGuessCount');
+const vicNameEl   = document.getElementById('victoryCookieName');
+const vicSkillEl  = document.getElementById('victorySkill');
+const submitBtn   = document.getElementById('submitBtn');
+const shareBtn    = document.getElementById('shareBtn');
+const nextTimerEl = document.getElementById('nextTimer');
+const toastEl     = document.getElementById('toast');
+const hintSection = document.getElementById('hintSection');
+const hintBtn     = document.getElementById('hintBtn');
+const hintPicker  = document.getElementById('hintPicker');
+const hintReveal  = document.getElementById('hintReveal');
 
 // ─────────────────────────────────────────
-// AUTOCOMPLETE
+// RESTORE SESSION ON PAGE LOAD
 // ─────────────────────────────────────────
+function restoreSession() {
+  guesses.forEach(name => {
+    const traitResults = results[name];
+    if (traitResults) addGuessRow(name, traitResults, false);
+  });
+  updateMeta();
+  updateHint();
+  if (won && victoryData) {
+    input.disabled     = true;
+    submitBtn.disabled = true;
+    showVictory(false);
+  }
+}
+
+// ─────────────────────────────────────────
+// AUTOCOMPLETE — fuzzy matching
+// ─────────────────────────────────────────
+function fuzzyScore(name, query) {
+  const n = name.toLowerCase(), q = query.toLowerCase();
+  if (n.startsWith(q)) return 3;
+  if (n.includes(q))   return 2;
+  let qi = 0;
+  for (let i = 0; i < n.length && qi < q.length; i++) {
+    if (n[i] === q[qi]) qi++;
+  }
+  return qi === q.length ? 1 : 0;
+}
+
 input.addEventListener('input', () => {
   activeSuggestion = -1;
-  const val = input.value.trim().toLowerCase();
+  const val = input.value.trim();
   alreadyEl.textContent = '';
   if (!val) { hideSuggestions(); return; }
 
-  const matches = COOKIES
-    .map(c => c.cookie_name)
-    .filter(n => n.toLowerCase().includes(val))
-    .sort((a, b) => {
-      const ai = a.toLowerCase().indexOf(val);
-      const bi = b.toLowerCase().indexOf(val);
-      return ai - bi || a.localeCompare(b);
-    })
+  const scored = COOKIES
+    .map(c => ({ name: c.cookie_name, score: fuzzyScore(c.cookie_name, val) }))
+    .filter(x => x.score > 0)
+    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
     .slice(0, 8);
 
-  if (!matches.length) { hideSuggestions(); return; }
+  if (!scored.length) { hideSuggestions(); return; }
 
   suggestBox.innerHTML = '';
-  matches.forEach((name, i) => {
+  scored.forEach(({ name }) => {
     const div = document.createElement('div');
-    div.className = 'suggestion-item';
+    div.className = 'suggestion-item' + (guesses.includes(name) ? ' used' : '');
     div.textContent = name;
-    if (guesses.includes(name)) {
-      div.style.opacity = '0.45';
-      div.style.textDecoration = 'line-through';
-    }
-    div.addEventListener('mousedown', e => {
-      e.preventDefault();
-      selectSuggestion(name);
-    });
+    div.addEventListener('mousedown', e => { e.preventDefault(); selectSuggestion(name); });
     suggestBox.appendChild(div);
   });
   suggestBox.style.display = 'block';
@@ -738,9 +883,7 @@ input.addEventListener('keydown', e => {
 
 function updateActiveSuggestion(items) {
   items.forEach((el, i) => el.classList.toggle('active', i === activeSuggestion));
-  if (activeSuggestion >= 0) {
-    input.value = items[activeSuggestion].textContent;
-  }
+  if (activeSuggestion >= 0) input.value = items[activeSuggestion].textContent;
 }
 
 function selectSuggestion(name) {
@@ -759,114 +902,225 @@ function hideSuggestions() {
 }
 
 // ─────────────────────────────────────────
-// GUESS LOGIC
+// GUESS LOGIC — sends to worker, never
+// compares against a local target
 // ─────────────────────────────────────────
 submitBtn.addEventListener('click', submitGuess);
 
-function submitGuess() {
+async function submitGuess() {
   if (won) return;
   const raw = input.value.trim();
   if (!raw) return;
 
   const cookie = COOKIES.find(c => c.cookie_name.toLowerCase() === raw.toLowerCase());
   if (!cookie) {
-    showToast('Cookie not found! Check your spelling.');
+    showToast('Cookie not found — check your spelling!');
     return;
   }
 
   if (guesses.includes(cookie.cookie_name)) {
-    alreadyEl.textContent = `You already guessed ${cookie.cookie_name}!`;
+    alreadyEl.textContent = `Already guessed ${cookie.cookie_name}!`;
     return;
   }
 
-  guesses.push(cookie.cookie_name);
-  input.value = '';
-  hideSuggestions();
+  // Disable input while waiting for worker response
+  input.disabled     = true;
+  submitBtn.disabled = true;
   alreadyEl.textContent = '';
 
-  addGuessRow(cookie);
-  updateMeta();
+  let data;
+  try {
+    const res = await fetch(`${WORKER_URL}/guess`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guess: cookie.cookie_name }),
+    });
+    data = await res.json();
+  } catch {
+    showToast('Connection error — please try again.');
+    input.disabled     = false;
+    submitBtn.disabled = false;
+    return;
+  }
 
-  if (cookie.cookie_name === TARGET.cookie_name) {
+  if (data.error) {
+    showToast(data.error);
+    input.disabled     = false;
+    submitBtn.disabled = false;
+    return;
+  }
+
+  // Store result traits locally (safe — no target info)
+  const traitResults = [
+    { value: cookie.cookie_name,     result: 'name' },
+    { value: cookie.primary_color,   result: data.primary_color },
+    { value: cookie.secondary_color, result: data.secondary_color },
+    { value: cookie.rarity,          result: data.rarity },
+    { value: cookie.type,            result: data.type },
+    { value: cookie.position,        result: data.position },
+  ];
+
+  guesses.push(cookie.cookie_name);
+  results[cookie.cookie_name] = traitResults;
+  input.value = '';
+  hideSuggestions();
+
+  addGuessRow(cookie.cookie_name, traitResults, true);
+  updateMeta();
+  updateHint();
+
+  if (data.correct) {
     won = true;
-    setTimeout(showVictory, guesses.length * 700 + 800);
-    input.disabled = true;
+    victoryData = {
+      name:      data.cookie_name,
+      skill:     data.skill_name     || '',
+      cooldown:  data.skill_cooldown || 0,
+    };
+    saveState();
+    input.disabled     = true;
     submitBtn.disabled = true;
+    setTimeout(() => showVictory(true), 6 * 700 + 400);
+  } else {
+    input.disabled     = false;
+    submitBtn.disabled = false;
+    saveState();
   }
 }
 
 // ─────────────────────────────────────────
 // RENDER GUESS ROW
+// traitResults = array of {value, result}
+// animate=true  → flip tiles one by one
+// animate=false → show instantly (restored)
 // ─────────────────────────────────────────
-function addGuessRow(cookie) {
-  const traits = [
-    { value: cookie.cookie_name, type: 'name' },
-    {
-      value: cookie.primary_color,
-      type: cookie.primary_color.toLowerCase() === TARGET.primary_color.toLowerCase()   ? 'correct'
-           : cookie.primary_color.toLowerCase() === TARGET.secondary_color.toLowerCase() ? 'partial'
-           : 'wrong'
-    },
-    {
-      value: cookie.secondary_color,
-      type: cookie.secondary_color.toLowerCase() === TARGET.secondary_color.toLowerCase() ? 'correct'
-           : cookie.secondary_color.toLowerCase() === TARGET.primary_color.toLowerCase()  ? 'partial'
-           : 'wrong'
-    },
-    { value: cookie.rarity,   type: cookie.rarity.toLowerCase()   === TARGET.rarity.toLowerCase()   ? 'correct' : 'wrong' },
-    { value: cookie.type,     type: cookie.type.toLowerCase()     === TARGET.type.toLowerCase()     ? 'correct' : 'wrong' },
-    { value: cookie.position, type: cookie.position.toLowerCase() === TARGET.position.toLowerCase() ? 'correct' : 'wrong' },
-  ];
-
+function addGuessRow(cookieName, traitResults, animate) {
   const row = document.createElement('div');
   row.className = 'guess-row';
 
-  traits.forEach((trait, i) => {
+  traitResults.forEach((trait, i) => {
     const cell = document.createElement('div');
-    cell.className = `cell cell-${trait.type === 'name' ? 'name' : trait.type}`;
+    cell.className = `cell cell-${trait.result}`;
     cell.textContent = trait.value;
+    if (!animate) {
+      cell.classList.add('instant');
+    } else {
+      setTimeout(() => cell.classList.add('revealed'), i * 700);
+    }
     row.appendChild(cell);
-
-    setTimeout(() => {
-      cell.classList.add('revealed');
-    }, i * 700);
   });
 
   historyEl.prepend(row);
 }
 
 // ─────────────────────────────────────────
+// HINT SYSTEM — fetches from worker
+// Worker returns the trait value without
+// revealing anything else about the target
+// ─────────────────────────────────────────
+const TRAIT_LABELS = {
+  primary_color:   'Primary Color',
+  secondary_color: 'Secondary Color',
+  rarity:          'Rarity',
+  type:            'Type',
+  position:        'Position',
+};
+
+// Wrong guesses = total guesses minus the winning guess (if won)
+function wrongCount() {
+  return won ? guesses.length - 1 : guesses.length;
+}
+
+function updateHint() {
+  // Never show hint if game is won
+  if (won) {
+    hintSection.classList.remove('show');
+    return;
+  }
+
+  // Show hint section only after 5 wrong guesses
+  hintSection.classList.toggle('show', wrongCount() >= 5);
+
+  // If hint already used, show the reveal and hide button/picker
+  if (hintUsed && hintTrait && hintValue) {
+    hintBtn.style.display = 'none';
+    hintPicker.classList.remove('show');
+    hintReveal.textContent = `💡 ${TRAIT_LABELS[hintTrait]}: ${hintValue}`;
+    hintReveal.classList.add('show');
+  } else {
+    hintBtn.style.display = '';
+    hintBtn.disabled = false;
+  }
+}
+
+hintBtn.addEventListener('click', () => {
+  if (hintUsed) return;
+  hintBtn.disabled = true;
+  hintPicker.classList.add('show');
+});
+
+hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const trait = btn.dataset.trait;
+
+    // Fetch the hint value from the worker
+    let value;
+    try {
+      const res = await fetch(`${WORKER_URL}/hint?trait=${trait}`);
+      const data = await res.json();
+      value = data.value;
+    } catch {
+      showToast('Could not fetch hint — please try again.');
+      hintBtn.disabled = false;
+      return;
+    }
+
+    hintUsed  = true;
+    hintTrait = trait;
+    hintValue = value;
+    saveState();
+
+    hintBtn.style.display = 'none';
+    hintPicker.classList.remove('show');
+    hintReveal.textContent = `💡 ${TRAIT_LABELS[trait]}: ${value}`;
+    hintReveal.classList.add('show');
+  });
+});
+
+// ─────────────────────────────────────────
 // META
 // ─────────────────────────────────────────
 function updateMeta() {
-  metaEl.textContent = guesses.length === 1
-    ? '1 guess so far'
-    : `${guesses.length} guesses so far`;
+  if (!guesses.length) { metaEl.textContent = ''; return; }
+  metaEl.textContent = guesses.length === 1 ? '1 guess so far' : `${guesses.length} guesses so far`;
 }
 
 // ─────────────────────────────────────────
 // VICTORY
 // ─────────────────────────────────────────
-function showVictory() {
+function showVictory(animate) {
   vicCountEl.textContent = guesses.length === 1
-    ? 'You got it in just 1 guess!'
-    : `You got it in ${guesses.length} guesses!`;
-  vicNameEl.textContent = `🍪 ${TARGET.cookie_name}`;
+    ? 'Got it in just 1 guess!'
+    : `Got it in ${guesses.length} guesses!`;
+  vicNameEl.textContent = `🍪 ${victoryData.name}`;
+  vicSkillEl.innerHTML  = victoryData.skill
+    ? `Skill: <span>${victoryData.skill}</span> · Cooldown: <span>${victoryData.cooldown}s</span>`
+    : '';
+
+  if (!animate) victoryEl.style.animation = 'none';
   victoryEl.classList.add('show');
   startNextCookieTimer();
 }
 
 function startNextCookieTimer() {
   function tick() {
-    const now = new Date();
+    const now      = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
     const diff = tomorrow - now;
-
-    const h = String(Math.floor(diff / 3600000)).padStart(2,'0');
-    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
-    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
+    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
     nextTimerEl.innerHTML = `Next cookie in <span>${h}:${m}:${s}</span>`;
   }
   tick();
@@ -874,24 +1128,15 @@ function startNextCookieTimer() {
 }
 
 // ─────────────────────────────────────────
-// SHARE
+// SHARE — uses locally stored results,
+// no target data needed
 // ─────────────────────────────────────────
 shareBtn.addEventListener('click', () => {
-  const emojiMap = { correct: '🟢', partial: '🟡', wrong: '🔴', name: '⬜' };
-
+  const emojiMap = { name: '⬜', correct: '🟢', partial: '🟡', wrong: '🔴' };
   const lines = guesses.map(name => {
-    const c = COOKIES.find(x => x.cookie_name === name);
-    const cells = [
-      'name',
-      c.primary_color.toLowerCase()   === TARGET.primary_color.toLowerCase()   ? 'correct' : c.primary_color.toLowerCase()   === TARGET.secondary_color.toLowerCase() ? 'partial' : 'wrong',
-      c.secondary_color.toLowerCase() === TARGET.secondary_color.toLowerCase() ? 'correct' : c.secondary_color.toLowerCase() === TARGET.primary_color.toLowerCase()    ? 'partial' : 'wrong',
-      c.rarity.toLowerCase()   === TARGET.rarity.toLowerCase()   ? 'correct' : 'wrong',
-      c.type.toLowerCase()     === TARGET.type.toLowerCase()     ? 'correct' : 'wrong',
-      c.position.toLowerCase() === TARGET.position.toLowerCase() ? 'correct' : 'wrong',
-    ];
-    return cells.map(t => emojiMap[t]).join('');
+    const traits = results[name] || [];
+    return traits.map(t => emojiMap[t.result] || '⬜').join('');
   });
-
   const text = [
     `Cookiedle 🍪`,
     `${guesses.length} guess${guesses.length !== 1 ? 'es' : ''}`,
@@ -900,7 +1145,6 @@ shareBtn.addEventListener('click', () => {
     '',
     window.location.href,
   ].join('\n');
-
   navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard! 🎉'));
 });
 
@@ -914,6 +1158,11 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2500);
 }
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+restoreSession();
 </script>
 </body>
 </html>
