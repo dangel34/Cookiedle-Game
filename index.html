@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cookiedle</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:        #1a1a2e;
+    --surface:   #16213e;
+    --card:      #0f3460;
+    --accent:    #e94560;
+    --gold:      #f5a623;
+    --green:     #4caf50;
+    --orange:    #ff9800;
+    --red:       #e94560;
+    --text:      #e0e0e0;
+    --muted:     #7a8aa0;
+    --border:    rgba(255,255,255,0.08);
+    --glow:      0 0 20px rgba(233,69,96,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background stars */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 25%, rgba(255,255,255,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 80%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(2px 2px at 20% 90%, rgba(245,166,35,0.4) 0%, transparent 100%),
+      radial-gradient(2px 2px at 80% 10%, rgba(233,69,96,0.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 16px 60px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    padding: 40px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .logo {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2rem, 6vw, 3.6rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--accent) 60%, #c44dff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    letter-spacing: 2px;
+    animation: logoGlow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes logoGlow {
+    from { filter: drop-shadow(0 0 8px rgba(245,166,35,0.5)); }
+    to   { filter: drop-shadow(0 0 20px rgba(233,69,96,0.6)); }
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .daily-badge {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    background: rgba(245,166,35,0.12);
+    border: 1px solid rgba(245,166,35,0.3);
+    color: var(--gold);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  /* ── HOW TO PLAY ── */
+  .how-to {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .how-to strong { color: var(--text); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+  }
+
+  .legend-dot {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ── GUESS INPUT ── */
+  .guess-section {
+    margin-bottom: 28px;
+  }
+
+  .input-wrap {
+    position: relative;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .guess-input {
+    width: 100%;
+    padding: 14px 120px 14px 20px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .guess-input:focus {
+    border-color: var(--accent);
+    box-shadow: var(--glow);
+  }
+
+  .guess-input::placeholder { color: var(--muted); font-weight: 600; }
+
+  .submit-btn {
+    position: absolute;
+    right: 6px; top: 50%;
+    transform: translateY(-50%);
+    padding: 8px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .submit-btn:hover { background: #c73650; }
+  .submit-btn:active { transform: translateY(-50%) scale(0.96); }
+
+  /* Autocomplete dropdown */
+  .suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #1e2d4a;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .suggestion-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item:hover, .suggestion-item.active { background: rgba(233,69,96,0.2); color: #fff; }
+
+  /* ── GUESS COUNT ── */
+  .guess-meta {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  /* ── TABLE HEADER ── */
+  .table-header {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1.2fr 1fr 1fr 1fr;
+    gap: 4px;
+    padding: 0 0 8px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .col-head {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-align: center;
+    padding: 4px 2px;
+  }
+
+  .col-head:first-child { text-align: left; padding-left: 8px; }
+
+  /* ── GUESS ROWS ── */
+  .guess-history { display: flex; flex-direction: column; gap: 5px; }
+
+  .guess-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1.2fr 1fr 1fr 1fr;
+    gap: 4px;
+    animation: rowSlide 0.3s ease-out;
+  }
+
+  @keyframes rowSlide {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .cell {
+    border-radius: 7px;
+    padding: 10px 6px;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1.25;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: rotateY(90deg);
+    transition: transform 0.35s ease, opacity 0.35s ease, background 0.2s;
+    word-break: break-word;
+  }
+
+  .cell.revealed {
+    opacity: 1;
+    transform: rotateY(0deg);
+  }
+
+  .cell:first-child { text-align: left; justify-content: flex-start; padding-left: 10px; font-size: 0.82rem; }
+
+  .cell-name    { background: #1e2d4a; border: 1px solid var(--border); color: var(--text); }
+  .cell-correct { background: var(--green); color: #fff; }
+  .cell-partial { background: var(--orange); color: #fff; }
+  .cell-wrong   { background: #c0392b; color: #fff; }
+
+  /* ── VICTORY BANNER ── */
+  .victory {
+    display: none;
+    text-align: center;
+    padding: 36px 24px;
+    background: linear-gradient(135deg, #0f3460, #16213e);
+    border: 1px solid rgba(245,166,35,0.35);
+    border-radius: 16px;
+    margin-top: 32px;
+    animation: victoryPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  @keyframes victoryPop {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .victory.show { display: block; }
+
+  .victory-emoji { font-size: 3rem; margin-bottom: 8px; }
+
+  .victory-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .victory-sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .victory-cookie {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .share-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background: var(--gold);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, transform 0.1s;
+    margin: 4px;
+  }
+
+  .share-btn:hover { background: #e0941a; }
+  .share-btn:active { transform: scale(0.97); }
+
+  .share-btn.secondary {
+    background: transparent;
+    border: 2px solid var(--muted);
+    color: var(--muted);
+  }
+
+  .share-btn.secondary:hover { border-color: var(--text); color: var(--text); }
+
+  /* Next cookie timer */
+  .next-timer {
+    margin-top: 16px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .next-timer span { color: var(--gold); font-weight: 800; }
+
+  /* Error toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #2d1f1f;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    pointer-events: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    z-index: 999;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  /* Already guessed indicator */
+  .already-guessed {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 6px;
+    min-height: 16px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--card); border-radius: 3px; }
+
+  /* Mobile tweaks */
+  @media (max-width: 600px) {
+    .table-header, .guess-row {
+      grid-template-columns: 1.8fr 1fr 1fr 0.9fr 0.9fr 0.9fr;
+    }
+    .cell { font-size: 0.68rem; padding: 8px 4px; min-height: 46px; }
+    .col-head { font-size: 0.6rem; letter-spacing: 0.8px; }
+    .cell:first-child { font-size: 0.7rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">Cookiedle</div>
+    <div class="subtitle">Cookie Run Kingdom · Guessing Game</div>
+    <div class="daily-badge">🍪 Daily Cookie</div>
+  </header>
+
+  <div class="how-to">
+    <strong>How to play:</strong> Guess today's Cookie Run Kingdom cookie! After each guess, tiles reveal how close you are.
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Correct</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Color is swapped (primary ↔ secondary)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div> Wrong</div>
+    </div>
+  </div>
+
+  <div class="guess-section">
+    <div class="input-wrap">
+      <input
+        id="guessInput"
+        class="guess-input"
+        type="text"
+        placeholder="Type a cookie name..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="submit-btn" id="submitBtn">Guess</button>
+      <div class="suggestions" id="suggestions" style="display:none"></div>
+    </div>
+    <div class="already-guessed" id="alreadyGuessed"></div>
+    <div class="guess-meta" id="guessMeta"></div>
+  </div>
+
+  <div class="table-header">
+    <div class="col-head">Cookie</div>
+    <div class="col-head">Primary</div>
+    <div class="col-head">Secondary</div>
+    <div class="col-head">Rarity</div>
+    <div class="col-head">Type</div>
+    <div class="col-head">Position</div>
+  </div>
+
+  <div class="guess-history" id="guessHistory"></div>
+
+  <div class="victory" id="victoryBanner">
+    <div class="victory-emoji">🎉</div>
+    <div class="victory-title">You got it!</div>
+    <div class="victory-sub" id="victoryGuessCount"></div>
+    <div class="victory-cookie" id="victoryCookieName"></div>
+    <button class="share-btn" id="shareBtn">Share Result 📋</button>
+    <button class="share-btn secondary" id="revealBtn" style="display:none">Reveal Answer</button>
+    <div class="next-timer" id="nextTimer"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────
+// COOKIE DATA
+// ─────────────────────────────────────────
+const COOKIES = [
+  {cookie_name:"Adventurer Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Ambush",position:"Middle"},
+  {cookie_name:"Affogato Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Middle"},
+  {cookie_name:"Agar Agar Cookie",primary_color:"Gray",secondary_color:"Red",rarity:"Epic",type:"Ambush",position:"Middle"},
+  {cookie_name:"Alchemist Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Rare",type:"Bomber",position:"Middle"},
+  {cookie_name:"Almond Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Angel Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Common",type:"Healing",position:"Rear"},
+  {cookie_name:"Avocado Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Rare",type:"Defense",position:"Front"},
+  {cookie_name:"Beet Cookie",primary_color:"Pink",secondary_color:"Green",rarity:"Common",type:"Ranged",position:"Rear"},
+  {cookie_name:"Blackberry Cookie",primary_color:"Purple",secondary_color:"Black",rarity:"Rare",type:"Magic",position:"Rear"},
+  {cookie_name:"Black Forest Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Black Lemonade Cookie",primary_color:"Yellow",secondary_color:"Black",rarity:"Epic",type:"Bomber",position:"Middle"},
+  {cookie_name:"Black Pearl Cookie",primary_color:"Black",secondary_color:"White",rarity:"Legendary",type:"Ambush",position:"Middle"},
+  {cookie_name:"Black Raisin Cookie",primary_color:"Black",secondary_color:"Purple",rarity:"Epic",type:"Ambush",position:"Middle"},
+  {cookie_name:"Black Sapphire Cookie",primary_color:"Black",secondary_color:"Purple",rarity:"Epic",type:"Support",position:"Middle"},
+  {cookie_name:"Blueberry Pie Cookie",primary_color:"Blue",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Burning Spice Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Beast",type:"Charge",position:"Front"},
+  {cookie_name:"Burnt Cheese Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Butter Roll Cookie",primary_color:"White",secondary_color:"Red",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Camellia Cookie",primary_color:"Green",secondary_color:"White",rarity:"Super Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Candy Apple Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Epic",type:"Bomber",position:"Middle"},
+  {cookie_name:"Candy Diver Cookie",primary_color:"Red",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Capsaicin Cookie",primary_color:"Orange",secondary_color:"Black",rarity:"Super Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Captain Caviar Cookie",primary_color:"Black",secondary_color:"Yellow",rarity:"Epic",type:"Bomber",position:"Middle"},
+  {cookie_name:"Caramel Arrow Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Ranged",position:"Front"},
+  {cookie_name:"Caramel Choux Cookie",primary_color:"Brown",secondary_color:"Yellow",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Carol Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Healing",position:"Rear"},
+  {cookie_name:"Carrot Cookie",primary_color:"Orange",secondary_color:"Brown",rarity:"Rare",type:"Support",position:"Middle"},
+  {cookie_name:"Cherry Blossom Cookie",primary_color:"Pink",secondary_color:"Brown",rarity:"Epic",type:"Ambush",position:"Rear"},
+  {cookie_name:"Cherry Cookie",primary_color:"Red",secondary_color:"White",rarity:"Rare",type:"Bomber",position:"Rear"},
+  {cookie_name:"Chili Pepper Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Epic",type:"Ambush",position:"Middle"},
+  {cookie_name:"Choco Drizzle Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Ambush",position:"Middle"},
+  {cookie_name:"Clotted Cream Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Super Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Cloud Haetae Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Clover Cookie",primary_color:"Green",secondary_color:"White",rarity:"Rare",type:"Support",position:"Rear"},
+  {cookie_name:"Cocoa Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Cotton Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Cream Ferret Cookie",primary_color:"White",secondary_color:"Yellow",rarity:"Special",type:"Support",position:"Rear"},
+  {cookie_name:"Cream Puff Cookie",primary_color:"Brown",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Cream Unicorn Cookie",primary_color:"White",secondary_color:"Pink",rarity:"Epic",type:"Healing",position:"Rear"},
+  {cookie_name:"Crème Brûlée Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Epic",type:"Ranged",position:"Rear"},
+  {cookie_name:"Crimson Coral Cookie",primary_color:"Red",secondary_color:"Pink",rarity:"Super Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Crunchy Chip Cookie",primary_color:"White",secondary_color:"Black",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Custard Cookie III",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Healing",position:"Rear"},
+  {cookie_name:"Dark Cacao Cookie",primary_color:"Black",secondary_color:"Purple",rarity:"Ancient",type:"Charge",position:"Front"},
+  {cookie_name:"Dark Choco Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Devil Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Rare",type:"Magic",position:"Middle"},
+  {cookie_name:"Eclair Cookie",primary_color:"Green",secondary_color:"White",rarity:"Epic",type:"Support",position:"Middle"},
+  {cookie_name:"Elder Faerie Cookie",primary_color:"Gray",secondary_color:"White",rarity:"Super Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Espresso Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Eternal Sugar Cookie",primary_color:"Pink",secondary_color:"Purple",rarity:"Beast",type:"Bomber",position:"Middle"},
+  {cookie_name:"Fettuccine Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Fig Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Middle"},
+  {cookie_name:"Financier Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Fire Spirit Cookie",primary_color:"Red",secondary_color:"Yellow",rarity:"Legendary",type:"Magic",position:"Rear"},
+  {cookie_name:"Frilled Jellyfish Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Middle"},
+  {cookie_name:"Frost Queen Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Legendary",type:"Magic",position:"Middle"},
+  {cookie_name:"GingerBrave",primary_color:"Brown",secondary_color:"Blue",rarity:"Common",type:"Charge",position:"Front"},
+  {cookie_name:"Golden Cheese Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Ancient",type:"Ranged",position:"Middle"},
+  {cookie_name:"Golden Osmanthus Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Epic",type:"Bomber",position:"Middle"},
+  {cookie_name:"Green Tea Mousse Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Gumball Cookie",primary_color:"Blue",secondary_color:"Red",rarity:"Rare",type:"Bomber",position:"Rear"},
+  {cookie_name:"Herb Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Healing",position:"Rear"},
+  {cookie_name:"Hollyberry Cookie",primary_color:"Pink",secondary_color:"Red",rarity:"Ancient",type:"Defense",position:"Front"},
+  {cookie_name:"Icicle Yeti Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Special",type:"Healing",position:"Front"},
+  {cookie_name:"Knight Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Rare",type:"Defense",position:"Front"},
+  {cookie_name:"Kouign-Amann Cookie",primary_color:"Pink",secondary_color:"Yellow",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Kumiho Cookie",primary_color:"Red",secondary_color:"Blue",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Latte Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Licorice Cookie",primary_color:"Black",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Lilac Cookie",primary_color:"Purple",secondary_color:"White",rarity:"Epic",type:"Support",position:"Middle"},
+  {cookie_name:"Linzer Cookie",primary_color:"Red",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Macaron Cookie",primary_color:"Red",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Madeleine Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Mala Sauce Cookie",primary_color:"Red",secondary_color:"Gray",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Mango Cookie",primary_color:"Orange",secondary_color:"Green",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Matcha Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Mercurial Knight Cookie",primary_color:"Gray",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Milk Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Milky Way Cookie",primary_color:"Black",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Mint Choco Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Moonlight Cookie",primary_color:"Blue",secondary_color:"Black",rarity:"Legendary",type:"Magic",position:"Middle"},
+  {cookie_name:"Moon Rabbit Cookie",primary_color:"White",secondary_color:"Pink",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Mozzarella Cookie",primary_color:"Yellow",secondary_color:"Brown",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Muscle Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Common",type:"Charge",position:"Front"},
+  {cookie_name:"Mystic Flour Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Beast",type:"Healing",position:"Rear"},
+  {cookie_name:"Ninja Cookie",primary_color:"Blue",secondary_color:"Brown",rarity:"Common",type:"Ambush",position:"Middle"},
+  {cookie_name:"Nutmeg Tiger Cookie",primary_color:"Red",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Front"},
+  {cookie_name:"Okchun Cookie",primary_color:"White",secondary_color:"Red",rarity:"Epic",type:"Healing",position:"Middle"},
+  {cookie_name:"Olive Cookie",primary_color:"Green",secondary_color:"Brown",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Onion Cookie",primary_color:"Purple",secondary_color:"White",rarity:"Rare",type:"Support",position:"Middle"},
+  {cookie_name:"Oyster Cookie",primary_color:"White",secondary_color:"Gray",rarity:"Super Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Pancake Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Ambush",position:"Rear"},
+  {cookie_name:"Parfait Cookie",primary_color:"White",secondary_color:"Pink",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Pastry Cookie",primary_color:"White",secondary_color:"Purple",rarity:"Epic",type:"Ranged",position:"Rear"},
+  {cookie_name:"Pavlova Cookie",primary_color:"Pink",secondary_color:"Red",rarity:"Epic",type:"Ranged",position:"Rear"},
+  {cookie_name:"Peach Blossom Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Epic",type:"Support",position:"Middle"},
+  {cookie_name:"Peppermint Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Pinecone Cookie",primary_color:"Brown",secondary_color:"Green",rarity:"Epic",type:"Bomber",position:"Front"},
+  {cookie_name:"Pitaya Dragon Cookie",primary_color:"Red",secondary_color:"White",rarity:"Dragon",type:"Charge",position:"Front"},
+  {cookie_name:"Poison Mushroom Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Middle"},
+  {cookie_name:"Pomegranate Cookie",primary_color:"Red",secondary_color:"Green",rarity:"Epic",type:"Support",position:"Middle"},
+  {cookie_name:"Princess Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Rare",type:"Charge",position:"Front"},
+  {cookie_name:"Prophet Cookie",primary_color:"Brown",secondary_color:"Purple",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Prune Juice Cookie",primary_color:"Purple",secondary_color:"Black",rarity:"Epic",type:"Bomber",position:"Middle"},
+  {cookie_name:"Pudding à la Mode Cookie",primary_color:"White",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Rear"},
+  {cookie_name:"Pumpkin Pie Cookie",primary_color:"Orange",secondary_color:"Black",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Pure Vanilla Cookie",primary_color:"Yellow",secondary_color:"White",rarity:"Ancient",type:"Healing",position:"Rear"},
+  {cookie_name:"Purple Yam Cookie",primary_color:"Purple",secondary_color:"Pink",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Raspberry Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Rebel Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Ambush",position:"Front"},
+  {cookie_name:"Red Osmanthus Cookie",primary_color:"Red",secondary_color:"White",rarity:"Epic",type:"Ranged",position:"Middle"},
+  {cookie_name:"Red Velvet Cookie",primary_color:"Red",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Rockstar Cookie",primary_color:"Red",secondary_color:"Gray",rarity:"Epic",type:"Healing",position:"Middle"},
+  {cookie_name:"Royal Margarine Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Epic",type:"Ambush",position:"Middle"},
+  {cookie_name:"Rye Cookie",primary_color:"Brown",secondary_color:"Red",rarity:"Epic",type:"Ranged",position:"Rear"},
+  {cookie_name:"Schwarzwälder",primary_color:"Brown",secondary_color:"Red",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Sea Fairy Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Legendary",type:"Bomber",position:"Middle"},
+  {cookie_name:"Shadow Milk Cookie",primary_color:"Blue",secondary_color:"Black",rarity:"Beast",type:"Magic",position:"Middle"},
+  {cookie_name:"Sherbet Cookie",primary_color:"White",secondary_color:"Blue",rarity:"Super Epic",type:"Ranged",position:"Middle"},
+  {cookie_name:"Shining Glitter Cookie",primary_color:"Pink",secondary_color:"Black",rarity:"Super Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Silverbell Cookie",primary_color:"White",secondary_color:"Gray",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Smoked Cheese Cookie",primary_color:"Red",secondary_color:"Yellow",rarity:"Epic",type:"Magic",position:"Rear"},
+  {cookie_name:"Snapdragon Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Special",type:"Support",position:"Rear"},
+  {cookie_name:"Snow Sugar Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Sonic Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Special",type:"Ambush",position:"Middle"},
+  {cookie_name:"Sorbet Shark Cookie",primary_color:"Brown",secondary_color:"Blue",rarity:"Epic",type:"Ambush",position:"Middle"},
+  {cookie_name:"Space Doughnut",primary_color:"Pink",secondary_color:"Brown",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Sparkling Cookie",primary_color:"Yellow",secondary_color:"Black",rarity:"Epic",type:"Healing",position:"Rear"},
+  {cookie_name:"Squid Ink Cookie",primary_color:"Black",secondary_color:"Blue",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Star Coral Cookie",primary_color:"Black",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Stardust Cookie",primary_color:"Blue",secondary_color:"Black",rarity:"Super Epic",type:"Ambush",position:"Middle"},
+  {cookie_name:"Stormbringer Cookie",primary_color:"Yellow",secondary_color:"Black",rarity:"Legendary",type:"Charge",position:"Front"},
+  {cookie_name:"Strawberry Cookie",primary_color:"Pink",secondary_color:"Brown",rarity:"Common",type:"Defense",position:"Front"},
+  {cookie_name:"Strawberry Crepe Cookie",primary_color:"Pink",secondary_color:"Brown",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Street Urchin Cookie",primary_color:"Black",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Middle"},
+  {cookie_name:"Sugarfly Cookie",primary_color:"Yellow",secondary_color:"Blue",rarity:"Epic",type:"Support",position:"Rear"},
+  {cookie_name:"Tails Cookie",primary_color:"Orange",secondary_color:"White",rarity:"Special",type:"Ambush",position:"Middle"},
+  {cookie_name:"Tarte Tatin Cookie",primary_color:"Red",secondary_color:"Gray",rarity:"Epic",type:"Ranged",position:"Rear"},
+  {cookie_name:"Tea Knight Cookie",primary_color:"Gray",secondary_color:"Blue",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"Tiger Lily Cookie",primary_color:"Blue",secondary_color:"Orange",rarity:"Epic",type:"Ranged",position:"Rear"},
+  {cookie_name:"Twizzly Gummy Cookie",primary_color:"Blue",secondary_color:"Pink",rarity:"Epic",type:"Ranged",position:"Rear"},
+  {cookie_name:"Vampire Cookie",primary_color:"Red",secondary_color:"Black",rarity:"Epic",type:"Ambush",position:"Rear"},
+  {cookie_name:"Wedding Cake Cookie",primary_color:"Pink",secondary_color:"White",rarity:"Epic",type:"Magic",position:"Middle"},
+  {cookie_name:"Werewolf Cookie",primary_color:"Gray",secondary_color:"White",rarity:"Epic",type:"Charge",position:"Front"},
+  {cookie_name:"White Lily Cookie",primary_color:"Green",secondary_color:"White",rarity:"Ancient",type:"Bomber",position:"Middle"},
+  {cookie_name:"Wildberry Cookie",primary_color:"White",secondary_color:"Red",rarity:"Epic",type:"Defense",position:"Front"},
+  {cookie_name:"Wind Archer Cookie",primary_color:"Green",secondary_color:"White",rarity:"Legendary",type:"Ranged",position:"Rear"},
+  {cookie_name:"Wizard Cookie",primary_color:"Blue",secondary_color:"White",rarity:"Common",type:"Magic",position:"Middle"},
+];
+
+// ─────────────────────────────────────────
+// DAILY COOKIE SELECTION
+// Uses date string as a deterministic seed
+// ─────────────────────────────────────────
+function getDailyIndex() {
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+  let hash = 0;
+  for (let i = 0; i < dateStr.length; i++) {
+    hash = (hash * 31 + dateStr.charCodeAt(i)) >>> 0;
+  }
+  return hash % COOKIES.length;
+}
+
+const TARGET = COOKIES[getDailyIndex()];
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let guesses = [];
+let won = false;
+let activeSuggestion = -1;
+
+// ─────────────────────────────────────────
+// DOM REFS
+// ─────────────────────────────────────────
+const input        = document.getElementById('guessInput');
+const suggestBox   = document.getElementById('suggestions');
+const historyEl    = document.getElementById('guessHistory');
+const metaEl       = document.getElementById('guessMeta');
+const alreadyEl    = document.getElementById('alreadyGuessed');
+const victoryEl    = document.getElementById('victoryBanner');
+const vicCountEl   = document.getElementById('victoryGuessCount');
+const vicNameEl    = document.getElementById('victoryCookieName');
+const submitBtn    = document.getElementById('submitBtn');
+const shareBtn     = document.getElementById('shareBtn');
+const nextTimerEl  = document.getElementById('nextTimer');
+const toastEl      = document.getElementById('toast');
+
+// ─────────────────────────────────────────
+// AUTOCOMPLETE
+// ─────────────────────────────────────────
+input.addEventListener('input', () => {
+  activeSuggestion = -1;
+  const val = input.value.trim().toLowerCase();
+  alreadyEl.textContent = '';
+  if (!val) { hideSuggestions(); return; }
+
+  const matches = COOKIES
+    .map(c => c.cookie_name)
+    .filter(n => n.toLowerCase().includes(val))
+    .sort((a, b) => {
+      const ai = a.toLowerCase().indexOf(val);
+      const bi = b.toLowerCase().indexOf(val);
+      return ai - bi || a.localeCompare(b);
+    })
+    .slice(0, 8);
+
+  if (!matches.length) { hideSuggestions(); return; }
+
+  suggestBox.innerHTML = '';
+  matches.forEach((name, i) => {
+    const div = document.createElement('div');
+    div.className = 'suggestion-item';
+    div.textContent = name;
+    if (guesses.includes(name)) {
+      div.style.opacity = '0.45';
+      div.style.textDecoration = 'line-through';
+    }
+    div.addEventListener('mousedown', e => {
+      e.preventDefault();
+      selectSuggestion(name);
+    });
+    suggestBox.appendChild(div);
+  });
+  suggestBox.style.display = 'block';
+});
+
+input.addEventListener('keydown', e => {
+  const items = suggestBox.querySelectorAll('.suggestion-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    activeSuggestion = Math.min(activeSuggestion + 1, items.length - 1);
+    updateActiveSuggestion(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    activeSuggestion = Math.max(activeSuggestion - 1, -1);
+    updateActiveSuggestion(items);
+  } else if (e.key === 'Enter') {
+    if (activeSuggestion >= 0 && items[activeSuggestion]) {
+      e.preventDefault();
+      selectSuggestion(items[activeSuggestion].textContent);
+    } else {
+      submitGuess();
+    }
+  } else if (e.key === 'Escape') {
+    hideSuggestions();
+  }
+});
+
+function updateActiveSuggestion(items) {
+  items.forEach((el, i) => el.classList.toggle('active', i === activeSuggestion));
+  if (activeSuggestion >= 0) {
+    input.value = items[activeSuggestion].textContent;
+  }
+}
+
+function selectSuggestion(name) {
+  input.value = name;
+  hideSuggestions();
+  input.focus();
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.input-wrap')) hideSuggestions();
+});
+
+function hideSuggestions() {
+  suggestBox.style.display = 'none';
+  suggestBox.innerHTML = '';
+}
+
+// ─────────────────────────────────────────
+// GUESS LOGIC
+// ─────────────────────────────────────────
+submitBtn.addEventListener('click', submitGuess);
+
+function submitGuess() {
+  if (won) return;
+  const raw = input.value.trim();
+  if (!raw) return;
+
+  const cookie = COOKIES.find(c => c.cookie_name.toLowerCase() === raw.toLowerCase());
+  if (!cookie) {
+    showToast('Cookie not found! Check your spelling.');
+    return;
+  }
+
+  if (guesses.includes(cookie.cookie_name)) {
+    alreadyEl.textContent = `You already guessed ${cookie.cookie_name}!`;
+    return;
+  }
+
+  guesses.push(cookie.cookie_name);
+  input.value = '';
+  hideSuggestions();
+  alreadyEl.textContent = '';
+
+  addGuessRow(cookie);
+  updateMeta();
+
+  if (cookie.cookie_name === TARGET.cookie_name) {
+    won = true;
+    setTimeout(showVictory, guesses.length * 700 + 800);
+    input.disabled = true;
+    submitBtn.disabled = true;
+  }
+}
+
+// ─────────────────────────────────────────
+// RENDER GUESS ROW
+// ─────────────────────────────────────────
+function addGuessRow(cookie) {
+  const traits = [
+    { value: cookie.cookie_name, type: 'name' },
+    {
+      value: cookie.primary_color,
+      type: cookie.primary_color.toLowerCase() === TARGET.primary_color.toLowerCase()   ? 'correct'
+           : cookie.primary_color.toLowerCase() === TARGET.secondary_color.toLowerCase() ? 'partial'
+           : 'wrong'
+    },
+    {
+      value: cookie.secondary_color,
+      type: cookie.secondary_color.toLowerCase() === TARGET.secondary_color.toLowerCase() ? 'correct'
+           : cookie.secondary_color.toLowerCase() === TARGET.primary_color.toLowerCase()  ? 'partial'
+           : 'wrong'
+    },
+    { value: cookie.rarity,   type: cookie.rarity.toLowerCase()   === TARGET.rarity.toLowerCase()   ? 'correct' : 'wrong' },
+    { value: cookie.type,     type: cookie.type.toLowerCase()     === TARGET.type.toLowerCase()     ? 'correct' : 'wrong' },
+    { value: cookie.position, type: cookie.position.toLowerCase() === TARGET.position.toLowerCase() ? 'correct' : 'wrong' },
+  ];
+
+  const row = document.createElement('div');
+  row.className = 'guess-row';
+
+  traits.forEach((trait, i) => {
+    const cell = document.createElement('div');
+    cell.className = `cell cell-${trait.type === 'name' ? 'name' : trait.type}`;
+    cell.textContent = trait.value;
+    row.appendChild(cell);
+
+    setTimeout(() => {
+      cell.classList.add('revealed');
+    }, i * 700);
+  });
+
+  historyEl.prepend(row);
+}
+
+// ─────────────────────────────────────────
+// META
+// ─────────────────────────────────────────
+function updateMeta() {
+  metaEl.textContent = guesses.length === 1
+    ? '1 guess so far'
+    : `${guesses.length} guesses so far`;
+}
+
+// ─────────────────────────────────────────
+// VICTORY
+// ─────────────────────────────────────────
+function showVictory() {
+  vicCountEl.textContent = guesses.length === 1
+    ? 'You got it in just 1 guess!'
+    : `You got it in ${guesses.length} guesses!`;
+  vicNameEl.textContent = `🍪 ${TARGET.cookie_name}`;
+  victoryEl.classList.add('show');
+  startNextCookieTimer();
+}
+
+function startNextCookieTimer() {
+  function tick() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const diff = tomorrow - now;
+
+    const h = String(Math.floor(diff / 3600000)).padStart(2,'0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
+    nextTimerEl.innerHTML = `Next cookie in <span>${h}:${m}:${s}</span>`;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ─────────────────────────────────────────
+// SHARE
+// ─────────────────────────────────────────
+shareBtn.addEventListener('click', () => {
+  const emojiMap = { correct: '🟢', partial: '🟡', wrong: '🔴', name: '⬜' };
+
+  const lines = guesses.map(name => {
+    const c = COOKIES.find(x => x.cookie_name === name);
+    const cells = [
+      'name',
+      c.primary_color.toLowerCase()   === TARGET.primary_color.toLowerCase()   ? 'correct' : c.primary_color.toLowerCase()   === TARGET.secondary_color.toLowerCase() ? 'partial' : 'wrong',
+      c.secondary_color.toLowerCase() === TARGET.secondary_color.toLowerCase() ? 'correct' : c.secondary_color.toLowerCase() === TARGET.primary_color.toLowerCase()    ? 'partial' : 'wrong',
+      c.rarity.toLowerCase()   === TARGET.rarity.toLowerCase()   ? 'correct' : 'wrong',
+      c.type.toLowerCase()     === TARGET.type.toLowerCase()     ? 'correct' : 'wrong',
+      c.position.toLowerCase() === TARGET.position.toLowerCase() ? 'correct' : 'wrong',
+    ];
+    return cells.map(t => emojiMap[t]).join('');
+  });
+
+  const text = [
+    `Cookiedle 🍪`,
+    `${guesses.length} guess${guesses.length !== 1 ? 'es' : ''}`,
+    '',
+    ...lines,
+    '',
+    window.location.href,
+  ].join('\n');
+
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard! 🎉'));
+});
+
+// ─────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
