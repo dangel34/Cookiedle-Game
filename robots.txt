@@ -1,0 +1,5 @@
+# Cookiedle - robots.txt
+# Allow all crawlers but block the secret page
+User-agent: *
+Allow: /
+Disallow: /secret.html
