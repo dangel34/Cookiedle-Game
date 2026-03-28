@@ -267,7 +267,6 @@
     transform: rotateY(0deg);
   }
 
-  /* instant = no animation, for restored sessions */
   .cell.instant {
     opacity: 1;
     transform: rotateY(0deg);
@@ -286,7 +285,7 @@
   .cell-partial { background: var(--orange); color: #fff; }
   .cell-wrong   { background: var(--red);    color: #fff; }
 
-  /* ── VICTORY ── */
+  /* ── VICTORY (game 1) ── */
   .victory {
     display: none;
     text-align: center;
@@ -337,11 +336,11 @@
 
   .victory-skill span { color: var(--gold); font-weight: 800; }
 
-  .share-btn {
+  .next-game-btn {
     display: inline-block;
     padding: 12px 32px;
-    background: var(--gold);
-    color: #1a1a2e;
+    background: var(--accent);
+    color: #fff;
     border: none;
     border-radius: 8px;
     font-family: 'Nunito', sans-serif;
@@ -353,17 +352,8 @@
     margin: 4px;
   }
 
-  .share-btn:hover  { background: #e0941a; }
-  .share-btn:active { transform: scale(0.97); }
-
-  .next-timer {
-    margin-top: 16px;
-    font-size: 0.8rem;
-    color: var(--muted);
-    font-weight: 600;
-  }
-
-  .next-timer span { color: var(--gold); font-weight: 800; }
+  .next-game-btn:hover  { background: #c73650; }
+  .next-game-btn:active { transform: scale(0.97); }
 
   /* ── HINT ── */
   .hint-section {
@@ -432,6 +422,140 @@
 
   .hint-reveal.show { display: block; }
 
+  /* ── GAME 2 ── */
+  .game2-section {
+    display: none;
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 2px solid var(--border);
+  }
+
+  .game2-section.show { display: block; }
+
+  .game2-label {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .skill-display {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 28px;
+    text-align: center;
+    margin: 0 auto 24px;
+    max-width: 480px;
+  }
+
+  .skill-display .skill-name {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .skill-display .skill-cd {
+    font-size: 0.82rem;
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* Game 2 guess list — simple rows */
+  .game2-history {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .game2-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    animation: rowFade 0.25s ease-out;
+  }
+
+  @keyframes rowFade {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .game2-row.correct { border-color: var(--green); background: rgba(76,175,80,0.1); }
+  .game2-row.wrong   { border-color: var(--red);   background: rgba(192,57,43,0.1); }
+
+  .game2-row .g2-icon { font-size: 1rem; flex-shrink: 0; }
+  .game2-row .g2-name { flex: 1; color: var(--text); }
+
+  /* Game 2 hint */
+  .game2-hint-reveal {
+    display: none;
+    margin: 0 auto 16px;
+    max-width: 480px;
+    padding: 12px 20px;
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.35);
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+  }
+
+  .game2-hint-reveal.show { display: block; }
+
+  /* ── FINAL VICTORY ── */
+  .final-victory {
+    display: none;
+    text-align: center;
+    padding: 36px 24px;
+    background: linear-gradient(135deg, #0f3460, #16213e);
+    border: 1px solid rgba(245,166,35,0.3);
+    border-radius: 16px;
+    margin-top: 32px;
+    animation: victoryPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .final-victory.show { display: block; }
+
+  .share-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background: var(--gold);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, transform 0.1s;
+    margin: 4px;
+  }
+
+  .share-btn:hover  { background: #e0941a; }
+  .share-btn:active { transform: scale(0.97); }
+
+  .next-timer {
+    margin-top: 16px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .next-timer span { color: var(--gold); font-weight: 800; }
+
   /* ── EASTER EGG ── */
   .easter-egg {
     position: fixed;
@@ -498,8 +622,9 @@
     <div class="subtitle">Cookie Run Kingdom · Guessing Game</div>
   </header>
 
+  <!-- ── GAME 1 ── -->
   <div class="how-to">
-    <strong>How to play:</strong> Guess today's Cookie Run Kingdom cookie! Each guess reveals how close you are across 5 traits.
+    <strong>Game 1:</strong> Guess today's Cookie Run Kingdom cookie! Each guess reveals how close you are across 5 traits.
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Correct</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Color swapped (primary ↔ secondary)</div>
@@ -509,14 +634,7 @@
 
   <div class="guess-section">
     <div class="input-wrap">
-      <input
-        id="guessInput"
-        class="guess-input"
-        type="text"
-        placeholder="Type a cookie name..."
-        autocomplete="off"
-        spellcheck="false"
-      />
+      <input id="guessInput" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
       <button class="submit-btn" id="submitBtn">Guess</button>
       <div class="suggestions" id="suggestions" style="display:none"></div>
     </div>
@@ -547,13 +665,54 @@
     <div class="hint-reveal" id="hintReveal"></div>
   </div>
 
+  <!-- Game 1 victory — no share button, just prompt to continue -->
   <div class="victory" id="victoryBanner">
     <div class="victory-emoji">🎉</div>
     <div class="victory-title">You got it!</div>
     <div class="victory-sub" id="victoryGuessCount"></div>
     <div class="victory-cookie" id="victoryCookieName"></div>
     <div class="victory-skill" id="victorySkill"></div>
-    <button class="share-btn" id="shareBtn">Share Result 📋</button>
+    <button class="next-game-btn" id="nextGameBtn">Next Challenge →</button>
+  </div>
+
+  <!-- ── GAME 2 ── -->
+  <div class="game2-section" id="game2Section">
+    <div class="game2-label">🔮 Game 2 — Skill Guesser</div>
+
+    <div class="skill-display">
+      <div class="skill-name" id="skillName">Loading...</div>
+      <div class="skill-cd" id="skillCd"></div>
+    </div>
+
+    <div class="how-to" style="margin-bottom:20px;">
+      <strong>Game 2:</strong> Which cookie has this skill? Guess the cookie name. You'll get ✅ or ❌ — after 5 wrong guesses a hint unlocks.
+    </div>
+
+    <div class="guess-section">
+      <div class="input-wrap">
+        <input id="guessInput2" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
+        <button class="submit-btn" id="submitBtn2">Guess</button>
+        <div class="suggestions" id="suggestions2" style="display:none"></div>
+      </div>
+      <div class="already-guessed" id="alreadyGuessed2"></div>
+      <div class="guess-meta" id="guessMeta2"></div>
+    </div>
+
+    <div class="game2-history" id="game2History"></div>
+
+    <div class="hint-section" id="hintSection2" style="margin-top:12px;">
+      <button class="hint-btn" id="hintBtn2">💡 Get Hint</button>
+      <div class="game2-hint-reveal" id="hintReveal2"></div>
+    </div>
+  </div>
+
+  <!-- ── FINAL VICTORY (shown after game 2) ── -->
+  <div class="final-victory" id="finalVictory">
+    <div class="victory-emoji">🏆</div>
+    <div class="victory-title" style="color:var(--gold)">Daily Complete!</div>
+    <div class="victory-sub" id="finalSub"></div>
+    <div class="victory-cookie" id="finalCookieName" style="margin-bottom:20px;"></div>
+    <button class="share-btn" id="shareBtn">Share Results 📋</button>
     <div class="next-timer" id="nextTimer"></div>
   </div>
 
@@ -572,34 +731,51 @@ const WORKER_URL = 'https://cookiedle-worker.dangel33.workers.dev';
 let COOKIES = [];
 
 // ─────────────────────────────────────────
-// SESSION PERSISTENCE via localStorage
-// Keyed by date so it resets each new day.
-// Stores guesses + results (not the target).
+// SESSION KEY
 // ─────────────────────────────────────────
 const TODAY_KEY = (() => {
   const d = new Date();
   return `cookiedle-${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 })();
 
+// ─────────────────────────────────────────
+// STATE PERSISTENCE
+// ─────────────────────────────────────────
 function loadState() {
   try {
     const raw = localStorage.getItem(TODAY_KEY);
-    return raw ? JSON.parse(raw) : { guesses: [], results: {}, won: false, hintUsed: false, hintTrait: null, hintValue: null, victoryData: null };
-  } catch { return { guesses: [], results: {}, won: false, hintUsed: false, hintTrait: null, hintValue: null, victoryData: null }; }
+    return raw ? JSON.parse(raw) : defaultState();
+  } catch { return defaultState(); }
+}
+
+function defaultState() {
+  return {
+    // Game 1
+    guesses: [], results: {}, won: false,
+    hintUsed: false, hintTrait: null, hintValue: null,
+    victoryData: null,
+    // Game 2
+    g2started: false,
+    g2guesses: [], g2won: false,
+    g2hintUsed: false, g2hintValue: null,
+    g2victoryName: null,
+  };
 }
 
 function saveState() {
   try {
-    localStorage.setItem(TODAY_KEY, JSON.stringify({ guesses, results, won, hintUsed, hintTrait, hintValue, victoryData }));
+    localStorage.setItem(TODAY_KEY, JSON.stringify({
+      guesses, results, won,
+      hintUsed, hintTrait, hintValue, victoryData,
+      g2started, g2guesses, g2won,
+      g2hintUsed, g2hintValue, g2victoryName,
+    }));
   } catch {}
 }
 
-// ─────────────────────────────────────────
-// STATE
-// results = { [cookieName]: [...traits] }
-// stored locally so restoring is instant
-// ─────────────────────────────────────────
-const saved     = loadState();
+const saved = loadState();
+
+// Game 1 state
 let guesses     = saved.guesses     || [];
 let results     = saved.results     || {};
 let won         = saved.won         || false;
@@ -607,10 +783,23 @@ let hintUsed    = saved.hintUsed    || false;
 let hintTrait   = saved.hintTrait   || null;
 let hintValue   = saved.hintValue   || null;
 let victoryData = saved.victoryData || null;
-let activeSuggestion = -1;
+
+// Game 2 state
+let g2started     = saved.g2started     || false;
+let g2guesses     = saved.g2guesses     || [];
+let g2won         = saved.g2won         || false;
+let g2hintUsed    = saved.g2hintUsed    || false;
+let g2hintValue   = saved.g2hintValue   || null;
+let g2victoryName = saved.g2victoryName || null;
+
+// Game 2 skill data (fetched from worker)
+let skillData = null;
+
+let activeSuggestion  = -1;
+let activeSuggestion2 = -1;
 
 // ─────────────────────────────────────────
-// DOM REFS
+// DOM REFS — GAME 1
 // ─────────────────────────────────────────
 const input       = document.getElementById('guessInput');
 const suggestBox  = document.getElementById('suggestions');
@@ -622,33 +811,68 @@ const vicCountEl  = document.getElementById('victoryGuessCount');
 const vicNameEl   = document.getElementById('victoryCookieName');
 const vicSkillEl  = document.getElementById('victorySkill');
 const submitBtn   = document.getElementById('submitBtn');
-const shareBtn    = document.getElementById('shareBtn');
-const nextTimerEl = document.getElementById('nextTimer');
-const toastEl     = document.getElementById('toast');
+const nextGameBtn = document.getElementById('nextGameBtn');
 const hintSection = document.getElementById('hintSection');
 const hintBtn     = document.getElementById('hintBtn');
 const hintPicker  = document.getElementById('hintPicker');
 const hintReveal  = document.getElementById('hintReveal');
+const toastEl     = document.getElementById('toast');
+
+// DOM REFS — GAME 2
+const game2Section  = document.getElementById('game2Section');
+const input2        = document.getElementById('guessInput2');
+const suggestBox2   = document.getElementById('suggestions2');
+const submitBtn2    = document.getElementById('submitBtn2');
+const alreadyEl2    = document.getElementById('alreadyGuessed2');
+const metaEl2       = document.getElementById('guessMeta2');
+const game2History  = document.getElementById('game2History');
+const hintSection2  = document.getElementById('hintSection2');
+const hintBtn2      = document.getElementById('hintBtn2');
+const hintReveal2   = document.getElementById('hintReveal2');
+const skillNameEl   = document.getElementById('skillName');
+const skillCdEl     = document.getElementById('skillCd');
+
+// DOM REFS — FINAL
+const finalVictory  = document.getElementById('finalVictory');
+const finalSub      = document.getElementById('finalSub');
+const finalCookieEl = document.getElementById('finalCookieName');
+const shareBtn      = document.getElementById('shareBtn');
+const nextTimerEl   = document.getElementById('nextTimer');
 
 // ─────────────────────────────────────────
-// RESTORE SESSION ON PAGE LOAD
+// RESTORE SESSION
 // ─────────────────────────────────────────
 function restoreSession() {
+  // Restore game 1 rows
   guesses.forEach(name => {
     const traitResults = results[name];
     if (traitResults) addGuessRow(name, traitResults, false);
   });
   updateMeta();
   updateHint();
+
   if (won && victoryData) {
     input.disabled     = true;
     submitBtn.disabled = true;
-    showVictory(false);
+    showVictory1(false);
+  }
+
+  if (g2started) {
+    showGame2();
+    // Restore game 2 rows
+    g2guesses.forEach(name => addGame2Row(name, name === g2victoryName, false));
+    updateMeta2();
+    updateHint2();
+    if (g2won) {
+      input2.disabled     = true;
+      submitBtn2.disabled = true;
+      showFinalVictory(false);
+    }
   }
 }
 
 // ─────────────────────────────────────────
-// AUTOCOMPLETE — fuzzy matching
+// FUZZY AUTOCOMPLETE (shared)
 // ─────────────────────────────────────────
 function fuzzyScore(name, query) {
   const n = name.toLowerCase(), q = query.toLowerCase();
@@ -661,76 +885,80 @@ function fuzzyScore(name, query) {
   return qi === q.length ? 1 : 0;
 }
 
-input.addEventListener('input', () => {
-  activeSuggestion = -1;
-  const val = input.value.trim();
-  alreadyEl.textContent = '';
-  if (!val) { hideSuggestions(); return; }
-
+function buildSuggestions(val, usedList, box) {
+  if (!val) { hideSuggestions(box); return; }
   const scored = COOKIES
     .map(c => ({ name: c.cookie_name, score: fuzzyScore(c.cookie_name, val) }))
     .filter(x => x.score > 0)
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
     .slice(0, 8);
-
-  if (!scored.length) { hideSuggestions(); return; }
-
-  suggestBox.innerHTML = '';
+  if (!scored.length) { hideSuggestions(box); return; }
+  box.innerHTML = '';
   scored.forEach(({ name }) => {
     const div = document.createElement('div');
-    div.className = 'suggestion-item' + (guesses.includes(name) ? ' used' : '');
+    div.className = 'suggestion-item' + (usedList.includes(name) ? ' used' : '');
     div.textContent = name;
-    div.addEventListener('mousedown', e => { e.preventDefault(); selectSuggestion(name); });
-    suggestBox.appendChild(div);
+    div.addEventListener('mousedown', e => { e.preventDefault(); selectSuggestion(name, box === suggestBox ? input : input2, box); });
+    box.appendChild(div);
   });
-  suggestBox.style.display = 'block';
+  box.style.display = 'block';
+}
+
+function hideSuggestions(box) {
+  box.style.display = 'none';
+  box.innerHTML = '';
+}
+
+function selectSuggestion(name, inp, box) {
+  inp.value = name;
+  hideSuggestions(box);
+  inp.focus();
+}
+
+function updateActiveSugg(items, activeIdx, inp) {
+  items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+  if (activeIdx >= 0) inp.value = items[activeIdx].textContent;
+}
+
+// Game 1 autocomplete
+input.addEventListener('input', () => {
+  activeSuggestion = -1;
+  alreadyEl.textContent = '';
+  buildSuggestions(input.value.trim(), guesses, suggestBox);
 });
 
 input.addEventListener('keydown', e => {
   const items = suggestBox.querySelectorAll('.suggestion-item');
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    activeSuggestion = Math.min(activeSuggestion + 1, items.length - 1);
-    updateActiveSuggestion(items);
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    activeSuggestion = Math.max(activeSuggestion - 1, -1);
-    updateActiveSuggestion(items);
-  } else if (e.key === 'Enter') {
-    if (activeSuggestion >= 0 && items[activeSuggestion]) {
-      e.preventDefault();
-      selectSuggestion(items[activeSuggestion].textContent);
-    } else {
-      submitGuess();
-    }
-  } else if (e.key === 'Escape') {
-    hideSuggestions();
+  if (e.key === 'ArrowDown') { e.preventDefault(); activeSuggestion = Math.min(activeSuggestion + 1, items.length - 1); updateActiveSugg(items, activeSuggestion, input); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); activeSuggestion = Math.max(activeSuggestion - 1, -1); updateActiveSugg(items, activeSuggestion, input); }
+  else if (e.key === 'Enter') { if (activeSuggestion >= 0 && items[activeSuggestion]) { e.preventDefault(); selectSuggestion(items[activeSuggestion].textContent, input, suggestBox); } else { submitGuess(); } }
+  else if (e.key === 'Escape') { hideSuggestions(suggestBox); }
+});
+
+// Game 2 autocomplete
+input2.addEventListener('input', () => {
+  activeSuggestion2 = -1;
+  alreadyEl2.textContent = '';
+  buildSuggestions(input2.value.trim(), g2guesses, suggestBox2);
+});
+
+input2.addEventListener('keydown', e => {
+  const items = suggestBox2.querySelectorAll('.suggestion-item');
+  if (e.key === 'ArrowDown') { e.preventDefault(); activeSuggestion2 = Math.min(activeSuggestion2 + 1, items.length - 1); updateActiveSugg(items, activeSuggestion2, input2); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); activeSuggestion2 = Math.max(activeSuggestion2 - 1, -1); updateActiveSugg(items, activeSuggestion2, input2); }
+  else if (e.key === 'Enter') { if (activeSuggestion2 >= 0 && items[activeSuggestion2]) { e.preventDefault(); selectSuggestion(items[activeSuggestion2].textContent, input2, suggestBox2); } else { submitGuess2(); } }
+  else if (e.key === 'Escape') { hideSuggestions(suggestBox2); }
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.input-wrap')) {
+    hideSuggestions(suggestBox);
+    hideSuggestions(suggestBox2);
   }
 });
 
-function updateActiveSuggestion(items) {
-  items.forEach((el, i) => el.classList.toggle('active', i === activeSuggestion));
-  if (activeSuggestion >= 0) input.value = items[activeSuggestion].textContent;
-}
-
-function selectSuggestion(name) {
-  input.value = name;
-  hideSuggestions();
-  input.focus();
-}
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.input-wrap')) hideSuggestions();
-});
-
-function hideSuggestions() {
-  suggestBox.style.display = 'none';
-  suggestBox.innerHTML = '';
-}
-
 // ─────────────────────────────────────────
-// GUESS LOGIC — sends to worker, never
-// compares against a local target
+// GAME 1 — GUESS LOGIC
 // ─────────────────────────────────────────
 submitBtn.addEventListener('click', submitGuess);
 
@@ -740,17 +968,9 @@ async function submitGuess() {
   if (!raw) return;
 
   const cookie = COOKIES.find(c => c.cookie_name.toLowerCase() === raw.toLowerCase());
-  if (!cookie) {
-    showToast('Cookie not found — check your spelling!');
-    return;
-  }
+  if (!cookie) { showToast('Cookie not found — check your spelling!'); return; }
+  if (guesses.includes(cookie.cookie_name)) { alreadyEl.textContent = `Already guessed ${cookie.cookie_name}!`; return; }
 
-  if (guesses.includes(cookie.cookie_name)) {
-    alreadyEl.textContent = `Already guessed ${cookie.cookie_name}!`;
-    return;
-  }
-
-  // Disable input while waiting for worker response
   input.disabled     = true;
   submitBtn.disabled = true;
   alreadyEl.textContent = '';
@@ -765,19 +985,12 @@ async function submitGuess() {
     data = await res.json();
   } catch {
     showToast('Connection error — please try again.');
-    input.disabled     = false;
-    submitBtn.disabled = false;
+    input.disabled = false; submitBtn.disabled = false;
     return;
   }
 
-  if (data.error) {
-    showToast(data.error);
-    input.disabled     = false;
-    submitBtn.disabled = false;
-    return;
-  }
+  if (data.error) { showToast(data.error); input.disabled = false; submitBtn.disabled = false; return; }
 
-  // Store result traits locally (safe — no target info)
   const traitResults = [
     { value: cookie.cookie_name,     result: 'name' },
     { value: cookie.primary_color,   result: data.primary_color },
@@ -790,7 +1003,7 @@ async function submitGuess() {
   guesses.push(cookie.cookie_name);
   results[cookie.cookie_name] = traitResults;
   input.value = '';
-  hideSuggestions();
+  hideSuggestions(suggestBox);
 
   addGuessRow(cookie.cookie_name, traitResults, true);
   updateMeta();
@@ -798,76 +1011,46 @@ async function submitGuess() {
 
   if (data.correct) {
     won = true;
-    victoryData = {
-      name:      data.cookie_name,
-      skill:     data.skill_name     || '',
-      cooldown:  data.skill_cooldown || 0,
-    };
+    victoryData = { name: data.cookie_name, skill: data.skill_name || '', cooldown: data.skill_cooldown || 0 };
     saveState();
     input.disabled     = true;
     submitBtn.disabled = true;
-    setTimeout(() => showVictory(true), 6 * 700 + 400);
+    setTimeout(() => showVictory1(true), 6 * 700 + 400);
   } else {
-    input.disabled     = false;
-    submitBtn.disabled = false;
+    input.disabled = false; submitBtn.disabled = false;
     saveState();
   }
 }
 
-// ─────────────────────────────────────────
-// RENDER GUESS ROW
-// traitResults = array of {value, result}
-// animate=true  → flip tiles one by one
-// animate=false → show instantly (restored)
-// ─────────────────────────────────────────
 function addGuessRow(cookieName, traitResults, animate) {
   const row = document.createElement('div');
   row.className = 'guess-row';
-
   traitResults.forEach((trait, i) => {
     const cell = document.createElement('div');
     cell.className = `cell cell-${trait.result}`;
     cell.textContent = trait.value;
-    if (!animate) {
-      cell.classList.add('instant');
-    } else {
-      setTimeout(() => cell.classList.add('revealed'), i * 700);
-    }
+    if (!animate) cell.classList.add('instant');
+    else setTimeout(() => cell.classList.add('revealed'), i * 700);
     row.appendChild(cell);
   });
-
   historyEl.prepend(row);
 }
 
 // ─────────────────────────────────────────
-// HINT SYSTEM — fetches from worker
-// Worker returns the trait value without
-// revealing anything else about the target
+// GAME 1 — META & HINT
 // ─────────────────────────────────────────
-const TRAIT_LABELS = {
-  primary_color:   'Primary Color',
-  secondary_color: 'Secondary Color',
-  rarity:          'Rarity',
-  type:            'Type',
-  position:        'Position',
-};
+const TRAIT_LABELS = { primary_color: 'Primary Color', secondary_color: 'Secondary Color', rarity: 'Rarity', type: 'Type', position: 'Position' };
 
-// Wrong guesses = total guesses minus the winning guess (if won)
-function wrongCount() {
-  return won ? guesses.length - 1 : guesses.length;
+function wrongCount() { return won ? guesses.length - 1 : guesses.length; }
+
+function updateMeta() {
+  if (!guesses.length) { metaEl.textContent = ''; return; }
+  metaEl.textContent = guesses.length === 1 ? '1 guess so far' : `${guesses.length} guesses so far`;
 }
 
 function updateHint() {
-  // Never show hint if game is won
-  if (won) {
-    hintSection.classList.remove('show');
-    return;
-  }
-
-  // Show hint section only after 5 wrong guesses
+  if (won) { hintSection.classList.remove('show'); return; }
   hintSection.classList.toggle('show', wrongCount() >= 5);
-
-  // If hint already used, show the reveal and hide button/picker
   if (hintUsed && hintTrait && hintValue) {
     hintBtn.style.display = 'none';
     hintPicker.classList.remove('show');
@@ -888,24 +1071,14 @@ hintBtn.addEventListener('click', () => {
 hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
   btn.addEventListener('click', async () => {
     const trait = btn.dataset.trait;
-
-    // Fetch the hint value from the worker
     let value;
     try {
       const res = await fetch(`${WORKER_URL}/hint?trait=${trait}`);
       const data = await res.json();
       value = data.value;
-    } catch {
-      showToast('Could not fetch hint — please try again.');
-      hintBtn.disabled = false;
-      return;
-    }
-
-    hintUsed  = true;
-    hintTrait = trait;
-    hintValue = value;
+    } catch { showToast('Could not fetch hint — please try again.'); hintBtn.disabled = false; return; }
+    hintUsed = true; hintTrait = trait; hintValue = value;
     saveState();
-
     hintBtn.style.display = 'none';
     hintPicker.classList.remove('show');
     hintReveal.textContent = `💡 ${TRAIT_LABELS[trait]}: ${value}`;
@@ -914,27 +1087,162 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
 });
 
 // ─────────────────────────────────────────
-// META
+// GAME 1 — VICTORY
 // ─────────────────────────────────────────
-function updateMeta() {
-  if (!guesses.length) { metaEl.textContent = ''; return; }
-  metaEl.textContent = guesses.length === 1 ? '1 guess so far' : `${guesses.length} guesses so far`;
+function showVictory1(animate) {
+  vicCountEl.textContent = guesses.length === 1 ? 'Got it in just 1 guess!' : `Got it in ${guesses.length} guesses!`;
+  vicNameEl.textContent  = `🍪 ${victoryData.name}`;
+  vicSkillEl.innerHTML   = victoryData.skill ? `Skill: <span style="color:var(--gold);font-weight:800">${victoryData.skill}</span> · Cooldown: <span style="color:var(--gold);font-weight:800">${victoryData.cooldown}s</span>` : '';
+  if (!animate) victoryEl.style.animation = 'none';
+  victoryEl.classList.add('show');
+}
+
+nextGameBtn.addEventListener('click', async () => {
+  g2started = true;
+  saveState();
+  await showGame2();
+});
+
+// ─────────────────────────────────────────
+// GAME 2 — SHOW & LOAD SKILL
+// ─────────────────────────────────────────
+async function showGame2() {
+  game2Section.classList.add('show');
+  game2Section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (!skillData) {
+    skillNameEl.textContent = 'Loading...';
+    skillCdEl.textContent   = '';
+    try {
+      const res = await fetch(`${WORKER_URL}/skill`);
+      skillData = await res.json();
+    } catch {
+      showToast('Could not load skill — please refresh.');
+      return;
+    }
+  }
+
+  skillNameEl.textContent = skillData.skill_name;
+  skillCdEl.textContent   = `Cooldown: ${skillData.skill_cooldown}s`;
+
+  if (!g2won) {
+    input2.disabled     = false;
+    submitBtn2.disabled = false;
+    input2.focus();
+  }
 }
 
 // ─────────────────────────────────────────
-// VICTORY
+// GAME 2 — GUESS LOGIC
 // ─────────────────────────────────────────
-function showVictory(animate) {
-  vicCountEl.textContent = guesses.length === 1
-    ? 'Got it in just 1 guess!'
-    : `Got it in ${guesses.length} guesses!`;
-  vicNameEl.textContent = `🍪 ${victoryData.name}`;
-  vicSkillEl.innerHTML  = victoryData.skill
-    ? `Skill: <span>${victoryData.skill}</span> · Cooldown: <span>${victoryData.cooldown}s</span>`
-    : '';
+submitBtn2.addEventListener('click', submitGuess2);
 
-  if (!animate) victoryEl.style.animation = 'none';
-  victoryEl.classList.add('show');
+async function submitGuess2() {
+  if (g2won) return;
+  const raw = input2.value.trim();
+  if (!raw) return;
+
+  const cookie = COOKIES.find(c => c.cookie_name.toLowerCase() === raw.toLowerCase());
+  if (!cookie) { showToast('Cookie not found — check your spelling!'); return; }
+  if (g2guesses.includes(cookie.cookie_name)) { alreadyEl2.textContent = `Already guessed ${cookie.cookie_name}!`; return; }
+
+  input2.disabled     = true;
+  submitBtn2.disabled = true;
+  alreadyEl2.textContent = '';
+
+  let data;
+  try {
+    const res = await fetch(`${WORKER_URL}/guess2`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guess: cookie.cookie_name }),
+    });
+    data = await res.json();
+  } catch {
+    showToast('Connection error — please try again.');
+    input2.disabled = false; submitBtn2.disabled = false;
+    return;
+  }
+
+  if (data.error) { showToast(data.error); input2.disabled = false; submitBtn2.disabled = false; return; }
+
+  g2guesses.push(cookie.cookie_name);
+  input2.value = '';
+  hideSuggestions(suggestBox2);
+
+  addGame2Row(cookie.cookie_name, data.correct, true);
+  updateMeta2();
+  updateHint2();
+
+  if (data.correct) {
+    g2won         = true;
+    g2victoryName = data.cookie_name;
+    saveState();
+    input2.disabled     = true;
+    submitBtn2.disabled = true;
+    setTimeout(() => showFinalVictory(true), 600);
+  } else {
+    input2.disabled = false; submitBtn2.disabled = false;
+    saveState();
+  }
+}
+
+function addGame2Row(name, correct, animate) {
+  const row = document.createElement('div');
+  row.className = `game2-row ${correct ? 'correct' : 'wrong'}${animate ? '' : ''}`;
+  if (!animate) row.style.animation = 'none';
+  row.innerHTML = `<span class="g2-icon">${correct ? '✅' : '❌'}</span><span class="g2-name">${name}</span>`;
+  game2History.prepend(row);
+}
+
+// ─────────────────────────────────────────
+// GAME 2 — META & HINT
+// ─────────────────────────────────────────
+function g2wrongCount() { return g2won ? g2guesses.length - 1 : g2guesses.length; }
+
+function updateMeta2() {
+  if (!g2guesses.length) { metaEl2.textContent = ''; return; }
+  metaEl2.textContent = g2guesses.length === 1 ? '1 guess so far' : `${g2guesses.length} guesses so far`;
+}
+
+function updateHint2() {
+  if (g2won) { hintSection2.classList.remove('show'); return; }
+  hintSection2.classList.toggle('show', g2wrongCount() >= 5);
+  if (g2hintUsed && g2hintValue) {
+    hintBtn2.style.display = 'none';
+    hintReveal2.innerHTML  = g2hintValue;
+    hintReveal2.classList.add('show');
+  } else {
+    hintBtn2.style.display = '';
+    hintBtn2.disabled = false;
+  }
+}
+
+hintBtn2.addEventListener('click', async () => {
+  if (g2hintUsed) return;
+  hintBtn2.disabled = true;
+  let data;
+  try {
+    const res = await fetch(`${WORKER_URL}/hint2`);
+    data = await res.json();
+  } catch { showToast('Could not fetch hint — please try again.'); hintBtn2.disabled = false; return; }
+  g2hintUsed  = true;
+  g2hintValue = `💡 Rarity: <strong>${data.rarity}</strong> · Type: <strong>${data.type}</strong> · Position: <strong>${data.position}</strong>`;
+  saveState();
+  hintBtn2.style.display = 'none';
+  hintReveal2.innerHTML  = g2hintValue;
+  hintReveal2.classList.add('show');
+});
+
+// ─────────────────────────────────────────
+// FINAL VICTORY & SHARE
+// ─────────────────────────────────────────
+function showFinalVictory(animate) {
+  const total = guesses.length + g2guesses.length;
+  finalSub.textContent      = `Game 1: ${guesses.length} guess${guesses.length !== 1 ? 'es' : ''} · Game 2: ${g2guesses.length} guess${g2guesses.length !== 1 ? 'es' : ''}`;
+  finalCookieEl.textContent = `🍪 ${g2victoryName}`;
+  if (!animate) finalVictory.style.animation = 'none';
+  finalVictory.classList.add('show');
   startNextCookieTimer();
 }
 
@@ -948,30 +1256,36 @@ function startNextCookieTimer() {
     const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
     const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
     const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-    nextTimerEl.innerHTML = `Next cookie in <span>${h}:${m}:${s}</span>`;
+    nextTimerEl.innerHTML = `Next cookies in <span>${h}:${m}:${s}</span>`;
   }
   tick();
   setInterval(tick, 1000);
 }
 
-// ─────────────────────────────────────────
-// SHARE — uses locally stored results,
-// no target data needed
-// ─────────────────────────────────────────
 shareBtn.addEventListener('click', () => {
   const emojiMap = { name: '⬜', correct: '🟢', partial: '🟡', wrong: '🔴' };
-  const lines = guesses.map(name => {
+
+  // Game 1 grid
+  const g1lines = guesses.map(name => {
     const traits = results[name] || [];
     return traits.map(t => emojiMap[t.result] || '⬜').join('');
   });
+
+  // Game 2 grid — just ✅/❌ per guess
+  const g2lines = g2guesses.map(name => name === g2victoryName ? '✅' : '❌');
+
   const text = [
     `Cookiedle 🍪`,
-    `${guesses.length} guess${guesses.length !== 1 ? 'es' : ''}`,
-    '',
-    ...lines,
-    '',
+    ``,
+    `🧁 Game 1 — ${guesses.length} guess${guesses.length !== 1 ? 'es' : ''}`,
+    ...g1lines,
+    ``,
+    `🔮 Game 2 — ${g2guesses.length} guess${g2guesses.length !== 1 ? 'es' : ''}`,
+    g2lines.join(' '),
+    ``,
     window.location.href,
   ].join('\n');
+
   navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard! 🎉'));
 });
 
@@ -987,26 +1301,37 @@ function showToast(msg) {
 }
 
 // ─────────────────────────────────────────
-// INIT — fetch cookies from worker first,
-// then restore session
+// INIT
 // ─────────────────────────────────────────
 async function init() {
-  // Disable input while loading
   input.disabled     = true;
   submitBtn.disabled = true;
   input.placeholder  = 'Loading cookies...';
 
   try {
     const res = await fetch(`${WORKER_URL}/cookies`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     COOKIES = await res.json();
-  } catch {
+  } catch (e) {
+    input.placeholder  = 'Type a cookie name...';
+    input.disabled     = false;
+    submitBtn.disabled = false;
     showToast('Could not load cookie list — please refresh.');
+    console.error('Failed to load cookies:', e);
     return;
   }
 
-  input.placeholder  = 'Type a cookie name...';
-  input.disabled     = false;
-  submitBtn.disabled = false;
+  input.placeholder = 'Type a cookie name...';
+  if (!won) {
+    input.disabled     = false;
+    submitBtn.disabled = false;
+  }
+
+  // Pre-fetch skill data for game 2 so it's ready
+  try {
+    const res = await fetch(`${WORKER_URL}/skill`);
+    skillData = await res.json();
+  } catch {}
 
   restoreSession();
 }
