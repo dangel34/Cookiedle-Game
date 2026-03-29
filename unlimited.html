@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cookiedle Unlimited</title>
+
+<style>
+body {
+  background:#1a1a2e;
+  color:white;
+  font-family:sans-serif;
+  text-align:center;
+  padding:40px;
+}
+
+input {
+  padding:10px;
+  font-size:16px;
+}
+
+button {
+  padding:10px 16px;
+  margin:6px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.row {
+  margin-top:10px;
+  padding:10px;
+  border-radius:6px;
+}
+
+.correct { background:#4caf50; }
+.partial { background:#ff9800; }
+.wrong   { background:#c0392b; }
+</style>
+</head>
+
+<body>
+
+<h1>♾️ Unlimited Mode</h1>
+
+<input id="input" placeholder="Guess a cookie"/>
+<button id="guessBtn">Guess</button>
+<button id="newBtn">🔄 New Cookie</button>
+
+<div id="history"></div>
+
+<script>
+const WORKER_URL = 'https://cookiedle-worker.dangel33.workers.dev';
+let COOKIES = [];
+
+const input = document.getElementById('input');
+const historyEl = document.getElementById('history');
+
+async function loadCookies() {
+  const res = await fetch(`${WORKER_URL}/cookies`);
+  COOKIES = await res.json();
+}
+
+async function newGame() {
+  await fetch(`${WORKER_URL}/unlimited/new`);
+  historyEl.innerHTML = '';
+}
+
+function makeCell(value, result) {
+  const span = document.createElement('span');
+  span.textContent = value + ' ';
+  span.className = result;
+  return span;
+}
+
+function addRow(data, cookie) {
+  const row = document.createElement('div');
+  row.className = 'row';
+
+  row.appendChild(makeCell(cookie.cookie_name, ''));
+  row.appendChild(makeCell(cookie.primary_color, data.primary_color));
+  row.appendChild(makeCell(cookie.secondary_color, data.secondary_color));
+  row.appendChild(makeCell(cookie.rarity, data.rarity));
+  row.appendChild(makeCell(cookie.type, data.type));
+  row.appendChild(makeCell(cookie.position, data.position));
+
+  historyEl.prepend(row);
+}
+
+async function submitGuess() {
+  const val = input.value.trim();
+  if (!val) return;
+
+  const cookie = COOKIES.find(c => c.cookie_name.toLowerCase() === val.toLowerCase());
+  if (!cookie) {
+    alert("Invalid cookie");
+    return;
+  }
+
+  const res = await fetch(`${WORKER_URL}/unlimited/guess`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ guess: cookie.cookie_name })
+  });
+
+  const data = await res.json();
+  addRow(data, cookie);
+
+  if (data.correct) {
+    setTimeout(() => {
+      alert(`Correct! ${data.cookie_name}`);
+    }, 200);
+  }
+
+  input.value = '';
+}
+
+document.getElementById('guessBtn').onclick = submitGuess;
+document.getElementById('newBtn').onclick = newGame;
+
+loadCookies().then(newGame);
+</script>
+
+</body>
+</html>
