@@ -682,7 +682,17 @@ async function submitGuess() {
     return;
   }
 
-  if (data.error) { showToast(data.error); input.disabled = false; submitBtn.disabled = false; return; }
+  if (data.error) {
+    // If token expired, auto-fetch a new one and tell the player
+    if (data.error.includes('expired')) {
+      showToast('Session expired — fetching a new cookie...');
+      await fetchNewToken();
+    } else {
+      showToast(data.error);
+    }
+    input.disabled = false; submitBtn.disabled = false;
+    return;
+  }
 
   const traitResults = [
     { value: cookie.cookie_name,     result: 'name' },
