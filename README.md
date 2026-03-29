@@ -2,7 +2,7 @@
 
 A daily Cookie Run Kingdom guessing game inspired by Wordle, Loldle, and Pokedle — now fully playable in the browser.
 
-**[▶ Play Now](https://dange134.github.io/Cookiedle-Game)**
+**[▶ Play Now](https://dangel34.github.io/Cookiedle-Game)**
 
 ---
 
