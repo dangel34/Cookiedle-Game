@@ -3,122 +3,229 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Cookiedle Unlimited</title>
+<title>Cookiedle — Unlimited Mode</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 
 <style>
+:root {
+  --bg:#1a1a2e; --surface:#16213e; --card:#0f3460;
+  --accent:#e94560; --gold:#f5a623;
+  --green:#4caf50; --orange:#ff9800; --red:#c0392b;
+  --text:#e0e0e0; --muted:#7a8aa0;
+  --border:rgba(255,255,255,0.08);
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+
 body {
-  background:#1a1a2e;
-  color:white;
-  font-family:sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Nunito',sans-serif;
+  min-height:100vh;
+}
+
+.wrap {
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+header {
   text-align:center;
-  padding:40px;
+  padding:40px 0 20px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:20px;
 }
 
-input {
-  padding:10px;
-  font-size:16px;
+.logo {
+  font-size:2.4rem;
+  font-weight:900;
 }
 
-button {
-  padding:10px 16px;
-  margin:6px;
-  font-weight:bold;
+.subtitle {
+  color:var(--muted);
+  font-size:0.8rem;
+  letter-spacing:2px;
+  margin-top:5px;
+}
+
+/* INPUT */
+.input-wrap {
+  max-width:450px;
+  margin:20px auto;
+  position:relative;
+}
+
+.guess-input {
+  width:100%;
+  padding:14px 120px 14px 16px;
+  border-radius:10px;
+  border:2px solid var(--border);
+  background:var(--surface);
+  color:white;
+  font-weight:700;
+}
+
+.submit-btn {
+  position:absolute;
+  right:6px;
+  top:50%;
+  transform:translateY(-50%);
+  padding:8px 20px;
+  background:var(--accent);
+  border:none;
+  color:white;
+  border-radius:6px;
+  font-weight:800;
   cursor:pointer;
 }
 
-.row {
-  margin-top:10px;
-  padding:10px;
-  border-radius:6px;
+/* GRID */
+.table-header,
+.guess-row {
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;
+  gap:5px;
 }
 
-.correct { background:#4caf50; }
-.partial { background:#ff9800; }
-.wrong   { background:#c0392b; }
+.col-head {
+  font-size:0.7rem;
+  text-align:center;
+  color:var(--muted);
+}
+
+.cell {
+  padding:10px;
+  text-align:center;
+  border-radius:6px;
+  font-size:0.75rem;
+  font-weight:800;
+}
+
+.cell-name { background:#1e2d4a; }
+.cell-correct { background:var(--green); }
+.cell-partial { background:var(--orange); }
+.cell-wrong { background:var(--red); }
+
+.guess-history {
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+/* BUTTONS */
+.top-btn {
+  margin-top:12px;
+  padding:10px 20px;
+  border:none;
+  border-radius:8px;
+  background:var(--gold);
+  color:black;
+  font-weight:800;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body>
+<div class="wrap">
 
-<h1>♾️ Unlimited Mode</h1>
+<header>
+  <div class="logo">Cookiedle ♾️</div>
+  <div class="subtitle">Unlimited Mode</div>
+  <button class="top-btn" onclick="location.href='index.html'">← Back to Daily</button>
+</header>
 
-<input id="input" placeholder="Guess a cookie"/>
-<button id="guessBtn">Guess</button>
-<button id="newBtn">🔄 New Cookie</button>
+<div class="input-wrap">
+  <input id="guessInput" class="guess-input" placeholder="Type a cookie name...">
+  <button class="submit-btn" id="submitBtn">Guess</button>
+</div>
 
-<div id="history"></div>
+<div class="table-header">
+  <div class="col-head">Cookie</div>
+  <div class="col-head">Primary</div>
+  <div class="col-head">Secondary</div>
+  <div class="col-head">Rarity</div>
+  <div class="col-head">Type</div>
+  <div class="col-head">Position</div>
+</div>
+
+<div class="guess-history" id="history"></div>
+
+</div>
 
 <script>
 const WORKER_URL = 'https://cookiedle-worker.dangel33.workers.dev';
+
 let COOKIES = [];
+let targetCookie = null;
 
-const input = document.getElementById('input');
-const historyEl = document.getElementById('history');
-
-async function loadCookies() {
-  const res = await fetch(`${WORKER_URL}/cookies`);
+// Load cookies + pick random target
+async function init() {
+  const res = await fetch(WORKER_URL + '/cookies');
   COOKIES = await res.json();
+  newGame();
 }
 
-async function newGame() {
-  await fetch(`${WORKER_URL}/unlimited/new`);
-  historyEl.innerHTML = '';
+function newGame() {
+  targetCookie = COOKIES[Math.floor(Math.random() * COOKIES.length)];
+  document.getElementById('history').innerHTML = '';
 }
 
-function makeCell(value, result) {
-  const span = document.createElement('span');
-  span.textContent = value + ' ';
-  span.className = result;
-  return span;
-}
-
-function addRow(data, cookie) {
-  const row = document.createElement('div');
-  row.className = 'row';
-
-  row.appendChild(makeCell(cookie.cookie_name, ''));
-  row.appendChild(makeCell(cookie.primary_color, data.primary_color));
-  row.appendChild(makeCell(cookie.secondary_color, data.secondary_color));
-  row.appendChild(makeCell(cookie.rarity, data.rarity));
-  row.appendChild(makeCell(cookie.type, data.type));
-  row.appendChild(makeCell(cookie.position, data.position));
-
-  historyEl.prepend(row);
-}
-
-async function submitGuess() {
+// Submit guess
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const input = document.getElementById('guessInput');
   const val = input.value.trim();
-  if (!val) return;
 
   const cookie = COOKIES.find(c => c.cookie_name.toLowerCase() === val.toLowerCase());
-  if (!cookie) {
-    alert("Invalid cookie");
-    return;
-  }
+  if (!cookie) return alert("Not found");
 
-  const res = await fetch(`${WORKER_URL}/unlimited/guess`, {
+  const res = await fetch(WORKER_URL + '/guess', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ guess: cookie.cookie_name })
+    body:JSON.stringify({ guess: cookie.cookie_name })
   });
 
   const data = await res.json();
-  addRow(data, cookie);
+
+  addRow(cookie, data);
 
   if (data.correct) {
     setTimeout(() => {
-      alert(`Correct! ${data.cookie_name}`);
-    }, 200);
+      alert("Correct! New cookie loaded!");
+      newGame();
+    }, 300);
   }
 
   input.value = '';
+});
+
+// Add row
+function addRow(cookie, data) {
+  const row = document.createElement('div');
+  row.className = 'guess-row';
+
+  const traits = [
+    { v: cookie.cookie_name, r: 'name' },
+    { v: cookie.primary_color, r: data.primary_color },
+    { v: cookie.secondary_color, r: data.secondary_color },
+    { v: cookie.rarity, r: data.rarity },
+    { v: cookie.type, r: data.type },
+    { v: cookie.position, r: data.position }
+  ];
+
+  traits.forEach(t => {
+    const cell = document.createElement('div');
+    cell.className = 'cell cell-' + t.r;
+    cell.textContent = t.v;
+    row.appendChild(cell);
+  });
+
+  document.getElementById('history').prepend(row);
 }
 
-document.getElementById('guessBtn').onclick = submitGuess;
-document.getElementById('newBtn').onclick = newGame;
-
-loadCookies().then(newGame);
+init();
 </script>
-
 </body>
 </html>
