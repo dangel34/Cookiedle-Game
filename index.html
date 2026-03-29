@@ -556,6 +556,124 @@
 
   .next-timer span { color: var(--gold); font-weight: 800; }
 
+  /* ── COUNTDOWN ── */
+  .countdown-bar {
+    text-align: center;
+    padding: 8px 0 0;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .countdown-bar span { color: var(--gold); font-weight: 800; font-variant-numeric: tabular-nums; }
+
+  /* ── HEADER ACTIONS ── */
+  .header-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .header-btn {
+    padding: 7px 18px;
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+    display: inline-block;
+  }
+
+  .header-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ── STATS MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 28px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    animation: victoryPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 16px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    font-weight: 800;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .modal-close:hover { color: var(--text); }
+
+  .modal-title {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .stat-box {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 16px 10px;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+  }
+
+  .streak-fire { color: var(--accent); }
+
   /* ── EASTER EGG ── */
   .easter-egg {
     position: fixed;
@@ -620,8 +738,38 @@
   <header>
     <div class="logo">Cookiedle</div>
     <div class="subtitle">Cookie Run Kingdom · Guessing Game</div>
-    <button id="unlimitedBtn" class="next-game-btn" style="margin-top:12px;">♾️ Unlimited Mode</button>
+    <div class="countdown-bar">Next cookies in <span id="headerCountdown">--:--:--</span></div>
+    <div class="header-actions">
+      <a class="header-btn" href="unlimited.html">♾️ Unlimited</a>
+      <button class="header-btn" id="statsBtn" style="display:none">📊 Stats</button>
+    </div>
   </header>
+
+  <!-- ── STATS MODAL ── -->
+  <div class="modal-overlay" id="statsModal">
+    <div class="modal">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div class="modal-title">📊 Your Stats</div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value streak-fire" id="statStreak">0</div>
+          <div class="stat-label">Current Streak 🔥</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statBest">0</div>
+          <div class="stat-label">Best Streak</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statWinRate">0%</div>
+          <div class="stat-label">Win Rate</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statAvgGuesses">—</div>
+          <div class="stat-label">Avg Guesses</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ── GAME 1 ── -->
   <div class="how-to">
@@ -714,6 +862,7 @@
     <div class="victory-sub" id="finalSub"></div>
     <div class="victory-cookie" id="finalCookieName" style="margin-bottom:20px;"></div>
     <button class="share-btn" id="shareBtn">Share Results 📋</button>
+    <button class="share-btn" id="statsBtn2" style="background:var(--card);color:var(--text);margin-left:8px;">📊 Stats</button>
     <div class="next-timer" id="nextTimer"></div>
   </div>
 
@@ -818,10 +967,6 @@ const hintBtn     = document.getElementById('hintBtn');
 const hintPicker  = document.getElementById('hintPicker');
 const hintReveal  = document.getElementById('hintReveal');
 const toastEl     = document.getElementById('toast');
-const unlimitedBtn = document.getElementById('unlimitedBtn');
-unlimitedBtn.addEventListener('click', () => {
-  window.location.href = 'unlimited.html';
-});
 
 // DOM REFS — GAME 2
 const game2Section  = document.getElementById('game2Section');
@@ -1240,14 +1385,97 @@ hintBtn2.addEventListener('click', async () => {
 });
 
 // ─────────────────────────────────────────
+// STATS & STREAK — all localStorage, no server
+// ─────────────────────────────────────────
+const STATS_KEY = 'cookiedle-stats';
+
+function loadStats() {
+  try {
+    const raw = localStorage.getItem(STATS_KEY);
+    return raw ? JSON.parse(raw) : defaultStats();
+  } catch { return defaultStats(); }
+}
+
+function defaultStats() {
+  return { currentStreak: 0, bestStreak: 0, totalPlayed: 0, totalWon: 0, totalGuesses: 0, lastCompleted: null };
+}
+
+function saveStats(s) {
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(s)); } catch {}
+}
+
+function recordCompletion(totalGuesses) {
+  const s = loadStats();
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  if (s.lastCompleted === todayStr) return; // already recorded today
+
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yestStr = `${yesterday.getFullYear()}-${yesterday.getMonth()}-${yesterday.getDate()}`;
+
+  s.totalPlayed++;
+  s.totalWon++;
+  s.totalGuesses  += totalGuesses;
+  s.currentStreak  = s.lastCompleted === yestStr ? s.currentStreak + 1 : 1;
+  s.bestStreak     = Math.max(s.bestStreak, s.currentStreak);
+  s.lastCompleted  = todayStr;
+  saveStats(s);
+}
+
+function renderStats() {
+  const s = loadStats();
+  document.getElementById('statStreak').textContent     = s.currentStreak;
+  document.getElementById('statBest').textContent       = s.bestStreak;
+  document.getElementById('statWinRate').textContent    = s.totalPlayed > 0 ? Math.round((s.totalWon / s.totalPlayed) * 100) + '%' : '0%';
+  document.getElementById('statAvgGuesses').textContent = s.totalWon > 0 ? (s.totalGuesses / s.totalWon).toFixed(1) : '—';
+}
+
+// Stats modal wiring
+const statsModal = document.getElementById('statsModal');
+const statsBtn   = document.getElementById('statsBtn');
+const statsBtn2  = document.getElementById('statsBtn2');
+const modalClose = document.getElementById('modalClose');
+
+function openStats()  { renderStats(); statsModal.classList.add('show'); }
+function closeStats() { statsModal.classList.remove('show'); }
+
+statsBtn.addEventListener('click', openStats);
+statsBtn2.addEventListener('click', openStats);
+modalClose.addEventListener('click', closeStats);
+statsModal.addEventListener('click', e => { if (e.target === statsModal) closeStats(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeStats(); });
+
+// ─────────────────────────────────────────
+// COUNTDOWN — always visible in header
+// ─────────────────────────────────────────
+function startHeaderCountdown() {
+  const el = document.getElementById('headerCountdown');
+  function tick() {
+    const now      = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const diff = tomorrow - now;
+    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+    el.textContent = `${h}:${m}:${s}`;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ─────────────────────────────────────────
 // FINAL VICTORY & SHARE
 // ─────────────────────────────────────────
 function showFinalVictory(animate) {
-  const total = guesses.length + g2guesses.length;
   finalSub.textContent      = `Game 1: ${guesses.length} guess${guesses.length !== 1 ? 'es' : ''} · Game 2: ${g2guesses.length} guess${g2guesses.length !== 1 ? 'es' : ''}`;
   finalCookieEl.textContent = `🍪 ${g2victoryName}`;
   if (!animate) finalVictory.style.animation = 'none';
   finalVictory.classList.add('show');
+  if (animate) recordCompletion(guesses.length + g2guesses.length);
+  statsBtn.style.display = '';
   startNextCookieTimer();
 }
 
@@ -1269,18 +1497,15 @@ function startNextCookieTimer() {
 
 shareBtn.addEventListener('click', () => {
   const emojiMap = { name: '⬜', correct: '🟢', partial: '🟡', wrong: '🔴' };
-
-  // Game 1 grid
   const g1lines = guesses.map(name => {
     const traits = results[name] || [];
     return traits.map(t => emojiMap[t.result] || '⬜').join('');
   });
-
-  // Game 2 grid — just ✅/❌ per guess
   const g2lines = g2guesses.map(name => name === g2victoryName ? '✅' : '❌');
-
+  const s = loadStats();
   const text = [
     `Cookiedle 🍪`,
+    `🔥 Streak: ${s.currentStreak}`,
     ``,
     `🧁 Game 1 — ${guesses.length} guess${guesses.length !== 1 ? 'es' : ''}`,
     ...g1lines,
@@ -1290,7 +1515,6 @@ shareBtn.addEventListener('click', () => {
     ``,
     window.location.href,
   ].join('\n');
-
   navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard! 🎉'));
 });
 
@@ -1309,6 +1533,9 @@ function showToast(msg) {
 // INIT
 // ─────────────────────────────────────────
 async function init() {
+  startHeaderCountdown();
+  if (g2won) statsBtn.style.display = '';
+
   input.disabled     = true;
   submitBtn.disabled = true;
   input.placeholder  = 'Loading cookies...';
@@ -1332,7 +1559,6 @@ async function init() {
     submitBtn.disabled = false;
   }
 
-  // Pre-fetch skill data for game 2 so it's ready
   try {
     const res = await fetch(`${WORKER_URL}/skill`);
     skillData = await res.json();
