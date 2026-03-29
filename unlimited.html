@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Cookiedle Unlimited</title>
+<title>Cookiedle ♾️ Unlimited</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -64,7 +64,6 @@
   }
 
   .logo {
-    font-family: 'Nunito', sans-serif;
     font-size: clamp(1.8rem, 5vw, 2.6rem);
     font-weight: 800;
     color: var(--text);
@@ -79,6 +78,24 @@
     text-transform: uppercase;
     margin-top: 6px;
   }
+
+  .back-btn {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 8px 20px;
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .back-btn:hover { border-color: var(--accent); color: var(--text); }
 
   /* ── HOW TO PLAY ── */
   .how-to {
@@ -114,6 +131,19 @@
     flex-shrink: 0;
   }
 
+  /* ── COUNTER ── */
+  .round-counter {
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .round-counter span { color: var(--gold); }
+
   /* ── GUESS INPUT ── */
   .guess-section { margin-bottom: 28px; }
 
@@ -137,11 +167,7 @@
     transition: border-color 0.2s, box-shadow 0.2s;
   }
 
-  .guess-input:focus {
-    border-color: var(--accent);
-    box-shadow: var(--glow);
-  }
-
+  .guess-input:focus { border-color: var(--accent); box-shadow: var(--glow); }
   .guess-input:disabled { opacity: 0.5; cursor: not-allowed; }
   .guess-input::placeholder { color: var(--muted); font-weight: 600; }
 
@@ -194,7 +220,7 @@
   .suggestion-item.active { background: rgba(233,69,96,0.2); color: #fff; }
   .suggestion-item.used   { opacity: 0.4; text-decoration: line-through; }
 
-  /* ── STATUS BAR ── */
+  /* ── STATUS ── */
   .already-guessed {
     font-size: 0.75rem;
     color: var(--accent);
@@ -262,16 +288,8 @@
     transition: transform 0.35s ease, opacity 0.35s ease;
   }
 
-  .cell.revealed {
-    opacity: 1;
-    transform: rotateY(0deg);
-  }
-
-  .cell.instant {
-    opacity: 1;
-    transform: rotateY(0deg);
-    transition: none;
-  }
+  .cell.revealed { opacity: 1; transform: rotateY(0deg); }
+  .cell.instant  { opacity: 1; transform: rotateY(0deg); transition: none; }
 
   .cell:first-child {
     text-align: left;
@@ -284,76 +302,6 @@
   .cell-correct { background: var(--green);  color: #fff; }
   .cell-partial { background: var(--orange); color: #fff; }
   .cell-wrong   { background: var(--red);    color: #fff; }
-
-  /* ── VICTORY (game 1) ── */
-  .victory {
-    display: none;
-    text-align: center;
-    padding: 36px 24px;
-    background: linear-gradient(135deg, #0f3460, #16213e);
-    border: 1px solid rgba(245,166,35,0.3);
-    border-radius: 16px;
-    margin-top: 32px;
-    animation: victoryPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  @keyframes victoryPop {
-    from { opacity: 0; transform: scale(0.85); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-
-  .victory.show { display: block; }
-
-  .victory-emoji  { font-size: 3rem; margin-bottom: 8px; }
-
-  .victory-title {
-    font-size: clamp(1.4rem, 4vw, 2rem);
-    font-weight: 900;
-    color: var(--gold);
-    margin-bottom: 10px;
-  }
-
-  .victory-sub {
-    color: var(--muted);
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-
-  .victory-cookie {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-
-  .victory-skill {
-    font-size: 0.82rem;
-    color: var(--muted);
-    font-weight: 600;
-    margin-bottom: 20px;
-  }
-
-  .victory-skill span { color: var(--gold); font-weight: 800; }
-
-  .next-game-btn {
-    display: inline-block;
-    padding: 12px 32px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 800;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: background 0.15s, transform 0.1s;
-    margin: 4px;
-  }
-
-  .next-game-btn:hover  { background: #c73650; }
-  .next-game-btn:active { transform: scale(0.97); }
 
   /* ── HINT ── */
   .hint-section {
@@ -375,7 +323,6 @@
     font-size: 0.9rem;
     font-weight: 800;
     cursor: pointer;
-    letter-spacing: 0.5px;
     transition: background 0.15s, color 0.15s, transform 0.1s;
   }
 
@@ -422,100 +369,8 @@
 
   .hint-reveal.show { display: block; }
 
-  /* ── GAME 2 ── */
-  .game2-section {
-    display: none;
-    margin-top: 40px;
-    padding-top: 32px;
-    border-top: 2px solid var(--border);
-  }
-
-  .game2-section.show { display: block; }
-
-  .game2-label {
-    text-align: center;
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--muted);
-    margin-bottom: 16px;
-  }
-
-  .skill-display {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 28px;
-    text-align: center;
-    margin: 0 auto 24px;
-    max-width: 480px;
-  }
-
-  .skill-display .skill-name {
-    font-size: 1.3rem;
-    font-weight: 900;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-
-  .skill-display .skill-cd {
-    font-size: 0.82rem;
-    color: var(--gold);
-    font-weight: 700;
-  }
-
-  /* Game 2 guess list — simple rows */
-  .game2-history {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-
-  .game2-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    animation: rowFade 0.25s ease-out;
-  }
-
-  @keyframes rowFade {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .game2-row.correct { border-color: var(--green); background: rgba(76,175,80,0.1); }
-  .game2-row.wrong   { border-color: var(--red);   background: rgba(192,57,43,0.1); }
-
-  .game2-row .g2-icon { font-size: 1rem; flex-shrink: 0; }
-  .game2-row .g2-name { flex: 1; color: var(--text); }
-
-  /* Game 2 hint */
-  .game2-hint-reveal {
-    display: none;
-    margin: 0 auto 16px;
-    max-width: 480px;
-    padding: 12px 20px;
-    background: rgba(245,166,35,0.1);
-    border: 1px solid rgba(245,166,35,0.35);
-    border-radius: 8px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    color: var(--gold);
-    text-align: center;
-  }
-
-  .game2-hint-reveal.show { display: block; }
-
-  /* ── FINAL VICTORY ── */
-  .final-victory {
+  /* ── VICTORY ── */
+  .victory {
     display: none;
     text-align: center;
     padding: 36px 24px;
@@ -526,52 +381,69 @@
     animation: victoryPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
-  .final-victory.show { display: block; }
+  @keyframes victoryPop {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+  }
 
-  .share-btn {
-    display: inline-block;
-    padding: 12px 32px;
-    background: var(--gold);
-    color: #1a1a2e;
+  .victory.show { display: block; }
+
+  .victory-emoji { font-size: 3rem; margin-bottom: 8px; }
+
+  .victory-title {
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .victory-sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .victory-cookie {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .victory-skill {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+
+  .victory-skill span { color: var(--gold); font-weight: 800; }
+
+  .new-cookie-btn {
+    padding: 12px 36px;
+    background: var(--accent);
+    color: #fff;
     border: none;
     border-radius: 8px;
     font-family: 'Nunito', sans-serif;
     font-size: 0.95rem;
     font-weight: 800;
     cursor: pointer;
-    letter-spacing: 0.5px;
     transition: background 0.15s, transform 0.1s;
-    margin: 4px;
   }
 
-  .share-btn:hover  { background: #e0941a; }
-  .share-btn:active { transform: scale(0.97); }
+  .new-cookie-btn:hover  { background: #c73650; }
+  .new-cookie-btn:active { transform: scale(0.97); }
 
-  .next-timer {
+  .stats-line {
     margin-top: 16px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--muted);
     font-weight: 600;
   }
 
-  .next-timer span { color: var(--gold); font-weight: 800; }
-
-  /* ── EASTER EGG ── */
-  .easter-egg {
-    position: fixed;
-    bottom: 20px;
-    right: 24px;
-    color: rgba(255,255,255,0.12);
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-decoration: none;
-    letter-spacing: 1px;
-    transition: color 0.4s;
-    user-select: none;
-    z-index: 10;
-  }
-
-  .easter-egg:hover { color: rgba(255,255,255,0.45); }
+  .stats-line span { color: var(--gold); font-weight: 800; }
 
   /* ── TOAST ── */
   .toast {
@@ -593,10 +465,23 @@
     white-space: nowrap;
   }
 
-  .toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  /* ── EASTER EGG ── */
+  .easter-egg {
+    position: fixed;
+    bottom: 20px; right: 24px;
+    color: rgba(255,255,255,0.12);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: color 0.4s;
+    user-select: none;
+    z-index: 10;
   }
+
+  .easter-egg:hover { color: rgba(255,255,255,0.45); }
 
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 6px; }
@@ -605,11 +490,9 @@
 
   /* ── MOBILE ── */
   @media (max-width: 600px) {
-    .table-header, .guess-row {
-      grid-template-columns: 1.8fr 1fr 1fr 0.9fr 0.9fr 0.9fr;
-    }
-    .cell          { font-size: 0.68rem; padding: 8px 4px; min-height: 46px; }
-    .col-head      { font-size: 0.6rem; letter-spacing: 0.8px; }
+    .table-header, .guess-row { grid-template-columns: 1.8fr 1fr 1fr 0.9fr 0.9fr 0.9fr; }
+    .cell { font-size: 0.68rem; padding: 8px 4px; min-height: 46px; }
+    .col-head { font-size: 0.6rem; letter-spacing: 0.8px; }
     .cell:first-child { font-size: 0.7rem; }
   }
 </style>
@@ -620,12 +503,11 @@
   <header>
     <div class="logo">Cookiedle ♾️</div>
     <div class="subtitle">Unlimited Mode</div>
-    <button class="next-game-btn" onclick="window.location.href='index.html'">← Back to Daily</button>
+    <a class="back-btn" href="index.html">← Back to Daily</a>
   </header>
 
-  <!-- ── GAME 1 ── -->
   <div class="how-to">
-    <strong>Game 1:</strong> Guess today's Cookie Run Kingdom cookie! Each guess reveals how close you are across 5 traits.
+    <strong>Unlimited Mode:</strong> Guess any cookie — no daily limit! Each guess reveals how close you are across 5 traits. Win and hit "New Cookie" to keep playing.
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Correct</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Color swapped (primary ↔ secondary)</div>
@@ -633,10 +515,12 @@
     </div>
   </div>
 
+  <div class="round-counter">Round <span id="roundNum">1</span> · Solved: <span id="solvedNum">0</span></div>
+
   <div class="guess-section">
     <div class="input-wrap">
-      <input id="guessInput" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
-      <button class="submit-btn" id="submitBtn">Guess</button>
+      <input id="guessInput" class="guess-input" type="text" placeholder="Loading..." autocomplete="off" spellcheck="false" disabled/>
+      <button class="submit-btn" id="submitBtn" disabled>Guess</button>
       <div class="suggestions" id="suggestions" style="display:none"></div>
     </div>
     <div class="already-guessed" id="alreadyGuessed"></div>
@@ -666,55 +550,14 @@
     <div class="hint-reveal" id="hintReveal"></div>
   </div>
 
-  <!-- Game 1 victory — no share button, just prompt to continue -->
   <div class="victory" id="victoryBanner">
     <div class="victory-emoji">🎉</div>
     <div class="victory-title">You got it!</div>
-    <div class="victory-sub" id="victoryGuessCount"></div>
-    <div class="victory-cookie" id="victoryCookieName"></div>
-    <div class="victory-skill" id="victorySkill"></div>
-    <button class="next-game-btn" id="nextGameBtn">Next Challenge →</button>
-  </div>
-
-  <!-- ── GAME 2 ── -->
-  <div class="game2-section" id="game2Section">
-    <div class="game2-label">🔮 Game 2 — Skill Guesser</div>
-
-    <div class="skill-display">
-      <div class="skill-name" id="skillName">Loading...</div>
-      <div class="skill-cd" id="skillCd"></div>
-    </div>
-
-    <div class="how-to" style="margin-bottom:20px;">
-      <strong>Game 2:</strong> Which cookie has this skill? Guess the cookie name. You'll get ✅ or ❌ — after 5 wrong guesses a hint unlocks.
-    </div>
-
-    <div class="guess-section">
-      <div class="input-wrap">
-        <input id="guessInput2" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
-        <button class="submit-btn" id="submitBtn2">Guess</button>
-        <div class="suggestions" id="suggestions2" style="display:none"></div>
-      </div>
-      <div class="already-guessed" id="alreadyGuessed2"></div>
-      <div class="guess-meta" id="guessMeta2"></div>
-    </div>
-
-    <div class="game2-history" id="game2History"></div>
-
-    <div class="hint-section" id="hintSection2" style="margin-top:12px;">
-      <button class="hint-btn" id="hintBtn2">💡 Get Hint</button>
-      <div class="game2-hint-reveal" id="hintReveal2"></div>
-    </div>
-  </div>
-
-  <!-- ── FINAL VICTORY (shown after game 2) ── -->
-  <div class="final-victory" id="finalVictory">
-    <div class="victory-emoji">🏆</div>
-    <div class="victory-title" style="color:var(--gold)">Daily Complete!</div>
-    <div class="victory-sub" id="finalSub"></div>
-    <div class="victory-cookie" id="finalCookieName" style="margin-bottom:20px;"></div>
-    <button class="share-btn" id="shareBtn">Share Results 📋</button>
-    <div class="next-timer" id="nextTimer"></div>
+    <div class="victory-sub" id="vicCount"></div>
+    <div class="victory-cookie" id="vicName"></div>
+    <div class="victory-skill" id="vicSkill"></div>
+    <button class="new-cookie-btn" id="newCookieBtn">New Cookie 🍪</button>
+    <div class="stats-line">Total solved: <span id="vicSolved">0</span></div>
   </div>
 
 </div>
@@ -723,249 +566,99 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ─────────────────────────────────────────
-// WORKER URL
-// ─────────────────────────────────────────
 const WORKER_URL = 'https://cookiedle-worker.dangel33.workers.dev';
 
-// Cookie list — loaded from worker on init
-let COOKIES = [];
+let COOKIES   = [];
+let token     = null;   // HMAC token for current round
+let guesses   = [];     // cookie names guessed this round
+let won       = false;
+let round     = 1;
+let solved    = 0;
+let hintUsed  = false;
+let hintTrait = null;
+let hintValue = null;
+let activeSuggestion = -1;
 
-// ─────────────────────────────────────────
-// SESSION KEY
-// ─────────────────────────────────────────
-const TODAY_KEY = `cookiedle-unlimited`;
+const TRAIT_LABELS = {
+  primary_color: 'Primary Color', secondary_color: 'Secondary Color',
+  rarity: 'Rarity', type: 'Type', position: 'Position',
+};
 
-// ─────────────────────────────────────────
-// STATE PERSISTENCE
-// ─────────────────────────────────────────
-function loadState() {
-  try {
-    const raw = localStorage.getItem(TODAY_KEY);
-    return raw ? JSON.parse(raw) : defaultState();
-  } catch { return defaultState(); }
-}
-
-function defaultState() {
-  return {
-    // Game 1
-    guesses: [], results: {}, won: false,
-    hintUsed: false, hintTrait: null, hintValue: null,
-    victoryData: null,
-    // Game 2
-    g2started: false,
-    g2guesses: [], g2won: false,
-    g2hintUsed: false, g2hintValue: null,
-    g2victoryName: null,
-  };
-}
-
-function saveState() {
-  try {
-    localStorage.setItem(TODAY_KEY, JSON.stringify({
-      guesses, results, won,
-      hintUsed, hintTrait, hintValue, victoryData,
-      g2started, g2guesses, g2won,
-      g2hintUsed, g2hintValue, g2victoryName,
-    }));
-  } catch {}
-}
-
-const saved = loadState();
-
-// Game 1 state
-let guesses     = saved.guesses     || [];
-let results     = saved.results     || {};
-let won         = saved.won         || false;
-let hintUsed    = saved.hintUsed    || false;
-let hintTrait   = saved.hintTrait   || null;
-let hintValue   = saved.hintValue   || null;
-let victoryData = saved.victoryData || null;
-
-// Game 2 state
-let g2started     = saved.g2started     || false;
-let g2guesses     = saved.g2guesses     || [];
-let g2won         = saved.g2won         || false;
-let g2hintUsed    = saved.g2hintUsed    || false;
-let g2hintValue   = saved.g2hintValue   || null;
-let g2victoryName = saved.g2victoryName || null;
-
-// Game 2 skill data (fetched from worker)
-let skillData = null;
-
-let activeSuggestion  = -1;
-let activeSuggestion2 = -1;
-
-// ─────────────────────────────────────────
-// DOM REFS — GAME 1
-// ─────────────────────────────────────────
+// DOM refs
 const input       = document.getElementById('guessInput');
 const suggestBox  = document.getElementById('suggestions');
+const submitBtn   = document.getElementById('submitBtn');
 const historyEl   = document.getElementById('guessHistory');
 const metaEl      = document.getElementById('guessMeta');
 const alreadyEl   = document.getElementById('alreadyGuessed');
-const victoryEl   = document.getElementById('victoryBanner');
-const vicCountEl  = document.getElementById('victoryGuessCount');
-const vicNameEl   = document.getElementById('victoryCookieName');
-const vicSkillEl  = document.getElementById('victorySkill');
-const submitBtn   = document.getElementById('submitBtn');
-const nextGameBtn = document.getElementById('nextGameBtn');
 const hintSection = document.getElementById('hintSection');
 const hintBtn     = document.getElementById('hintBtn');
 const hintPicker  = document.getElementById('hintPicker');
 const hintReveal  = document.getElementById('hintReveal');
+const victoryEl   = document.getElementById('victoryBanner');
+const vicCountEl  = document.getElementById('vicCount');
+const vicNameEl   = document.getElementById('vicName');
+const vicSkillEl  = document.getElementById('vicSkill');
+const vicSolvedEl = document.getElementById('vicSolved');
+const newCookieBtn= document.getElementById('newCookieBtn');
+const roundNumEl  = document.getElementById('roundNum');
+const solvedNumEl = document.getElementById('solvedNum');
 const toastEl     = document.getElementById('toast');
-const unlimitedBtn = document.getElementById('unlimitedBtn');
-unlimitedBtn.addEventListener('click', () => {
-  window.location.href = 'unlimited.html';
-});
 
-// DOM REFS — GAME 2
-const game2Section  = document.getElementById('game2Section');
-const input2        = document.getElementById('guessInput2');
-const suggestBox2   = document.getElementById('suggestions2');
-const submitBtn2    = document.getElementById('submitBtn2');
-const alreadyEl2    = document.getElementById('alreadyGuessed2');
-const metaEl2       = document.getElementById('guessMeta2');
-const game2History  = document.getElementById('game2History');
-const hintSection2  = document.getElementById('hintSection2');
-const hintBtn2      = document.getElementById('hintBtn2');
-const hintReveal2   = document.getElementById('hintReveal2');
-const skillNameEl   = document.getElementById('skillName');
-const skillCdEl     = document.getElementById('skillCd');
-
-// DOM REFS — FINAL
-const finalVictory  = document.getElementById('finalVictory');
-const finalSub      = document.getElementById('finalSub');
-const finalCookieEl = document.getElementById('finalCookieName');
-const shareBtn      = document.getElementById('shareBtn');
-const nextTimerEl   = document.getElementById('nextTimer');
-
-// ─────────────────────────────────────────
-// RESTORE SESSION
-// ─────────────────────────────────────────
-function restoreSession() {
-  // Restore game 1 rows
-  guesses.forEach(name => {
-    const traitResults = results[name];
-    if (traitResults) addGuessRow(name, traitResults, false);
-  });
-  updateMeta();
-  updateHint();
-
-  if (won && victoryData) {
-    input.disabled     = true;
-    submitBtn.disabled = true;
-    showVictory1(false);
-  }
-
-  if (g2started) {
-    showGame2();
-    // Restore game 2 rows
-    g2guesses.forEach(name => addGame2Row(name, name === g2victoryName, false));
-    updateMeta2();
-    updateHint2();
-    if (g2won) {
-      input2.disabled     = true;
-      submitBtn2.disabled = true;
-      showFinalVictory(false);
-    }
-  }
-}
-
-// ─────────────────────────────────────────
-// FUZZY AUTOCOMPLETE (shared)
-// ─────────────────────────────────────────
+// ── AUTOCOMPLETE ──────────────────────────
 function fuzzyScore(name, query) {
   const n = name.toLowerCase(), q = query.toLowerCase();
   if (n.startsWith(q)) return 3;
   if (n.includes(q))   return 2;
   let qi = 0;
-  for (let i = 0; i < n.length && qi < q.length; i++) {
-    if (n[i] === q[qi]) qi++;
-  }
+  for (let i = 0; i < n.length && qi < q.length; i++) { if (n[i] === q[qi]) qi++; }
   return qi === q.length ? 1 : 0;
 }
 
-function buildSuggestions(val, usedList, box) {
-  if (!val) { hideSuggestions(box); return; }
+input.addEventListener('input', () => {
+  activeSuggestion = -1;
+  alreadyEl.textContent = '';
+  const val = input.value.trim();
+  if (!val) { hideSugg(); return; }
   const scored = COOKIES
     .map(c => ({ name: c.cookie_name, score: fuzzyScore(c.cookie_name, val) }))
     .filter(x => x.score > 0)
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
     .slice(0, 8);
-  if (!scored.length) { hideSuggestions(box); return; }
-  box.innerHTML = '';
+  if (!scored.length) { hideSugg(); return; }
+  suggestBox.innerHTML = '';
   scored.forEach(({ name }) => {
     const div = document.createElement('div');
-    div.className = 'suggestion-item' + (usedList.includes(name) ? ' used' : '');
+    div.className = 'suggestion-item' + (guesses.includes(name) ? ' used' : '');
     div.textContent = name;
-    div.addEventListener('mousedown', e => { e.preventDefault(); selectSuggestion(name, box === suggestBox ? input : input2, box); });
-    box.appendChild(div);
+    div.addEventListener('mousedown', e => { e.preventDefault(); input.value = name; hideSugg(); input.focus(); });
+    suggestBox.appendChild(div);
   });
-  box.style.display = 'block';
-}
-
-function hideSuggestions(box) {
-  box.style.display = 'none';
-  box.innerHTML = '';
-}
-
-function selectSuggestion(name, inp, box) {
-  inp.value = name;
-  hideSuggestions(box);
-  inp.focus();
-}
-
-function updateActiveSugg(items, activeIdx, inp) {
-  items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
-  if (activeIdx >= 0) inp.value = items[activeIdx].textContent;
-}
-
-// Game 1 autocomplete
-input.addEventListener('input', () => {
-  activeSuggestion = -1;
-  alreadyEl.textContent = '';
-  buildSuggestions(input.value.trim(), guesses, suggestBox);
+  suggestBox.style.display = 'block';
 });
 
 input.addEventListener('keydown', e => {
   const items = suggestBox.querySelectorAll('.suggestion-item');
-  if (e.key === 'ArrowDown') { e.preventDefault(); activeSuggestion = Math.min(activeSuggestion + 1, items.length - 1); updateActiveSugg(items, activeSuggestion, input); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); activeSuggestion = Math.max(activeSuggestion - 1, -1); updateActiveSugg(items, activeSuggestion, input); }
-  else if (e.key === 'Enter') { if (activeSuggestion >= 0 && items[activeSuggestion]) { e.preventDefault(); selectSuggestion(items[activeSuggestion].textContent, input, suggestBox); } else { submitGuess(); } }
-  else if (e.key === 'Escape') { hideSuggestions(suggestBox); }
+  if (e.key === 'ArrowDown') { e.preventDefault(); activeSuggestion = Math.min(activeSuggestion + 1, items.length - 1); updateActive(items); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); activeSuggestion = Math.max(activeSuggestion - 1, -1); updateActive(items); }
+  else if (e.key === 'Enter') { if (activeSuggestion >= 0 && items[activeSuggestion]) { e.preventDefault(); input.value = items[activeSuggestion].textContent; hideSugg(); } else { submitGuess(); } }
+  else if (e.key === 'Escape') { hideSugg(); }
 });
 
-// Game 2 autocomplete
-input2.addEventListener('input', () => {
-  activeSuggestion2 = -1;
-  alreadyEl2.textContent = '';
-  buildSuggestions(input2.value.trim(), g2guesses, suggestBox2);
-});
+function updateActive(items) {
+  items.forEach((el, i) => el.classList.toggle('active', i === activeSuggestion));
+  if (activeSuggestion >= 0) input.value = items[activeSuggestion].textContent;
+}
 
-input2.addEventListener('keydown', e => {
-  const items = suggestBox2.querySelectorAll('.suggestion-item');
-  if (e.key === 'ArrowDown') { e.preventDefault(); activeSuggestion2 = Math.min(activeSuggestion2 + 1, items.length - 1); updateActiveSugg(items, activeSuggestion2, input2); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); activeSuggestion2 = Math.max(activeSuggestion2 - 1, -1); updateActiveSugg(items, activeSuggestion2, input2); }
-  else if (e.key === 'Enter') { if (activeSuggestion2 >= 0 && items[activeSuggestion2]) { e.preventDefault(); selectSuggestion(items[activeSuggestion2].textContent, input2, suggestBox2); } else { submitGuess2(); } }
-  else if (e.key === 'Escape') { hideSuggestions(suggestBox2); }
-});
+function hideSugg() { suggestBox.style.display = 'none'; suggestBox.innerHTML = ''; }
 
-document.addEventListener('click', e => {
-  if (!e.target.closest('.input-wrap')) {
-    hideSuggestions(suggestBox);
-    hideSuggestions(suggestBox2);
-  }
-});
+document.addEventListener('click', e => { if (!e.target.closest('.input-wrap')) hideSugg(); });
 
-// ─────────────────────────────────────────
-// GAME 1 — GUESS LOGIC
-// ─────────────────────────────────────────
+// ── GUESS ─────────────────────────────────
 submitBtn.addEventListener('click', submitGuess);
 
 async function submitGuess() {
-  if (won) return;
+  if (won || !token) return;
   const raw = input.value.trim();
   if (!raw) return;
 
@@ -973,16 +666,14 @@ async function submitGuess() {
   if (!cookie) { showToast('Cookie not found — check your spelling!'); return; }
   if (guesses.includes(cookie.cookie_name)) { alreadyEl.textContent = `Already guessed ${cookie.cookie_name}!`; return; }
 
-  input.disabled     = true;
-  submitBtn.disabled = true;
-  alreadyEl.textContent = '';
+  input.disabled = true; submitBtn.disabled = true; alreadyEl.textContent = '';
 
   let data;
   try {
-    const res = await fetch(`${WORKER_URL}/guess`, {
+    const res = await fetch(`${WORKER_URL}/unlimited/guess`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guess: cookie.cookie_name }),
+      body: JSON.stringify({ token, guess: cookie.cookie_name }),
     });
     data = await res.json();
   } catch {
@@ -1003,28 +694,23 @@ async function submitGuess() {
   ];
 
   guesses.push(cookie.cookie_name);
-  results[cookie.cookie_name] = traitResults;
   input.value = '';
-  hideSuggestions(suggestBox);
-
-  addGuessRow(cookie.cookie_name, traitResults, true);
+  hideSugg();
+  addGuessRow(traitResults, true);
   updateMeta();
   updateHint();
 
   if (data.correct) {
-    setTimeout(() => {
-      localStorage.removeItem(TODAY_KEY);
-      location.reload();
-    }, 1200);
-  
-    return;
+    won = true; solved++;
+    solvedNumEl.textContent = solved;
+    input.disabled = true; submitBtn.disabled = true;
+    setTimeout(() => showVictory(data), 6 * 700 + 400);
   } else {
     input.disabled = false; submitBtn.disabled = false;
-    saveState();
   }
 }
 
-function addGuessRow(cookieName, traitResults, animate) {
+function addGuessRow(traitResults, animate) {
   const row = document.createElement('div');
   row.className = 'guess-row';
   traitResults.forEach((trait, i) => {
@@ -1038,11 +724,7 @@ function addGuessRow(cookieName, traitResults, animate) {
   historyEl.prepend(row);
 }
 
-// ─────────────────────────────────────────
-// GAME 1 — META & HINT
-// ─────────────────────────────────────────
-const TRAIT_LABELS = { primary_color: 'Primary Color', secondary_color: 'Secondary Color', rarity: 'Rarity', type: 'Type', position: 'Position' };
-
+// ── META & HINT ───────────────────────────
 function wrongCount() { return won ? guesses.length - 1 : guesses.length; }
 
 function updateMeta() {
@@ -1075,12 +757,11 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
     const trait = btn.dataset.trait;
     let value;
     try {
-      const res = await fetch(`${WORKER_URL}/hint?trait=${trait}`);
+      const res = await fetch(`${WORKER_URL}/unlimited/hint?token=${encodeURIComponent(token)}&trait=${trait}`);
       const data = await res.json();
       value = data.value;
     } catch { showToast('Could not fetch hint — please try again.'); hintBtn.disabled = false; return; }
     hintUsed = true; hintTrait = trait; hintValue = value;
-    saveState();
     hintBtn.style.display = 'none';
     hintPicker.classList.remove('show');
     hintReveal.textContent = `💡 ${TRAIT_LABELS[trait]}: ${value}`;
@@ -1088,212 +769,68 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
   });
 });
 
-// ─────────────────────────────────────────
-// GAME 1 — VICTORY
-// ─────────────────────────────────────────
-function showVictory1(animate) {
+// ── VICTORY ───────────────────────────────
+function showVictory(data) {
   vicCountEl.textContent = guesses.length === 1 ? 'Got it in just 1 guess!' : `Got it in ${guesses.length} guesses!`;
-  vicNameEl.textContent  = `🍪 ${victoryData.name}`;
-  vicSkillEl.innerHTML   = victoryData.skill ? `Skill: <span style="color:var(--gold);font-weight:800">${victoryData.skill}</span> · Cooldown: <span style="color:var(--gold);font-weight:800">${victoryData.cooldown}s</span>` : '';
-  if (!animate) victoryEl.style.animation = 'none';
+  vicNameEl.textContent  = `🍪 ${data.cookie_name}`;
+  vicSkillEl.innerHTML   = data.skill_name
+    ? `Skill: <span>${data.skill_name}</span> · Cooldown: <span>${data.skill_cooldown}s</span>`
+    : '';
+  vicSolvedEl.textContent = solved;
   victoryEl.classList.add('show');
 }
 
-nextGameBtn.addEventListener('click', async () => {
-  g2started = true;
-  saveState();
-  await showGame2();
-});
+newCookieBtn.addEventListener('click', startNewRound);
 
-// ─────────────────────────────────────────
-// GAME 2 — SHOW & LOAD SKILL
-// ─────────────────────────────────────────
-async function showGame2() {
-  game2Section.classList.add('show');
-  game2Section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+async function startNewRound() {
+  // Reset state
+  guesses   = [];
+  won       = false;
+  hintUsed  = false;
+  hintTrait = null;
+  hintValue = null;
+  token     = null;
+  round++;
 
-  if (!skillData) {
-    skillNameEl.textContent = 'Loading...';
-    skillCdEl.textContent   = '';
-    try {
-      const res = await fetch(`${WORKER_URL}/skill`);
-      skillData = await res.json();
-    } catch {
-      showToast('Could not load skill — please refresh.');
-      return;
-    }
-  }
+  // Reset UI
+  historyEl.innerHTML   = '';
+  metaEl.textContent    = '';
+  alreadyEl.textContent = '';
+  hintSection.classList.remove('show');
+  hintBtn.style.display = '';
+  hintBtn.disabled = false;
+  hintPicker.classList.remove('show');
+  hintReveal.classList.remove('show');
+  hintReveal.textContent = '';
+  victoryEl.classList.remove('show');
+  victoryEl.style.animation = '';
+  roundNumEl.textContent = round;
 
-  skillNameEl.textContent = skillData.skill_name;
-  skillCdEl.textContent   = `Cooldown: ${skillData.skill_cooldown}s`;
+  input.disabled     = true;
+  submitBtn.disabled = true;
+  input.placeholder  = 'Loading...';
 
-  if (!g2won) {
-    input2.disabled     = false;
-    submitBtn2.disabled = false;
-    input2.focus();
-  }
+  await fetchNewToken();
+
+  input.placeholder  = 'Type a cookie name...';
+  input.disabled     = false;
+  submitBtn.disabled = false;
+  input.focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ─────────────────────────────────────────
-// GAME 2 — GUESS LOGIC
-// ─────────────────────────────────────────
-submitBtn2.addEventListener('click', submitGuess2);
-
-async function submitGuess2() {
-  if (g2won) return;
-  const raw = input2.value.trim();
-  if (!raw) return;
-
-  const cookie = COOKIES.find(c => c.cookie_name.toLowerCase() === raw.toLowerCase());
-  if (!cookie) { showToast('Cookie not found — check your spelling!'); return; }
-  if (g2guesses.includes(cookie.cookie_name)) { alreadyEl2.textContent = `Already guessed ${cookie.cookie_name}!`; return; }
-
-  input2.disabled     = true;
-  submitBtn2.disabled = true;
-  alreadyEl2.textContent = '';
-
-  let data;
+// ── TOKEN FETCH ───────────────────────────
+async function fetchNewToken() {
   try {
-    const res = await fetch(`${WORKER_URL}/guess2`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guess: cookie.cookie_name }),
-    });
-    data = await res.json();
+    const res = await fetch(`${WORKER_URL}/unlimited/new`);
+    const data = await res.json();
+    token = data.token;
   } catch {
-    showToast('Connection error — please try again.');
-    input2.disabled = false; submitBtn2.disabled = false;
-    return;
-  }
-
-  if (data.error) { showToast(data.error); input2.disabled = false; submitBtn2.disabled = false; return; }
-
-  g2guesses.push(cookie.cookie_name);
-  input2.value = '';
-  hideSuggestions(suggestBox2);
-
-  addGame2Row(cookie.cookie_name, data.correct, true);
-  updateMeta2();
-  updateHint2();
-
-  if (data.correct) {
-    setTimeout(() => {
-      localStorage.removeItem(TODAY_KEY);
-      location.reload();
-    }, 1200);
-  
-    return;
-  } else {
-    input2.disabled = false; submitBtn2.disabled = false;
-    saveState();
+    showToast('Could not load a new cookie — please refresh.');
   }
 }
 
-function addGame2Row(name, correct, animate) {
-  const row = document.createElement('div');
-  row.className = `game2-row ${correct ? 'correct' : 'wrong'}${animate ? '' : ''}`;
-  if (!animate) row.style.animation = 'none';
-  row.innerHTML = `<span class="g2-icon">${correct ? '✅' : '❌'}</span><span class="g2-name">${name}</span>`;
-  game2History.prepend(row);
-}
-
-// ─────────────────────────────────────────
-// GAME 2 — META & HINT
-// ─────────────────────────────────────────
-function g2wrongCount() { return g2won ? g2guesses.length - 1 : g2guesses.length; }
-
-function updateMeta2() {
-  if (!g2guesses.length) { metaEl2.textContent = ''; return; }
-  metaEl2.textContent = g2guesses.length === 1 ? '1 guess so far' : `${g2guesses.length} guesses so far`;
-}
-
-function updateHint2() {
-  if (g2won) { hintSection2.classList.remove('show'); return; }
-  hintSection2.classList.toggle('show', g2wrongCount() >= 5);
-  if (g2hintUsed && g2hintValue) {
-    hintBtn2.style.display = 'none';
-    hintReveal2.innerHTML  = g2hintValue;
-    hintReveal2.classList.add('show');
-  } else {
-    hintBtn2.style.display = '';
-    hintBtn2.disabled = false;
-  }
-}
-
-hintBtn2.addEventListener('click', async () => {
-  if (g2hintUsed) return;
-  hintBtn2.disabled = true;
-  let data;
-  try {
-    const res = await fetch(`${WORKER_URL}/hint2`);
-    data = await res.json();
-  } catch { showToast('Could not fetch hint — please try again.'); hintBtn2.disabled = false; return; }
-  g2hintUsed  = true;
-  g2hintValue = `💡 Rarity: <strong>${data.rarity}</strong> · Type: <strong>${data.type}</strong> · Position: <strong>${data.position}</strong>`;
-  saveState();
-  hintBtn2.style.display = 'none';
-  hintReveal2.innerHTML  = g2hintValue;
-  hintReveal2.classList.add('show');
-});
-
-// ─────────────────────────────────────────
-// FINAL VICTORY & SHARE
-// ─────────────────────────────────────────
-function showFinalVictory(animate) {
-  const total = guesses.length + g2guesses.length;
-  finalSub.textContent      = `Game 1: ${guesses.length} guess${guesses.length !== 1 ? 'es' : ''} · Game 2: ${g2guesses.length} guess${g2guesses.length !== 1 ? 'es' : ''}`;
-  finalCookieEl.textContent = `🍪 ${g2victoryName}`;
-  if (!animate) finalVictory.style.animation = 'none';
-  finalVictory.classList.add('show');
-  startNextCookieTimer();
-}
-
-function startNextCookieTimer() {
-  function tick() {
-    const now      = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    const diff = tomorrow - now;
-    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-    nextTimerEl.innerHTML = `Next cookies in <span>${h}:${m}:${s}</span>`;
-  }
-  tick();
-  setInterval(tick, 1000);
-}
-
-shareBtn.addEventListener('click', () => {
-  const emojiMap = { name: '⬜', correct: '🟢', partial: '🟡', wrong: '🔴' };
-
-  // Game 1 grid
-  const g1lines = guesses.map(name => {
-    const traits = results[name] || [];
-    return traits.map(t => emojiMap[t.result] || '⬜').join('');
-  });
-
-  // Game 2 grid — just ✅/❌ per guess
-  const g2lines = g2guesses.map(name => name === g2victoryName ? '✅' : '❌');
-
-  const text = [
-    `Cookiedle 🍪`,
-    ``,
-    `🧁 Game 1 — ${guesses.length} guess${guesses.length !== 1 ? 'es' : ''}`,
-    ...g1lines,
-    ``,
-    `🔮 Game 2 — ${g2guesses.length} guess${g2guesses.length !== 1 ? 'es' : ''}`,
-    g2lines.join(' '),
-    ``,
-    window.location.href,
-  ].join('\n');
-
-  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard! 🎉'));
-});
-
-// ─────────────────────────────────────────
-// TOAST
-// ─────────────────────────────────────────
+// ── TOAST ─────────────────────────────────
 let toastTimer;
 function showToast(msg) {
   toastEl.textContent = msg;
@@ -1302,40 +839,25 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2500);
 }
 
-// ─────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────
+// ── INIT ──────────────────────────────────
 async function init() {
-  input.disabled     = true;
-  submitBtn.disabled = true;
-  input.placeholder  = 'Loading cookies...';
+  input.placeholder = 'Loading cookies...';
 
   try {
     const res = await fetch(`${WORKER_URL}/cookies`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error();
     COOKIES = await res.json();
-  } catch (e) {
-    input.placeholder  = 'Type a cookie name...';
-    input.disabled     = false;
-    submitBtn.disabled = false;
-    showToast('Could not load cookie list — please refresh.');
-    console.error('Failed to load cookies:', e);
+  } catch {
+    showToast('Could not load cookies — please refresh.');
     return;
   }
 
-  input.placeholder = 'Type a cookie name...';
-  if (!won) {
-    input.disabled     = false;
-    submitBtn.disabled = false;
-  }
+  await fetchNewToken();
 
-  // Pre-fetch skill data for game 2 so it's ready
-  try {
-    const res = await fetch(`${WORKER_URL}/skill`);
-    skillData = await res.json();
-  } catch {}
-
-  restoreSession();
+  input.placeholder  = 'Type a cookie name...';
+  input.disabled     = false;
+  submitBtn.disabled = false;
+  input.focus();
 }
 
 init();
