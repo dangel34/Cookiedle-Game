@@ -101,8 +101,7 @@ Cookiedle-Game/
 ├── index.html           # Main web app (game UI + JS logic)
 ├── secret.html          # 👀
 ├── worker.js            # Cloudflare Worker (backend logic)
-├── wrangler.toml        # Wrangler config for Worker deployment
-├── wrangler.jsonc       # Wrangler config (alternate format)
+├── wrangler.jsonc       # Wrangler config
 ├── cookies_rows.csv     # Cookie database (source of truth)
 ├── scraper.py           # Selenium scraper for noff.gg
 ├── build_cookies_js.py  # Injects CSV data into index.html
