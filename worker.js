@@ -178,7 +178,7 @@ const COOKIES = [
 // ─────────────────────────────────────────
 async function getDailyTarget(secret) {
   const now = new Date();
-  const dateStr = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
+  const dateStr = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}`;
   const msgBuffer = new TextEncoder().encode(dateStr + secret);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -189,7 +189,7 @@ async function getDailyTarget(secret) {
 // Game 2 target — different cookie, uses a different hash offset
 async function getDailyTarget2(secret) {
   const now = new Date();
-  const dateStr = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}-skill`;
+  const dateStr = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}-skill`;
   const msgBuffer = new TextEncoder().encode(dateStr + secret);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -198,10 +198,9 @@ async function getDailyTarget2(secret) {
 }
 
 // ─────────────────────────────────────────
-// CORS HEADERS — allow your GitHub Pages domain
-// Update ALLOWED_ORIGIN to your actual URL
+// CORS HEADERS — allow GitHub Pages domain
 // ─────────────────────────────────────────
-const ALLOWED_ORIGIN = 'https://dange134.github.io';
+const ALLOWED_ORIGIN = 'https://dangel34.github.io';
 
 function corsHeaders(origin) {
   const allowed = origin === ALLOWED_ORIGIN || origin?.endsWith('.github.io');
@@ -398,12 +397,23 @@ export default {
       return jsonResponse(result, 200, origin);
     }
 
-    // GET /hint?trait=rarity — reveal one trait value (only called after 5 wrong guesses)
+    // GET /hint?trait=rarity&guesses=CookieA,CookieB,... — reveal one trait value
+    // Server verifies at least 5 of the provided guesses are genuinely wrong.
     if (url.pathname === '/hint' && request.method === 'GET') {
       const trait = sanitizeInput(url.searchParams.get('trait') || '');
       const valid = ['primary_color','secondary_color','rarity','type','position'];
       if (!valid.includes(trait)) {
         return jsonResponse({ error: 'Invalid trait' }, 400, origin);
+      }
+      const guessesParam = sanitizeInput(url.searchParams.get('guesses') || '', 2000);
+      const guessNames = guessesParam.split(',').map(s => s.trim()).filter(Boolean);
+      let wrongCount = 0;
+      for (const name of guessNames) {
+        const gc = COOKIES.find(c => c.cookie_name.toLowerCase() === name.toLowerCase());
+        if (gc && !evaluateGuess(gc, target).correct) wrongCount++;
+      }
+      if (wrongCount < 5) {
+        return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
       }
       return jsonResponse({ trait, value: target[trait] }, 200, origin);
     }
@@ -444,8 +454,19 @@ export default {
       }, 200, origin);
     }
 
-    // GET /hint2 — reveals rarity, type, and position after 5 wrong guesses
+    // GET /hint2?guesses=CookieA,CookieB,... — reveals rarity, type, and position
+    // Server verifies at least 5 of the provided guesses are genuinely wrong.
     if (url.pathname === '/hint2' && request.method === 'GET') {
+      const guessesParam = sanitizeInput(url.searchParams.get('guesses') || '', 2000);
+      const guessNames = guessesParam.split(',').map(s => s.trim()).filter(Boolean);
+      let wrongCount = 0;
+      for (const name of guessNames) {
+        const gc = COOKIES.find(c => c.cookie_name.toLowerCase() === name.toLowerCase());
+        if (gc && gc.cookie_name.toLowerCase() !== target2.cookie_name.toLowerCase()) wrongCount++;
+      }
+      if (wrongCount < 5) {
+        return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
+      }
       return jsonResponse({
         rarity:   target2.rarity,
         type:     target2.type,

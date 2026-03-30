@@ -885,7 +885,7 @@ let COOKIES = [];
 // ─────────────────────────────────────────
 const TODAY_KEY = (() => {
   const d = new Date();
-  return `cookiedle-${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  return `cookiedle-${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`;
 })();
 
 // ─────────────────────────────────────────
@@ -1223,7 +1223,7 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
     const trait = btn.dataset.trait;
     let value;
     try {
-      const res = await fetch(`${WORKER_URL}/hint?trait=${trait}`);
+      const res = await fetch(`${WORKER_URL}/hint?trait=${trait}&guesses=${encodeURIComponent(guesses.join(','))}`);
       const data = await res.json();
       value = data.value;
     } catch { showToast('Could not fetch hint — please try again.'); hintBtn.disabled = false; return; }
@@ -1373,7 +1373,7 @@ hintBtn2.addEventListener('click', async () => {
   hintBtn2.disabled = true;
   let data;
   try {
-    const res = await fetch(`${WORKER_URL}/hint2`);
+    const res = await fetch(`${WORKER_URL}/hint2?guesses=${encodeURIComponent(g2guesses.join(','))}`);
     data = await res.json();
   } catch { showToast('Could not fetch hint — please try again.'); hintBtn2.disabled = false; return; }
   g2hintUsed  = true;
