@@ -716,6 +716,48 @@
     opacity: 1;
   }
 
+  /* ── GAME 2 — NEXT PROMPT ── */
+  .g2-next-prompt { display: none; text-align: center; padding: 12px 0 4px; }
+  .g2-next-prompt.show { display: block; }
+
+  /* ── GAME 3 ── */
+  .game3-section { display: none; margin-top: 40px; padding-top: 36px; border-top: 1px solid var(--border); }
+  .game3-section.show { display: block; }
+
+  .game3-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .silhouette-container { display: flex; justify-content: center; margin: 0 auto 24px; }
+
+  .silhouette-img {
+    width: 220px;
+    height: 220px;
+    object-fit: contain;
+    border-radius: 12px;
+    transition: opacity 0.4s ease;
+  }
+
+  .silhouette-img.fading { opacity: 0; }
+
+  @keyframes silhouetteShake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-8px); }
+    40%       { transform: translateX(8px); }
+    60%       { transform: translateX(-5px); }
+    80%       { transform: translateX(5px); }
+  }
+
+  .silhouette-img.shake { animation: silhouetteShake 0.4s ease; }
+
+  .game3-history { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -853,9 +895,42 @@
       <button class="hint-btn" id="hintBtn2">💡 Get Hint</button>
       <div class="game2-hint-reveal" id="hintReveal2"></div>
     </div>
+    <div class="g2-next-prompt" id="g2NextPrompt">
+      <button class="next-game-btn" id="g3NextBtn">Next Challenge →</button>
+    </div>
   </div>
 
-  <!-- ── FINAL VICTORY (shown after game 2) ── -->
+  <!-- ── GAME 3 ── -->
+  <div class="game3-section" id="game3Section">
+    <div class="game3-label">🖼️ Game 3 — Silhouette</div>
+
+    <div class="silhouette-container">
+      <img id="silhouetteImg" class="silhouette-img" src="" alt="Mystery Cookie Silhouette" style="display:none"/>
+    </div>
+
+    <div class="how-to" style="margin-bottom:20px;">
+      <strong>Game 3:</strong> Identify the cookie from its silhouette! After 5 wrong guesses a hint unlocks.
+    </div>
+
+    <div class="guess-section">
+      <div class="input-wrap">
+        <input id="guessInput3" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
+        <button class="submit-btn" id="submitBtn3">Guess</button>
+        <div class="suggestions" id="suggestions3" style="display:none"></div>
+      </div>
+      <div class="already-guessed" id="alreadyGuessed3"></div>
+      <div class="guess-meta" id="guessMeta3"></div>
+    </div>
+
+    <div class="game3-history" id="game3History"></div>
+
+    <div class="hint-section" id="hintSection3" style="margin-top:12px;">
+      <button class="hint-btn" id="hintBtn3">💡 Get Hint</button>
+      <div class="game2-hint-reveal" id="hintReveal3"></div>
+    </div>
+  </div>
+
+  <!-- ── FINAL VICTORY (shown after game 3) ── -->
   <div class="final-victory" id="finalVictory">
     <div class="victory-emoji">🏆</div>
     <div class="victory-title" style="color:var(--gold)">Daily Complete!</div>
@@ -909,6 +984,11 @@ function defaultState() {
     g2guesses: [], g2won: false,
     g2hintUsed: false, g2hintValue: null,
     g2victoryName: null,
+    // Game 3
+    g3started: false,
+    g3guesses: [], g3won: false,
+    g3hintUsed: false, g3hintValue: null,
+    g3victoryName: null,
   };
 }
 
@@ -919,6 +999,8 @@ function saveState() {
       hintUsed, hintTrait, hintValue, victoryData,
       g2started, g2guesses, g2won,
       g2hintUsed, g2hintValue, g2victoryName,
+      g3started, g3guesses, g3won,
+      g3hintUsed, g3hintValue, g3victoryName,
     }));
   } catch {}
 }
@@ -942,11 +1024,23 @@ let g2hintUsed    = saved.g2hintUsed    || false;
 let g2hintValue   = saved.g2hintValue   || null;
 let g2victoryName = saved.g2victoryName || null;
 
+// Game 3 state
+let g3started     = saved.g3started     || false;
+let g3guesses     = saved.g3guesses     || [];
+let g3won         = saved.g3won         || false;
+let g3hintUsed    = saved.g3hintUsed    || false;
+let g3hintValue   = saved.g3hintValue   || null;
+let g3victoryName = saved.g3victoryName || null;
+
 // Game 2 skill data (fetched from worker)
 let skillData = null;
 
+// Game 3 silhouette data (fetched from worker)
+let silhouette3Data = null;  // { filename }
+
 let activeSuggestion  = -1;
 let activeSuggestion2 = -1;
+let activeSuggestion3 = -1;
 
 // ─────────────────────────────────────────
 // DOM REFS — GAME 1
@@ -982,6 +1076,20 @@ const hintReveal2   = document.getElementById('hintReveal2');
 const skillNameEl   = document.getElementById('skillName');
 const skillCdEl     = document.getElementById('skillCd');
 
+// DOM REFS — GAME 3
+const game3Section  = document.getElementById('game3Section');
+const input3        = document.getElementById('guessInput3');
+const suggestBox3   = document.getElementById('suggestions3');
+const submitBtn3    = document.getElementById('submitBtn3');
+const alreadyEl3    = document.getElementById('alreadyGuessed3');
+const metaEl3       = document.getElementById('guessMeta3');
+const game3History  = document.getElementById('game3History');
+const hintSection3  = document.getElementById('hintSection3');
+const hintBtn3      = document.getElementById('hintBtn3');
+const hintReveal3   = document.getElementById('hintReveal3');
+const silhouetteImg = document.getElementById('silhouetteImg');
+const g2NextPrompt  = document.getElementById('g2NextPrompt');
+
 // DOM REFS — FINAL
 const finalVictory  = document.getElementById('finalVictory');
 const finalSub      = document.getElementById('finalSub');
@@ -1016,6 +1124,21 @@ function restoreSession() {
     if (g2won) {
       input2.disabled     = true;
       submitBtn2.disabled = true;
+      if (!g3started) {
+        g2NextPrompt.classList.add('show');
+      }
+    }
+  }
+
+  if (g3started) {
+    showGame3();
+    // Restore game 3 rows
+    g3guesses.forEach(name => addGame3Row(name, name === g3victoryName, false));
+    updateMeta3();
+    updateHint3();
+    if (g3won) {
+      input3.disabled     = true;
+      submitBtn3.disabled = true;
       showFinalVictory(false);
     }
   }
@@ -1048,7 +1171,7 @@ function buildSuggestions(val, usedList, box) {
     const div = document.createElement('div');
     div.className = 'suggestion-item' + (usedList.includes(name) ? ' used' : '');
     div.textContent = name;
-    div.addEventListener('mousedown', e => { e.preventDefault(); selectSuggestion(name, box === suggestBox ? input : input2, box); });
+    div.addEventListener('mousedown', e => { e.preventDefault(); selectSuggestion(name, box === suggestBox ? input : (box === suggestBox2 ? input2 : input3), box); });
     box.appendChild(div);
   });
   box.style.display = 'block';
@@ -1100,10 +1223,26 @@ input2.addEventListener('keydown', e => {
   else if (e.key === 'Escape') { hideSuggestions(suggestBox2); }
 });
 
+// Game 3 autocomplete
+input3.addEventListener('input', () => {
+  activeSuggestion3 = -1;
+  alreadyEl3.textContent = '';
+  buildSuggestions(input3.value.trim(), g3guesses, suggestBox3);
+});
+
+input3.addEventListener('keydown', e => {
+  const items = suggestBox3.querySelectorAll('.suggestion-item');
+  if (e.key === 'ArrowDown') { e.preventDefault(); activeSuggestion3 = Math.min(activeSuggestion3 + 1, items.length - 1); updateActiveSugg(items, activeSuggestion3, input3); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); activeSuggestion3 = Math.max(activeSuggestion3 - 1, -1); updateActiveSugg(items, activeSuggestion3, input3); }
+  else if (e.key === 'Enter') { if (activeSuggestion3 >= 0 && items[activeSuggestion3]) { e.preventDefault(); selectSuggestion(items[activeSuggestion3].textContent, input3, suggestBox3); } else { submitGuess3(); } }
+  else if (e.key === 'Escape') { hideSuggestions(suggestBox3); }
+});
+
 document.addEventListener('click', e => {
   if (!e.target.closest('.input-wrap')) {
     hideSuggestions(suggestBox);
     hideSuggestions(suggestBox2);
+    hideSuggestions(suggestBox3);
   }
 });
 
@@ -1330,7 +1469,10 @@ async function submitGuess2() {
     saveState();
     input2.disabled     = true;
     submitBtn2.disabled = true;
-    setTimeout(() => showFinalVictory(true), 600);
+    setTimeout(() => {
+      g2NextPrompt.classList.add('show');
+      g2NextPrompt.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 600);
   } else {
     input2.disabled = false; submitBtn2.disabled = false;
     saveState();
@@ -1382,6 +1524,154 @@ hintBtn2.addEventListener('click', async () => {
   hintBtn2.style.display = 'none';
   hintReveal2.innerHTML  = g2hintValue;
   hintReveal2.classList.add('show');
+});
+
+// ─────────────────────────────────────────
+// GAME 3 — SHOW & LOAD SILHOUETTE
+// ─────────────────────────────────────────
+document.getElementById('g3NextBtn').addEventListener('click', async () => {
+  g3started = true;
+  saveState();
+  await showGame3();
+});
+
+async function showGame3() {
+  game3Section.classList.add('show');
+  game3Section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (!silhouette3Data) {
+    try {
+      const res = await fetch(`${WORKER_URL}/silhouette3`);
+      silhouette3Data = await res.json();
+    } catch {
+      showToast('Could not load silhouette — please refresh.');
+      return;
+    }
+  }
+
+  silhouetteImg.src     = `cookie_silhouettes/${silhouette3Data.filename}`;
+  silhouetteImg.style.display = '';
+
+  if (!g3won) {
+    input3.disabled     = false;
+    submitBtn3.disabled = false;
+    input3.focus();
+  }
+}
+
+// ─────────────────────────────────────────
+// GAME 3 — GUESS LOGIC
+// ─────────────────────────────────────────
+submitBtn3.addEventListener('click', submitGuess3);
+
+async function submitGuess3() {
+  if (g3won) return;
+  const raw = input3.value.trim();
+  if (!raw) return;
+
+  const cookie = COOKIES.find(c => c.cookie_name.toLowerCase() === raw.toLowerCase());
+  if (!cookie) { showToast('Cookie not found — check your spelling!'); return; }
+  if (g3guesses.includes(cookie.cookie_name)) { alreadyEl3.textContent = `Already guessed ${cookie.cookie_name}!`; return; }
+
+  input3.disabled     = true;
+  submitBtn3.disabled = true;
+  alreadyEl3.textContent = '';
+
+  let data;
+  try {
+    const res = await fetch(`${WORKER_URL}/guess3`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guess: cookie.cookie_name }),
+    });
+    data = await res.json();
+  } catch {
+    showToast('Connection error — please try again.');
+    input3.disabled = false; submitBtn3.disabled = false;
+    return;
+  }
+
+  if (data.error) { showToast(data.error); input3.disabled = false; submitBtn3.disabled = false; return; }
+
+  g3guesses.push(cookie.cookie_name);
+  input3.value = '';
+  hideSuggestions(suggestBox3);
+
+  addGame3Row(cookie.cookie_name, data.correct, true);
+  updateMeta3();
+  updateHint3();
+
+  if (data.correct) {
+    g3won         = true;
+    g3victoryName = data.cookie_name;
+    saveState();
+    input3.disabled     = true;
+    submitBtn3.disabled = true;
+
+    // Reveal the real cookie image
+    silhouetteImg.classList.add('fading');
+    setTimeout(() => {
+      silhouetteImg.src = `cookie_images/${data.filename}`;
+      silhouetteImg.classList.remove('fading');
+    }, 400);
+
+    setTimeout(() => showFinalVictory(true), 1000);
+  } else {
+    // Shake the silhouette on wrong guess
+    silhouetteImg.classList.remove('shake');
+    void silhouetteImg.offsetWidth; // force reflow
+    silhouetteImg.classList.add('shake');
+    input3.disabled = false; submitBtn3.disabled = false;
+    saveState();
+  }
+}
+
+function addGame3Row(name, correct, animate) {
+  const row = document.createElement('div');
+  row.className = `game2-row ${correct ? 'correct' : 'wrong'}`;
+  if (!animate) row.style.animation = 'none';
+  row.innerHTML = `<span class="g2-icon">${correct ? '✅' : '❌'}</span><span class="g2-name">${name}</span>`;
+  game3History.prepend(row);
+}
+
+// ─────────────────────────────────────────
+// GAME 3 — META & HINT
+// ─────────────────────────────────────────
+function g3wrongCount() { return g3won ? g3guesses.length - 1 : g3guesses.length; }
+
+function updateMeta3() {
+  if (!g3guesses.length) { metaEl3.textContent = ''; return; }
+  metaEl3.textContent = g3guesses.length === 1 ? '1 guess so far' : `${g3guesses.length} guesses so far`;
+}
+
+function updateHint3() {
+  if (g3won) { hintSection3.classList.remove('show'); return; }
+  hintSection3.classList.toggle('show', g3wrongCount() >= 5);
+  if (g3hintUsed && g3hintValue) {
+    hintBtn3.style.display = 'none';
+    hintReveal3.innerHTML  = g3hintValue;
+    hintReveal3.classList.add('show');
+  } else {
+    hintBtn3.style.display = '';
+    hintBtn3.disabled = false;
+  }
+}
+
+hintBtn3.addEventListener('click', async () => {
+  if (g3hintUsed) return;
+  hintBtn3.disabled = true;
+  let data;
+  try {
+    const res = await fetch(`${WORKER_URL}/hint3?guesses=${encodeURIComponent(g3guesses.join(','))}`);
+    data = await res.json();
+  } catch { showToast('Could not fetch hint — please try again.'); hintBtn3.disabled = false; return; }
+  if (data.error) { showToast(data.error); hintBtn3.disabled = false; return; }
+  g3hintUsed  = true;
+  g3hintValue = `💡 Primary Color: <strong>${data.primary_color}</strong> · Type: <strong>${data.type}</strong> · Rarity: <strong>${data.rarity}</strong>`;
+  saveState();
+  hintBtn3.style.display = 'none';
+  hintReveal3.innerHTML  = g3hintValue;
+  hintReveal3.classList.add('show');
 });
 
 // ─────────────────────────────────────────
@@ -1470,11 +1760,11 @@ function startHeaderCountdown() {
 // FINAL VICTORY & SHARE
 // ─────────────────────────────────────────
 function showFinalVictory(animate) {
-  finalSub.textContent      = `Game 1: ${guesses.length} guess${guesses.length !== 1 ? 'es' : ''} · Game 2: ${g2guesses.length} guess${g2guesses.length !== 1 ? 'es' : ''}`;
-  finalCookieEl.textContent = `🍪 ${g2victoryName}`;
+  finalSub.textContent      = `Game 1: ${guesses.length} guess${guesses.length !== 1 ? 'es' : ''} · Game 2: ${g2guesses.length} guess${g2guesses.length !== 1 ? 'es' : ''} · Game 3: ${g3guesses.length} guess${g3guesses.length !== 1 ? 'es' : ''}`;
+  finalCookieEl.textContent = `🍪 ${g3victoryName}`;
   if (!animate) finalVictory.style.animation = 'none';
   finalVictory.classList.add('show');
-  if (animate) recordCompletion(guesses.length + g2guesses.length);
+  if (animate) recordCompletion(guesses.length + g2guesses.length + g3guesses.length);
   statsBtn.style.display = '';
   startNextCookieTimer();
 }
@@ -1502,6 +1792,7 @@ shareBtn.addEventListener('click', () => {
     return traits.map(t => emojiMap[t.result] || '⬜').join('');
   });
   const g2lines = g2guesses.map(name => name === g2victoryName ? '✅' : '❌');
+  const g3lines = g3guesses.map(name => name === g3victoryName ? '✅' : '❌');
   const s = loadStats();
   const text = [
     `Cookiedle 🍪`,
@@ -1512,6 +1803,9 @@ shareBtn.addEventListener('click', () => {
     ``,
     `🔮 Game 2 — ${g2guesses.length} guess${g2guesses.length !== 1 ? 'es' : ''}`,
     g2lines.join(' '),
+    ``,
+    `🖼️ Game 3 — ${g3guesses.length} guess${g3guesses.length !== 1 ? 'es' : ''}`,
+    g3lines.join(' '),
     ``,
     window.location.href,
   ].join('\n');
@@ -1562,6 +1856,11 @@ async function init() {
   try {
     const res = await fetch(`${WORKER_URL}/skill`);
     skillData = await res.json();
+  } catch {}
+
+  try {
+    const res = await fetch(`${WORKER_URL}/silhouette3`);
+    silhouette3Data = await res.json();
   } catch {}
 
   restoreSession();

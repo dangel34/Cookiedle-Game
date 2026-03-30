@@ -197,6 +197,17 @@ async function getDailyTarget2(secret) {
   return COOKIES[hashInt % COOKIES.length];
 }
 
+// Game 3 target — silhouette guesser
+async function getDailyTarget3(secret) {
+  const now = new Date();
+  const dateStr = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}-silhouette`;
+  const msgBuffer = new TextEncoder().encode(dateStr + secret);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashInt = hashArray.slice(0, 4).reduce((acc, b) => (acc * 256 + b) >>> 0, 0);
+  return COOKIES[hashInt % COOKIES.length];
+}
+
 // ─────────────────────────────────────────
 // CORS HEADERS — allow GitHub Pages domain
 // ─────────────────────────────────────────
@@ -304,6 +315,7 @@ export default {
 
     const target  = await getDailyTarget(env.COOKIE_SECRET);
     const target2 = await getDailyTarget2(env.COOKIE_SECRET);
+    const target3 = await getDailyTarget3(env.COOKIE_SECRET);
 
     // GET /unlimited/new — pick a random cookie, return a signed token
     // The cookie name never leaves the server; only the token does.
@@ -471,6 +483,52 @@ export default {
         rarity:   target2.rarity,
         type:     target2.type,
         position: target2.position,
+      }, 200, origin);
+    }
+
+    // GET /silhouette3 — returns the filename of today's silhouette image
+    // The cookie name is embedded in the filename; the server validates guesses.
+    if (url.pathname === '/silhouette3' && request.method === 'GET') {
+      const filename = target3.cookie_name.replace(/ /g, '_') + '.webp';
+      return jsonResponse({ filename }, 200, origin);
+    }
+
+    // POST /guess3 — check a silhouette guess
+    if (url.pathname === '/guess3' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch {
+        return jsonResponse({ error: 'Invalid JSON' }, 400, origin);
+      }
+      const guessName = sanitizeInput(body.guess || '').toLowerCase();
+      if (!guessName) return jsonResponse({ error: 'No guess provided' }, 400, origin);
+
+      const guessCookie = COOKIES.find(c => c.cookie_name.toLowerCase() === guessName);
+      if (!guessCookie) return jsonResponse({ error: 'Cookie not found' }, 404, origin);
+
+      const correct = guessCookie.cookie_name.toLowerCase() === target3.cookie_name.toLowerCase();
+      return jsonResponse({
+        correct,
+        cookie_name: correct ? target3.cookie_name : undefined,
+        filename:    correct ? target3.cookie_name.replace(/ /g, '_') + '.webp' : undefined,
+      }, 200, origin);
+    }
+
+    // GET /hint3?guesses=CookieA,CookieB,... — reveals primary color, type, rarity after 5 wrong guesses
+    if (url.pathname === '/hint3' && request.method === 'GET') {
+      const guessesParam = sanitizeInput(url.searchParams.get('guesses') || '', 2000);
+      const guessNames = guessesParam.split(',').map(s => s.trim()).filter(Boolean);
+      let wrongCount = 0;
+      for (const name of guessNames) {
+        const gc = COOKIES.find(c => c.cookie_name.toLowerCase() === name.toLowerCase());
+        if (gc && gc.cookie_name.toLowerCase() !== target3.cookie_name.toLowerCase()) wrongCount++;
+      }
+      if (wrongCount < 5) {
+        return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
+      }
+      return jsonResponse({
+        primary_color: target3.primary_color,
+        type:          target3.type,
+        rarity:        target3.rarity,
       }, 200, origin);
     }
 
