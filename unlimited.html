@@ -420,6 +420,20 @@
 
   .victory-skill span { color: var(--gold); font-weight: 800; }
 
+  .victory-img {
+    width: 160px;
+    height: 160px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 16px;
+    border-radius: 12px;
+    animation: victoryImgPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes victoryImgPop {
+    from { opacity: 0; transform: scale(0.6); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
   .new-cookie-btn {
     padding: 12px 36px;
     background: var(--accent);
@@ -554,6 +568,7 @@
     <div class="victory-emoji">🎉</div>
     <div class="victory-title">You got it!</div>
     <div class="victory-sub" id="vicCount"></div>
+    <img id="victoryImg" class="victory-img" src="" alt="" style="display:none"/>
     <div class="victory-cookie" id="vicName"></div>
     <div class="victory-skill" id="vicSkill"></div>
     <button class="new-cookie-btn" id="newCookieBtn">New Cookie 🍪</button>
@@ -787,6 +802,11 @@ function showVictory(data) {
     ? `Skill: <span>${data.skill_name}</span> · Cooldown: <span>${data.skill_cooldown}s</span>`
     : '';
   vicSolvedEl.textContent = solved;
+  const victoryImg = document.getElementById('victoryImg');
+  victoryImg.src   = `cookie_images/${data.cookie_name.replace(/ /g, '_')}.webp`;
+  victoryImg.alt   = data.cookie_name;
+  victoryImg.style.animation = '';
+  victoryImg.style.display   = '';
   victoryEl.classList.add('show');
 }
 
@@ -814,6 +834,9 @@ async function startNewRound() {
   hintReveal.textContent = '';
   victoryEl.classList.remove('show');
   victoryEl.style.animation = '';
+  const victoryImg = document.getElementById('victoryImg');
+  victoryImg.style.display = 'none';
+  victoryImg.src = '';
   roundNumEl.textContent = round;
 
   input.disabled     = true;
