@@ -1586,7 +1586,9 @@ async function showGame3() {
     }
   }
 
-  silhouetteImg.src     = `cookie_silhouettes/${silhouette3Data.filename}`;
+  silhouetteImg.src         = g3won
+    ? `cookie_images/${silhouette3Data.filename}`
+    : `cookie_silhouettes/${silhouette3Data.filename}`;
   silhouetteImg.style.display = '';
 
   if (!g3won) {
