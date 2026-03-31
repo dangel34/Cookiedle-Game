@@ -1,3 +1,5 @@
+// worker.js
+
 const COOKIES = [
   {cookie_name:"Adventurer Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Ambush",position:"Middle",skill_name:"Rope Master",skill_cooldown:12},
   {cookie_name:"Affogato Cookie",primary_color:"Purple",secondary_color:"Brown",rarity:"Epic",type:"Bomber",position:"Middle",skill_name:"Sweet Scheme",skill_cooldown:15},
@@ -214,7 +216,7 @@ async function getDailyTarget3(secret) {
 const ALLOWED_ORIGIN = 'https://dangel34.github.io';
 
 function corsHeaders(origin) {
-  const allowed = origin === ALLOWED_ORIGIN || origin?.endsWith('.github.io');
+  const allowed = origin === ALLOWED_ORIGIN;
   return {
     'Access-Control-Allow-Origin': allowed ? origin : ALLOWED_ORIGIN,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -227,6 +229,7 @@ function jsonResponse(data, status = 200, origin = '') {
     status,
     headers: {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
       ...corsHeaders(origin),
     },
   });
@@ -320,7 +323,7 @@ export default {
     // GET /unlimited/new — pick a random cookie, return a signed token
     // The cookie name never leaves the server; only the token does.
     if (url.pathname === '/unlimited/new' && request.method === 'GET') {
-      const cookie = COOKIES[Math.floor(Math.random() * COOKIES.length)];
+      const cookie = COOKIES[crypto.getRandomValues(new Uint32Array(1))[0] % COOKIES.length];
       const token  = await makeToken(cookie.cookie_name, env.COOKIE_SECRET);
       return jsonResponse({ token }, 200, origin);
     }
@@ -361,10 +364,14 @@ export default {
       return jsonResponse(result, 200, origin);
     }
 
-    // GET /unlimited/hint?token=...&trait=... — reveal one trait for the unlimited target
-    if (url.pathname === '/unlimited/hint' && request.method === 'GET') {
-      const token = sanitizeInput(url.searchParams.get('token') || '', 200);
-      const trait = sanitizeInput(url.searchParams.get('trait') || '');
+    // POST /unlimited/hint — reveal one trait for the unlimited target (token in body, not URL)
+    if (url.pathname === '/unlimited/hint' && request.method === 'POST') {
+      let hintBody;
+      try { hintBody = await request.json(); } catch {
+        return jsonResponse({ error: 'Invalid JSON' }, 400, origin);
+      }
+      const token = sanitizeInput(hintBody.token || '', 200);
+      const trait = sanitizeInput(hintBody.trait || '');
       const valid = ['primary_color','secondary_color','rarity','type','position'];
       if (!token || !valid.includes(trait)) return jsonResponse({ error: 'Invalid request' }, 400, origin);
 
@@ -418,7 +425,7 @@ export default {
         return jsonResponse({ error: 'Invalid trait' }, 400, origin);
       }
       const guessesParam = sanitizeInput(url.searchParams.get('guesses') || '', 2000);
-      const guessNames = guessesParam.split(',').map(s => s.trim()).filter(Boolean);
+      const guessNames = [...new Set(guessesParam.split(',').map(s => s.trim()).filter(Boolean))];
       let wrongCount = 0;
       for (const name of guessNames) {
         const gc = COOKIES.find(c => c.cookie_name.toLowerCase() === name.toLowerCase());
@@ -470,7 +477,7 @@ export default {
     // Server verifies at least 5 of the provided guesses are genuinely wrong.
     if (url.pathname === '/hint2' && request.method === 'GET') {
       const guessesParam = sanitizeInput(url.searchParams.get('guesses') || '', 2000);
-      const guessNames = guessesParam.split(',').map(s => s.trim()).filter(Boolean);
+      const guessNames = [...new Set(guessesParam.split(',').map(s => s.trim()).filter(Boolean))];
       let wrongCount = 0;
       for (const name of guessNames) {
         const gc = COOKIES.find(c => c.cookie_name.toLowerCase() === name.toLowerCase());
@@ -516,7 +523,7 @@ export default {
     // GET /hint3?guesses=CookieA,CookieB,... — reveals primary color, type, rarity after 5 wrong guesses
     if (url.pathname === '/hint3' && request.method === 'GET') {
       const guessesParam = sanitizeInput(url.searchParams.get('guesses') || '', 2000);
-      const guessNames = guessesParam.split(',').map(s => s.trim()).filter(Boolean);
+      const guessNames = [...new Set(guessesParam.split(',').map(s => s.trim()).filter(Boolean))];
       let wrongCount = 0;
       for (const name of guessNames) {
         const gc = COOKIES.find(c => c.cookie_name.toLowerCase() === name.toLowerCase());

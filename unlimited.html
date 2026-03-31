@@ -782,7 +782,11 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
     const trait = btn.dataset.trait;
     let value;
     try {
-      const res = await fetch(`${WORKER_URL}/unlimited/hint?token=${encodeURIComponent(token)}&trait=${trait}`);
+      const res = await fetch(`${WORKER_URL}/unlimited/hint`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, trait }),
+      });
       const data = await res.json();
       value = data.value;
     } catch { showToast('Could not fetch hint — please try again.'); hintBtn.disabled = false; return; }
@@ -798,9 +802,14 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
 function showVictory(data) {
   vicCountEl.textContent = guesses.length === 1 ? 'Got it in just 1 guess!' : `Got it in ${guesses.length} guesses!`;
   vicNameEl.textContent  = `🍪 ${data.cookie_name}`;
-  vicSkillEl.innerHTML   = data.skill_name
-    ? `Skill: <span>${data.skill_name}</span> · Cooldown: <span>${data.skill_cooldown}s</span>`
-    : '';
+  vicSkillEl.textContent = '';
+  if (data.skill_name) {
+    const skillSpan = document.createElement('span');
+    skillSpan.textContent = data.skill_name;
+    const cdSpan = document.createElement('span');
+    cdSpan.textContent = `${data.skill_cooldown}s`;
+    vicSkillEl.append('Skill: ', skillSpan, ' · Cooldown: ', cdSpan);
+  }
   vicSolvedEl.textContent = solved;
   const victoryImg = document.getElementById('victoryImg');
   victoryImg.src   = `cookie_images/${data.cookie_name.replace(/ /g, '_')}.webp`;

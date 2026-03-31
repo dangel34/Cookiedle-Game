@@ -1407,7 +1407,20 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
 function showVictory1(animate) {
   vicCountEl.textContent = guesses.length === 1 ? 'Got it in just 1 guess!' : `Got it in ${guesses.length} guesses!`;
   vicNameEl.textContent  = `🍪 ${victoryData.name}`;
-  vicSkillEl.innerHTML   = victoryData.skill ? `Skill: <span style="color:var(--gold);font-weight:800">${victoryData.skill}</span> · Cooldown: <span style="color:var(--gold);font-weight:800">${victoryData.cooldown}s</span>` : '';
+  if (victoryData.skill) {
+    vicSkillEl.textContent = '';
+    const skillLabel = document.createTextNode('Skill: ');
+    const skillSpan = document.createElement('span');
+    skillSpan.style.cssText = 'color:var(--gold);font-weight:800';
+    skillSpan.textContent = victoryData.skill;
+    const sep = document.createTextNode(' · Cooldown: ');
+    const cdSpan = document.createElement('span');
+    cdSpan.style.cssText = 'color:var(--gold);font-weight:800';
+    cdSpan.textContent = `${victoryData.cooldown}s`;
+    vicSkillEl.append(skillLabel, skillSpan, sep, cdSpan);
+  } else {
+    vicSkillEl.textContent = '';
+  }
   const victoryImg = document.getElementById('victoryImg');
   victoryImg.src   = `cookie_images/${victoryData.name.replace(/ /g, '_')}.webp`;
   victoryImg.alt   = victoryData.name;
@@ -1534,12 +1547,20 @@ function updateMeta2() {
   metaEl2.textContent = g2guesses.length === 1 ? '1 guess so far' : `${g2guesses.length} guesses so far`;
 }
 
+function renderHint2(el, hintData) {
+  el.textContent = '';
+  const b1 = document.createElement('strong'); b1.textContent = hintData.rarity;
+  const b2 = document.createElement('strong'); b2.textContent = hintData.type;
+  const b3 = document.createElement('strong'); b3.textContent = hintData.position;
+  el.append('💡 Rarity: ', b1, ' · Type: ', b2, ' · Position: ', b3);
+}
+
 function updateHint2() {
   if (g2won) { hintSection2.classList.remove('show'); return; }
   hintSection2.classList.toggle('show', g2wrongCount() >= 5);
-  if (g2hintUsed && g2hintValue) {
+  if (g2hintUsed && g2hintValue && typeof g2hintValue === 'object') {
     hintBtn2.style.display = 'none';
-    hintReveal2.innerHTML  = g2hintValue;
+    renderHint2(hintReveal2, g2hintValue);
     hintReveal2.classList.add('show');
   } else {
     hintBtn2.style.display = '';
@@ -1556,10 +1577,10 @@ hintBtn2.addEventListener('click', async () => {
     data = await res.json();
   } catch { showToast('Could not fetch hint — please try again.'); hintBtn2.disabled = false; return; }
   g2hintUsed  = true;
-  g2hintValue = `💡 Rarity: <strong>${data.rarity}</strong> · Type: <strong>${data.type}</strong> · Position: <strong>${data.position}</strong>`;
+  g2hintValue = { rarity: data.rarity, type: data.type, position: data.position };
   saveState();
   hintBtn2.style.display = 'none';
-  hintReveal2.innerHTML  = g2hintValue;
+  renderHint2(hintReveal2, g2hintValue);
   hintReveal2.classList.add('show');
 });
 
@@ -1683,12 +1704,20 @@ function updateMeta3() {
   metaEl3.textContent = g3guesses.length === 1 ? '1 guess so far' : `${g3guesses.length} guesses so far`;
 }
 
+function renderHint3(el, hintData) {
+  el.textContent = '';
+  const b1 = document.createElement('strong'); b1.textContent = hintData.primary_color;
+  const b2 = document.createElement('strong'); b2.textContent = hintData.type;
+  const b3 = document.createElement('strong'); b3.textContent = hintData.rarity;
+  el.append('💡 Primary Color: ', b1, ' · Type: ', b2, ' · Rarity: ', b3);
+}
+
 function updateHint3() {
   if (g3won) { hintSection3.classList.remove('show'); return; }
   hintSection3.classList.toggle('show', g3wrongCount() >= 5);
-  if (g3hintUsed && g3hintValue) {
+  if (g3hintUsed && g3hintValue && typeof g3hintValue === 'object') {
     hintBtn3.style.display = 'none';
-    hintReveal3.innerHTML  = g3hintValue;
+    renderHint3(hintReveal3, g3hintValue);
     hintReveal3.classList.add('show');
   } else {
     hintBtn3.style.display = '';
@@ -1706,10 +1735,10 @@ hintBtn3.addEventListener('click', async () => {
   } catch { showToast('Could not fetch hint — please try again.'); hintBtn3.disabled = false; return; }
   if (data.error) { showToast(data.error); hintBtn3.disabled = false; return; }
   g3hintUsed  = true;
-  g3hintValue = `💡 Primary Color: <strong>${data.primary_color}</strong> · Type: <strong>${data.type}</strong> · Rarity: <strong>${data.rarity}</strong>`;
+  g3hintValue = { primary_color: data.primary_color, type: data.type, rarity: data.rarity };
   saveState();
   hintBtn3.style.display = 'none';
-  hintReveal3.innerHTML  = g3hintValue;
+  renderHint3(hintReveal3, g3hintValue);
   hintReveal3.classList.add('show');
 });
 
@@ -1736,12 +1765,11 @@ function saveStats(s) {
 function recordCompletion(totalGuesses) {
   const s = loadStats();
   const today = new Date();
-  const todayStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  const todayStr = `${today.getUTCFullYear()}-${today.getUTCMonth() + 1}-${today.getUTCDate()}`;
   if (s.lastCompleted === todayStr) return; // already recorded today
 
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yestStr = `${yesterday.getFullYear()}-${yesterday.getMonth()}-${yesterday.getDate()}`;
+  const yesterday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - 1));
+  const yestStr = `${yesterday.getUTCFullYear()}-${yesterday.getUTCMonth() + 1}-${yesterday.getUTCDate()}`;
 
   s.totalPlayed++;
   s.totalWon++;
@@ -1782,9 +1810,7 @@ function startHeaderCountdown() {
   const el = document.getElementById('headerCountdown');
   function tick() {
     const now      = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
     const diff = tomorrow - now;
     const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
     const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
@@ -1811,9 +1837,7 @@ function showFinalVictory(animate) {
 function startNextCookieTimer() {
   function tick() {
     const now      = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
     const diff = tomorrow - now;
     const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
     const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
