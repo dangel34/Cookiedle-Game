@@ -716,6 +716,21 @@
     opacity: 1;
   }
 
+  /* ── VICTORY COOKIE IMAGE ── */
+  .victory-img {
+    width: 160px;
+    height: 160px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 16px;
+    border-radius: 12px;
+    animation: victoryImgPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes victoryImgPop {
+    from { opacity: 0; transform: scale(0.6); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
   /* ── GAME 2 — NEXT PROMPT ── */
   .g2-next-prompt { display: none; text-align: center; padding: 12px 0 4px; }
   .g2-next-prompt.show { display: block; }
@@ -861,6 +876,7 @@
     <div class="victory-emoji">🎉</div>
     <div class="victory-title">You got it!</div>
     <div class="victory-sub" id="victoryGuessCount"></div>
+    <img id="victoryImg" class="victory-img" src="" alt="" style="display:none"/>
     <div class="victory-cookie" id="victoryCookieName"></div>
     <div class="victory-skill" id="victorySkill"></div>
     <button class="next-game-btn" id="nextGameBtn">Next Challenge →</button>
@@ -896,6 +912,7 @@
       <div class="game2-hint-reveal" id="hintReveal2"></div>
     </div>
     <div class="g2-next-prompt" id="g2NextPrompt">
+      <img id="g2VictoryImg" class="victory-img" src="" alt="" style="display:none"/>
       <button class="next-game-btn" id="g3NextBtn">Next Challenge →</button>
     </div>
   </div>
@@ -1113,6 +1130,8 @@ function restoreSession() {
     input.disabled     = true;
     submitBtn.disabled = true;
     showVictory1(false);
+    const victoryImg = document.getElementById('victoryImg');
+    victoryImg.style.animation = 'none';
   }
 
   if (g2started) {
@@ -1125,6 +1144,11 @@ function restoreSession() {
       input2.disabled     = true;
       submitBtn2.disabled = true;
       if (!g3started) {
+        const g2Img = document.getElementById('g2VictoryImg');
+        g2Img.src   = `cookie_images/${g2victoryName.replace(/ /g, '_')}.webp`;
+        g2Img.alt   = g2victoryName;
+        g2Img.style.animation = 'none';
+        g2Img.style.display   = '';
         g2NextPrompt.classList.add('show');
       }
     }
@@ -1382,6 +1406,11 @@ function showVictory1(animate) {
   vicCountEl.textContent = guesses.length === 1 ? 'Got it in just 1 guess!' : `Got it in ${guesses.length} guesses!`;
   vicNameEl.textContent  = `🍪 ${victoryData.name}`;
   vicSkillEl.innerHTML   = victoryData.skill ? `Skill: <span style="color:var(--gold);font-weight:800">${victoryData.skill}</span> · Cooldown: <span style="color:var(--gold);font-weight:800">${victoryData.cooldown}s</span>` : '';
+  const victoryImg = document.getElementById('victoryImg');
+  victoryImg.src   = `cookie_images/${victoryData.name.replace(/ /g, '_')}.webp`;
+  victoryImg.alt   = victoryData.name;
+  if (!animate) victoryImg.style.animation = 'none';
+  victoryImg.style.display = '';
   if (!animate) victoryEl.style.animation = 'none';
   victoryEl.classList.add('show');
 }
@@ -1470,6 +1499,10 @@ async function submitGuess2() {
     input2.disabled     = true;
     submitBtn2.disabled = true;
     setTimeout(() => {
+      const g2Img = document.getElementById('g2VictoryImg');
+      g2Img.src   = `cookie_images/${data.cookie_name.replace(/ /g, '_')}.webp`;
+      g2Img.alt   = data.cookie_name;
+      g2Img.style.display = '';
       g2NextPrompt.classList.add('show');
       g2NextPrompt.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 600);
