@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Cookiedle</title>
 <link rel="icon" href="cookie_images/GingerBrave.webp" type="image/webp"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -746,13 +748,22 @@
     text-align: center;
   }
 
-  .silhouette-container { display: flex; justify-content: center; margin: 0 auto 24px; }
+  .silhouette-container {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto 24px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px;
+    width: fit-content;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  }
 
   .silhouette-img {
     width: 220px;
     height: 220px;
     object-fit: contain;
-    border-radius: 12px;
+    border-radius: 8px;
     transition: opacity 0.4s ease;
   }
 
@@ -1534,7 +1545,13 @@ function addGame2Row(name, correct, animate) {
   const row = document.createElement('div');
   row.className = `game2-row ${correct ? 'correct' : 'wrong'}${animate ? '' : ''}`;
   if (!animate) row.style.animation = 'none';
-  row.innerHTML = `<span class="g2-icon">${correct ? '✅' : '❌'}</span><span class="g2-name">${name}</span>`;
+  const icon = document.createElement('span');
+  icon.className = 'g2-icon';
+  icon.textContent = correct ? '✅' : '❌';
+  const label = document.createElement('span');
+  label.className = 'g2-name';
+  label.textContent = name;
+  row.append(icon, label);
   game2History.prepend(row);
 }
 
@@ -1691,7 +1708,13 @@ function addGame3Row(name, correct, animate) {
   const row = document.createElement('div');
   row.className = `game2-row ${correct ? 'correct' : 'wrong'}`;
   if (!animate) row.style.animation = 'none';
-  row.innerHTML = `<span class="g2-icon">${correct ? '✅' : '❌'}</span><span class="g2-name">${name}</span>`;
+  const icon = document.createElement('span');
+  icon.className = 'g2-icon';
+  icon.textContent = correct ? '✅' : '❌';
+  const label = document.createElement('span');
+  label.className = 'g2-name';
+  label.textContent = name;
+  row.append(icon, label);
   game3History.prepend(row);
 }
 
