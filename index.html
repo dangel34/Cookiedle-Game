@@ -752,11 +752,11 @@
     display: flex;
     justify-content: center;
     margin: 0 auto 24px;
-    background: #ffffff;
+    background: #dce6f5;
     border-radius: 16px;
     padding: 16px;
     width: fit-content;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.35);
   }
 
   .silhouette-img {
@@ -1183,29 +1183,19 @@ function restoreSession() {
 }
 
 // ─────────────────────────────────────────
-// FUZZY AUTOCOMPLETE (shared)
+// AUTOCOMPLETE (shared)
 // ─────────────────────────────────────────
-function fuzzyScore(name, query) {
-  const n = name.toLowerCase(), q = query.toLowerCase();
-  if (n.startsWith(q)) return 3;
-  if (n.includes(q))   return 2;
-  let qi = 0;
-  for (let i = 0; i < n.length && qi < q.length; i++) {
-    if (n[i] === q[qi]) qi++;
-  }
-  return qi === q.length ? 1 : 0;
-}
-
 function buildSuggestions(val, usedList, box) {
   if (!val) { hideSuggestions(box); return; }
+  const q = val.toLowerCase();
   const scored = COOKIES
-    .map(c => ({ name: c.cookie_name, score: fuzzyScore(c.cookie_name, val) }))
-    .filter(x => x.score > 0)
-    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
+    .map(c => c.cookie_name)
+    .filter(name => name.toLowerCase().includes(q))
+    .sort((a, b) => a.localeCompare(b))
     .slice(0, 8);
   if (!scored.length) { hideSuggestions(box); return; }
   box.innerHTML = '';
-  scored.forEach(({ name }) => {
+  scored.forEach(name => {
     const div = document.createElement('div');
     div.className = 'suggestion-item' + (usedList.includes(name) ? ' used' : '');
     div.textContent = name;
