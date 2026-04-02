@@ -1190,7 +1190,7 @@ function buildSuggestions(val, usedList, box) {
   const q = val.toLowerCase();
   const scored = COOKIES
     .map(c => c.cookie_name)
-    .filter(name => name.toLowerCase().includes(q))
+    .filter(name => name.toLowerCase().startsWith(q))
     .sort((a, b) => a.localeCompare(b))
     .slice(0, 8);
   if (!scored.length) { hideSuggestions(box); return; }
