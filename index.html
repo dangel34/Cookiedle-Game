@@ -1190,8 +1190,16 @@ function buildSuggestions(val, usedList, box) {
   const q = val.toLowerCase();
   const scored = COOKIES
     .map(c => c.cookie_name)
-    .filter(name => name.toLowerCase().startsWith(q))
-    .sort((a, b) => a.localeCompare(b))
+    .filter(name => {
+      const n = name.toLowerCase();
+      return n.startsWith(q) || n.split(' ').some(word => word !== 'cookie' && word.startsWith(q));
+    })
+    .sort((a, b) => {
+      const an = a.toLowerCase(), bn = b.toLowerCase();
+      const aStart = an.startsWith(q) ? 0 : 1;
+      const bStart = bn.startsWith(q) ? 0 : 1;
+      return aStart - bStart || a.localeCompare(b);
+    })
     .slice(0, 8);
   if (!scored.length) { hideSuggestions(box); return; }
   box.innerHTML = '';
