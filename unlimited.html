@@ -625,10 +625,8 @@ const toastEl     = document.getElementById('toast');
 function fuzzyScore(name, query) {
   const n = name.toLowerCase(), q = query.toLowerCase();
   if (n.startsWith(q)) return 3;
-  if (n.includes(q))   return 2;
-  let qi = 0;
-  for (let i = 0; i < n.length && qi < q.length; i++) { if (n[i] === q[qi]) qi++; }
-  return qi === q.length ? 1 : 0;
+  if (n.split(' ').some(word => word !== 'cookie' && word.startsWith(q))) return 2;
+  return 0;
 }
 
 input.addEventListener('input', () => {
