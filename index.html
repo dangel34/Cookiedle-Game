@@ -468,6 +468,16 @@
     font-weight: 700;
   }
 
+  .skill-display .skill-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    padding: 8px;
+  }
+
   /* Game 2 guess list — simple rows */
   .game2-history {
     display: flex;
@@ -895,6 +905,7 @@
     <div class="game2-label">🔮 Game 2 — Skill Guesser</div>
 
     <div class="skill-display">
+      <img id="skillImg" class="skill-img" src="" alt="Skill" style="display:none"/>
       <div class="skill-name" id="skillName">Loading...</div>
       <div class="skill-cd" id="skillCd"></div>
     </div>
@@ -1104,6 +1115,7 @@ const hintBtn2      = document.getElementById('hintBtn2');
 const hintReveal2   = document.getElementById('hintReveal2');
 const skillNameEl   = document.getElementById('skillName');
 const skillCdEl     = document.getElementById('skillCd');
+const skillImgEl    = document.getElementById('skillImg');
 
 // DOM REFS — GAME 3
 const game3Section  = document.getElementById('game3Section');
@@ -1400,6 +1412,7 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
     try {
       const res = await fetch(`${WORKER_URL}/hint?trait=${trait}&guesses=${encodeURIComponent(guesses.join(','))}`);
       const data = await res.json();
+      if (data.error) { showToast(data.error); hintBtn.disabled = false; return; }
       value = data.value;
     } catch { showToast('Could not fetch hint — please try again.'); hintBtn.disabled = false; return; }
     hintUsed = true; hintTrait = trait; hintValue = value;
@@ -1467,6 +1480,11 @@ async function showGame2() {
 
   skillNameEl.textContent = skillData.skill_name;
   skillCdEl.textContent   = `Cooldown: ${skillData.skill_cooldown}s`;
+  if (skillData.skill_filename) {
+    skillImgEl.src          = `cookie_skill_images/${skillData.skill_filename}`;
+    skillImgEl.alt          = skillData.skill_name;
+    skillImgEl.style.display = '';
+  }
 
   if (!g2won) {
     input2.disabled     = false;
@@ -1864,7 +1882,10 @@ function startNextCookieTimer() {
     const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
     const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
     const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-    nextTimerEl.innerHTML = `Next cookies in <span>${h}:${m}:${s}</span>`;
+    nextTimerEl.textContent = 'Next cookies in ';
+    const timerSpan = document.createElement('span');
+    timerSpan.textContent = `${h}:${m}:${s}`;
+    nextTimerEl.appendChild(timerSpan);
   }
   tick();
   setInterval(tick, 1000);

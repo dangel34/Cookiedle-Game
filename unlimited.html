@@ -787,6 +787,7 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
         body: JSON.stringify({ token, trait }),
       });
       const data = await res.json();
+      if (data.error) { showToast(data.error); hintBtn.disabled = false; return; }
       value = data.value;
     } catch { showToast('Could not fetch hint — please try again.'); hintBtn.disabled = false; return; }
     hintUsed = true; hintTrait = trait; hintValue = value;

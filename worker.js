@@ -449,6 +449,7 @@ export default {
       return jsonResponse({
         skill_name:     target2.skill_name,
         skill_cooldown: target2.skill_cooldown,
+        skill_filename: target2.cookie_name.replace(/ /g, '_') + '.webp',
       }, 200, origin);
     }
 
