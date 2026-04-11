@@ -1,1000 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Cookiedle</title>
-<link rel="icon" href="cookie_images/GingerBrave.webp" type="image/webp"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
-<style>
-  :root {
-    --bg:      #1a1a2e;
-    --surface: #16213e;
-    --card:    #0f3460;
-    --accent:  #e94560;
-    --gold:    #f5a623;
-    --green:   #4caf50;
-    --orange:  #ff9800;
-    --red:     #c0392b;
-    --text:    #e0e0e0;
-    --muted:   #7a8aa0;
-    --border:  rgba(255,255,255,0.08);
-    --glow:    0 0 20px rgba(233,69,96,0.3);
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Nunito', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.25) 0%, transparent 100%),
-      radial-gradient(1px 1px at 55% 25%, rgba(255,255,255,0.35) 0%, transparent 100%),
-      radial-gradient(1px 1px at 75% 80%, rgba(255,255,255,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.3) 0%, transparent 100%),
-      radial-gradient(2px 2px at 20% 90%, rgba(245,166,35,0.4) 0%, transparent 100%),
-      radial-gradient(2px 2px at 80% 10%, rgba(233,69,96,0.3) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrap {
-    position: relative;
-    z-index: 1;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 16px 80px;
-  }
-
-  /* ── HEADER ── */
-  header {
-    text-align: center;
-    padding: 40px 0 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 28px;
-  }
-
-  .logo {
-    font-family: 'Nunito', sans-serif;
-    font-size: clamp(1.8rem, 5vw, 2.6rem);
-    font-weight: 800;
-    color: var(--text);
-    letter-spacing: 0.5px;
-  }
-
-  .subtitle {
-    color: var(--muted);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-top: 6px;
-  }
-
-  /* ── HOW TO PLAY ── */
-  .how-to {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 28px;
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
-  .how-to strong { color: var(--text); }
-
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 10px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.78rem;
-  }
-
-  .legend-dot {
-    width: 14px; height: 14px;
-    border-radius: 3px;
-    flex-shrink: 0;
-  }
-
-  /* ── GUESS INPUT ── */
-  .guess-section { margin-bottom: 28px; }
-
-  .input-wrap {
-    position: relative;
-    max-width: 480px;
-    margin: 0 auto;
-  }
-
-  .guess-input {
-    width: 100%;
-    padding: 14px 120px 14px 20px;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'Nunito', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .guess-input:focus {
-    border-color: var(--accent);
-    box-shadow: var(--glow);
-  }
-
-  .guess-input:disabled { opacity: 0.5; cursor: not-allowed; }
-  .guess-input::placeholder { color: var(--muted); font-weight: 600; }
-
-  .submit-btn {
-    position: absolute;
-    right: 6px; top: 50%;
-    transform: translateY(-50%);
-    padding: 8px 20px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 7px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-  }
-
-  .submit-btn:hover  { background: #c73650; }
-  .submit-btn:active { transform: translateY(-50%) scale(0.96); }
-  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  /* Autocomplete */
-  .suggestions {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0; right: 0;
-    background: #1e2d4a;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    z-index: 100;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    max-height: 220px;
-    overflow-y: auto;
-  }
-
-  .suggestion-item {
-    padding: 10px 16px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 700;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.1s;
-  }
-
-  .suggestion-item:last-child { border-bottom: none; }
-  .suggestion-item:hover,
-  .suggestion-item.active { background: rgba(233,69,96,0.2); color: #fff; }
-  .suggestion-item.used   { opacity: 0.4; text-decoration: line-through; }
-
-  /* ── STATUS BAR ── */
-  .already-guessed {
-    font-size: 0.75rem;
-    color: var(--accent);
-    text-align: center;
-    margin-top: 6px;
-    min-height: 16px;
-    font-weight: 700;
-  }
-
-  .guess-meta {
-    text-align: center;
-    margin-top: 6px;
-    font-size: 0.8rem;
-    color: var(--muted);
-    font-weight: 600;
-    letter-spacing: 1px;
-    min-height: 18px;
-  }
-
-  /* ── TABLE HEADER ── */
-  .table-header {
-    display: grid;
-    grid-template-columns: 2fr 1.2fr 1.2fr 1fr 1fr 1fr;
-    gap: 4px;
-    padding: 0 0 8px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .col-head {
-    font-size: 0.68rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-    text-align: center;
-    padding: 4px 2px;
-  }
-
-  .col-head:first-child { text-align: left; padding-left: 8px; }
-
-  /* ── GUESS ROWS ── */
-  .guess-history { display: flex; flex-direction: column; gap: 5px; }
-
-  .guess-row {
-    display: grid;
-    grid-template-columns: 2fr 1.2fr 1.2fr 1fr 1fr 1fr;
-    gap: 4px;
-  }
-
-  .cell {
-    border-radius: 7px;
-    padding: 10px 6px;
-    text-align: center;
-    font-size: 0.78rem;
-    font-weight: 800;
-    line-height: 1.25;
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    word-break: break-word;
-    opacity: 0;
-    transform: rotateY(90deg);
-    transition: transform 0.35s ease, opacity 0.35s ease;
-  }
-
-  .cell.revealed {
-    opacity: 1;
-    transform: rotateY(0deg);
-  }
-
-  .cell.instant {
-    opacity: 1;
-    transform: rotateY(0deg);
-    transition: none;
-  }
-
-  .cell:first-child {
-    text-align: left;
-    justify-content: flex-start;
-    padding-left: 10px;
-    font-size: 0.82rem;
-  }
-
-  .cell-name    { background: #1e2d4a; border: 1px solid var(--border); color: var(--text); }
-  .cell-correct { background: var(--green);  color: #fff; }
-  .cell-partial { background: var(--orange); color: #fff; }
-  .cell-wrong   { background: var(--red);    color: #fff; }
-
-  /* ── VICTORY (game 1) ── */
-  .victory {
-    display: none;
-    text-align: center;
-    padding: 36px 24px;
-    background: linear-gradient(135deg, #0f3460, #16213e);
-    border: 1px solid rgba(245,166,35,0.3);
-    border-radius: 16px;
-    margin-top: 32px;
-    animation: victoryPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  @keyframes victoryPop {
-    from { opacity: 0; transform: scale(0.85); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-
-  .victory.show { display: block; }
-
-  .victory-emoji  { font-size: 3rem; margin-bottom: 8px; }
-
-  .victory-title {
-    font-size: clamp(1.4rem, 4vw, 2rem);
-    font-weight: 900;
-    color: var(--gold);
-    margin-bottom: 10px;
-  }
-
-  .victory-sub {
-    color: var(--muted);
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-
-  .victory-cookie {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-
-  .victory-skill {
-    font-size: 0.82rem;
-    color: var(--muted);
-    font-weight: 600;
-    margin-bottom: 20px;
-  }
-
-  .victory-skill span { color: var(--gold); font-weight: 800; }
-
-  .next-game-btn {
-    display: inline-block;
-    padding: 12px 32px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 800;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: background 0.15s, transform 0.1s;
-    margin: 4px;
-  }
-
-  .next-game-btn:hover  { background: #c73650; }
-  .next-game-btn:active { transform: scale(0.97); }
-
-  /* ── HINT ── */
-  .hint-section {
-    display: none;
-    text-align: center;
-    margin: 4px auto 20px;
-    max-width: 480px;
-  }
-
-  .hint-section.show { display: block; }
-
-  .hint-btn {
-    padding: 10px 28px;
-    background: transparent;
-    border: 2px solid var(--gold);
-    border-radius: 8px;
-    color: var(--gold);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 800;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: background 0.15s, color 0.15s, transform 0.1s;
-  }
-
-  .hint-btn:hover  { background: rgba(245,166,35,0.12); }
-  .hint-btn:active { transform: scale(0.97); }
-  .hint-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .hint-picker {
-    display: none;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    margin-top: 14px;
-  }
-
-  .hint-picker.show { display: flex; }
-
-  .hint-choice {
-    padding: 8px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--text);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-  }
-
-  .hint-choice:hover { background: var(--card); border-color: var(--gold); color: var(--gold); }
-
-  .hint-reveal {
-    display: none;
-    margin-top: 14px;
-    padding: 12px 20px;
-    background: rgba(245,166,35,0.1);
-    border: 1px solid rgba(245,166,35,0.35);
-    border-radius: 8px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    color: var(--gold);
-  }
-
-  .hint-reveal.show { display: block; }
-
-  /* ── GAME 2 ── */
-  .game2-section {
-    display: none;
-    margin-top: 40px;
-    padding-top: 32px;
-    border-top: 2px solid var(--border);
-  }
-
-  .game2-section.show { display: block; }
-
-  .game2-label {
-    text-align: center;
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--muted);
-    margin-bottom: 16px;
-  }
-
-  .skill-display {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 28px;
-    text-align: center;
-    margin: 0 auto 24px;
-    max-width: 480px;
-  }
-
-  .skill-display .skill-name {
-    font-size: 1.3rem;
-    font-weight: 900;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-
-  .skill-display .skill-cd {
-    font-size: 0.82rem;
-    color: var(--gold);
-    font-weight: 700;
-  }
-
-  .skill-display .skill-img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-    margin-bottom: 12px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.05);
-    padding: 8px;
-  }
-
-  /* Game 2 guess list — simple rows */
-  .game2-history {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-
-  .game2-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    animation: rowFade 0.25s ease-out;
-  }
-
-  @keyframes rowFade {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .game2-row.correct { border-color: var(--green); background: rgba(76,175,80,0.1); }
-  .game2-row.wrong   { border-color: var(--red);   background: rgba(192,57,43,0.1); }
-
-  .game2-row .g2-icon { font-size: 1rem; flex-shrink: 0; }
-  .game2-row .g2-name { flex: 1; color: var(--text); }
-
-  /* Game 2 hint */
-  .game2-hint-reveal {
-    display: none;
-    margin: 0 auto 16px;
-    max-width: 480px;
-    padding: 12px 20px;
-    background: rgba(245,166,35,0.1);
-    border: 1px solid rgba(245,166,35,0.35);
-    border-radius: 8px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    color: var(--gold);
-    text-align: center;
-  }
-
-  .game2-hint-reveal.show { display: block; }
-
-  /* ── FINAL VICTORY ── */
-  .final-victory {
-    display: none;
-    text-align: center;
-    padding: 36px 24px;
-    background: linear-gradient(135deg, #0f3460, #16213e);
-    border: 1px solid rgba(245,166,35,0.3);
-    border-radius: 16px;
-    margin-top: 32px;
-    animation: victoryPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .final-victory.show { display: block; }
-
-  .share-btn {
-    display: inline-block;
-    padding: 12px 32px;
-    background: var(--gold);
-    color: #1a1a2e;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 800;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: background 0.15s, transform 0.1s;
-    margin: 4px;
-  }
-
-  .share-btn:hover  { background: #e0941a; }
-  .share-btn:active { transform: scale(0.97); }
-
-  .next-timer {
-    margin-top: 16px;
-    font-size: 0.8rem;
-    color: var(--muted);
-    font-weight: 600;
-  }
-
-  .next-timer span { color: var(--gold); font-weight: 800; }
-
-  /* ── COUNTDOWN ── */
-  .countdown-bar {
-    text-align: center;
-    padding: 8px 0 0;
-    font-size: 0.78rem;
-    color: var(--muted);
-    font-weight: 600;
-    letter-spacing: 1px;
-  }
-
-  .countdown-bar span { color: var(--gold); font-weight: 800; font-variant-numeric: tabular-nums; }
-
-  /* ── HEADER ACTIONS ── */
-  .header-actions {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
-
-  .header-btn {
-    padding: 7px 18px;
-    background: transparent;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    transition: border-color 0.2s, color 0.2s;
-    display: inline-block;
-  }
-
-  .header-btn:hover { border-color: var(--accent); color: var(--text); }
-
-  /* ── STATS MODAL ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 500;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-  }
-
-  .modal-overlay.show { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px 28px;
-    max-width: 420px;
-    width: 100%;
-    text-align: center;
-    position: relative;
-    animation: victoryPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .modal-close {
-    position: absolute;
-    top: 14px; right: 16px;
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 1.2rem;
-    cursor: pointer;
-    font-weight: 800;
-    line-height: 1;
-    transition: color 0.2s;
-  }
-
-  .modal-close:hover { color: var(--text); }
-
-  .modal-title {
-    font-size: 1.2rem;
-    font-weight: 900;
-    color: var(--gold);
-    margin-bottom: 24px;
-    letter-spacing: 0.5px;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 24px;
-  }
-
-  .stat-box {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 16px 10px;
-  }
-
-  .stat-value {
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--text);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .stat-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-  }
-
-  .streak-fire { color: var(--accent); }
-
-  /* ── EASTER EGG ── */
-  .easter-egg {
-    position: fixed;
-    bottom: 20px;
-    right: 24px;
-    color: rgba(255,255,255,0.12);
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-decoration: none;
-    letter-spacing: 1px;
-    transition: color 0.4s;
-    user-select: none;
-    z-index: 10;
-  }
-
-  .easter-egg:hover { color: rgba(255,255,255,0.45); }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: #2d1f1f;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    padding: 10px 24px;
-    border-radius: 8px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    pointer-events: none;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    opacity: 0;
-    z-index: 999;
-    white-space: nowrap;
-  }
-
-  .toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
-
-  /* ── VICTORY COOKIE IMAGE ── */
-  .victory-img {
-    width: 160px;
-    height: 160px;
-    object-fit: contain;
-    display: block;
-    margin: 0 auto 16px;
-    border-radius: 12px;
-    animation: victoryImgPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  @keyframes victoryImgPop {
-    from { opacity: 0; transform: scale(0.6); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-
-  /* ── GAME 3 ── */
-  .game3-section { display: none; margin-top: 40px; padding-top: 36px; border-top: 1px solid var(--border); }
-  .game3-section.show { display: block; }
-
-  .game3-label {
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--muted);
-    margin-bottom: 16px;
-    text-align: center;
-  }
-
-  .silhouette-container {
-    display: flex;
-    justify-content: center;
-    margin: 0 auto 24px;
-    background: #dce6f5;
-    border-radius: 16px;
-    padding: 16px;
-    width: fit-content;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.35);
-  }
-
-  .silhouette-img {
-    width: 220px;
-    height: 220px;
-    object-fit: contain;
-    border-radius: 8px;
-    transition: opacity 0.4s ease;
-  }
-
-  .silhouette-img.fading { opacity: 0; }
-
-  @keyframes silhouetteShake {
-    0%, 100% { transform: translateX(0); }
-    20%       { transform: translateX(-8px); }
-    40%       { transform: translateX(8px); }
-    60%       { transform: translateX(-5px); }
-    80%       { transform: translateX(5px); }
-  }
-
-  .silhouette-img.shake { animation: silhouetteShake 0.4s ease; }
-
-  .game3-history { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--card); border-radius: 3px; }
-
-  /* ── MOBILE ── */
-  @media (max-width: 600px) {
-    .table-header, .guess-row {
-      grid-template-columns: 1.8fr 1fr 1fr 0.9fr 0.9fr 0.9fr;
-    }
-    .cell          { font-size: 0.68rem; padding: 8px 4px; min-height: 46px; }
-    .col-head      { font-size: 0.6rem; letter-spacing: 0.8px; }
-    .cell:first-child { font-size: 0.7rem; }
-  }
-</style>
-</head>
-<body>
-<div class="wrap">
-
-  <header>
-    <div class="logo">Cookiedle</div>
-    <div class="subtitle">Cookie Run Kingdom · Guessing Game</div>
-    <div class="countdown-bar">Next cookies in <span id="headerCountdown">--:--:--</span></div>
-    <div class="header-actions">
-      <a class="header-btn" href="unlimited.html">♾️ Unlimited</a>
-      <button class="header-btn" id="statsBtn" style="display:none">📊 Stats</button>
-    </div>
-  </header>
-
-  <!-- ── STATS MODAL ── -->
-  <div class="modal-overlay" id="statsModal">
-    <div class="modal">
-      <button class="modal-close" id="modalClose">✕</button>
-      <div class="modal-title">📊 Your Stats</div>
-      <div class="stats-grid">
-        <div class="stat-box">
-          <div class="stat-value streak-fire" id="statStreak">0</div>
-          <div class="stat-label">Current Streak 🔥</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-value" id="statBest">0</div>
-          <div class="stat-label">Best Streak</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-value" id="statWinRate">0%</div>
-          <div class="stat-label">Win Rate</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-value" id="statAvgGuesses">—</div>
-          <div class="stat-label">Avg Guesses</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── GAME 1 ── -->
-  <div class="how-to">
-    <strong>Game 1:</strong> Guess today's Cookie Run Kingdom cookie! Each guess reveals how close you are across 5 traits.
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Correct</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Color swapped (primary ↔ secondary)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Wrong</div>
-    </div>
-  </div>
-
-  <div class="guess-section">
-    <div class="input-wrap">
-      <input id="guessInput" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
-      <button class="submit-btn" id="submitBtn">Guess</button>
-      <div class="suggestions" id="suggestions" style="display:none"></div>
-    </div>
-    <div class="already-guessed" id="alreadyGuessed"></div>
-    <div class="guess-meta" id="guessMeta"></div>
-  </div>
-
-  <div class="table-header">
-    <div class="col-head">Cookie</div>
-    <div class="col-head">Primary</div>
-    <div class="col-head">Secondary</div>
-    <div class="col-head">Rarity</div>
-    <div class="col-head">Type</div>
-    <div class="col-head">Position</div>
-  </div>
-
-  <div class="guess-history" id="guessHistory"></div>
-
-  <div class="hint-section" id="hintSection">
-    <button class="hint-btn" id="hintBtn">💡 Get Hint</button>
-    <div class="hint-picker" id="hintPicker">
-      <button class="hint-choice" data-trait="primary_color">Primary Color</button>
-      <button class="hint-choice" data-trait="secondary_color">Secondary Color</button>
-      <button class="hint-choice" data-trait="rarity">Rarity</button>
-      <button class="hint-choice" data-trait="type">Type</button>
-      <button class="hint-choice" data-trait="position">Position</button>
-    </div>
-    <div class="hint-reveal" id="hintReveal"></div>
-  </div>
-
-  <!-- Game 1 victory — no share button, just prompt to continue -->
-  <div class="victory" id="victoryBanner">
-    <div class="victory-emoji">🎉</div>
-    <div class="victory-title">You got it!</div>
-    <div class="victory-sub" id="victoryGuessCount"></div>
-    <img id="victoryImg" class="victory-img" src="" alt="" style="display:none"/>
-    <div class="victory-cookie" id="victoryCookieName"></div>
-    <div class="victory-skill" id="victorySkill"></div>
-    <button class="next-game-btn" id="nextGameBtn">Next Challenge →</button>
-  </div>
-
-  <!-- ── GAME 2 ── -->
-  <div class="game2-section" id="game2Section">
-    <div class="game2-label">🔮 Game 2 — Skill Guesser</div>
-
-    <div class="skill-display">
-      <img id="skillImg" class="skill-img" src="" alt="Skill" style="display:none"/>
-      <div class="skill-name" id="skillName">Loading...</div>
-      <div class="skill-cd" id="skillCd"></div>
-    </div>
-
-    <div class="how-to" style="margin-bottom:20px;">
-      <strong>Game 2:</strong> Which cookie has this skill? Guess the cookie name. You'll get ✅ or ❌ — after 5 wrong guesses a hint unlocks.
-    </div>
-
-    <div class="guess-section">
-      <div class="input-wrap">
-        <input id="guessInput2" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
-        <button class="submit-btn" id="submitBtn2">Guess</button>
-        <div class="suggestions" id="suggestions2" style="display:none"></div>
-      </div>
-      <div class="already-guessed" id="alreadyGuessed2"></div>
-      <div class="guess-meta" id="guessMeta2"></div>
-    </div>
-
-    <div class="game2-history" id="game2History"></div>
-
-    <div class="hint-section" id="hintSection2" style="margin-top:12px;">
-      <button class="hint-btn" id="hintBtn2">💡 Get Hint</button>
-      <div class="game2-hint-reveal" id="hintReveal2"></div>
-    </div>
-    <div class="victory" id="g2NextPrompt">
-      <div class="victory-emoji">🎉</div>
-      <div class="victory-title">You got it!</div>
-      <div class="victory-sub" id="g2VicCount"></div>
-      <img id="g2VictoryImg" class="victory-img" src="" alt="" style="display:none"/>
-      <div class="victory-cookie" id="g2VicName"></div>
-      <button class="next-game-btn" id="g3NextBtn">Next Challenge →</button>
-    </div>
-  </div>
-
-  <!-- ── GAME 3 ── -->
-  <div class="game3-section" id="game3Section">
-    <div class="game3-label">🖼️ Game 3 — Silhouette</div>
-
-    <div class="silhouette-container">
-      <img id="silhouetteImg" class="silhouette-img" src="" alt="Mystery Cookie Silhouette" style="display:none"/>
-    </div>
-
-    <div class="how-to" style="margin-bottom:20px;">
-      <strong>Game 3:</strong> Identify the cookie from its silhouette! After 5 wrong guesses a hint unlocks.
-    </div>
-
-    <div class="guess-section">
-      <div class="input-wrap">
-        <input id="guessInput3" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
-        <button class="submit-btn" id="submitBtn3">Guess</button>
-        <div class="suggestions" id="suggestions3" style="display:none"></div>
-      </div>
-      <div class="already-guessed" id="alreadyGuessed3"></div>
-      <div class="guess-meta" id="guessMeta3"></div>
-    </div>
-
-    <div class="game3-history" id="game3History"></div>
-
-    <div class="hint-section" id="hintSection3" style="margin-top:12px;">
-      <button class="hint-btn" id="hintBtn3">💡 Get Hint</button>
-      <div class="game2-hint-reveal" id="hintReveal3"></div>
-    </div>
-  </div>
-
-  <!-- ── FINAL VICTORY (shown after game 3) ── -->
-  <div class="final-victory" id="finalVictory">
-    <div class="victory-emoji">🏆</div>
-    <div class="victory-title" style="color:var(--gold)">Daily Complete!</div>
-    <div class="victory-sub" id="finalSub"></div>
-    <div class="victory-cookie" id="finalCookieName" style="margin-bottom:20px;"></div>
-    <button class="share-btn" id="shareBtn">Share Results 📋</button>
-    <button class="share-btn" id="statsBtn2" style="background:var(--card);color:var(--text);margin-left:8px;">📊 Stats</button>
-    <div class="next-timer" id="nextTimer"></div>
-  </div>
-
-</div>
-
-<a class="easter-egg" href="secret.html">psst...</a>
-<div class="toast" id="toast"></div>
-
-<script>
-// ─────────────────────────────────────────
-// WORKER URL
-// ─────────────────────────────────────────
-const WORKER_URL = 'https://cookiedle-worker.dangel33.workers.dev';
-
-// Cookie list — loaded from worker on init
-let COOKIES = [];
-
 // ─────────────────────────────────────────
 // SESSION KEY
 // ─────────────────────────────────────────
@@ -1035,8 +38,7 @@ function defaultState() {
 function saveState() {
   try {
     localStorage.setItem(TODAY_KEY, JSON.stringify({
-      guesses, results, won,
-      hintUsed, hintTrait, hintValue, victoryData,
+      guesses, results, won, hintUsed, hintTrait, hintValue, victoryData,
       g2started, g2guesses, g2won,
       g2hintUsed, g2hintValue, g2victoryName,
       g3started, g3guesses, g3won,
@@ -1047,7 +49,10 @@ function saveState() {
 
 const saved = loadState();
 
-// Game 1 state
+// ─────────────────────────────────────────
+// STATE VARIABLES
+// ─────────────────────────────────────────
+// Game 1
 let guesses     = saved.guesses     || [];
 let results     = saved.results     || {};
 let won         = saved.won         || false;
@@ -1056,7 +61,7 @@ let hintTrait   = saved.hintTrait   || null;
 let hintValue   = saved.hintValue   || null;
 let victoryData = saved.victoryData || null;
 
-// Game 2 state
+// Game 2
 let g2started     = saved.g2started     || false;
 let g2guesses     = saved.g2guesses     || [];
 let g2won         = saved.g2won         || false;
@@ -1064,7 +69,7 @@ let g2hintUsed    = saved.g2hintUsed    || false;
 let g2hintValue   = saved.g2hintValue   || null;
 let g2victoryName = saved.g2victoryName || null;
 
-// Game 3 state
+// Game 3
 let g3started     = saved.g3started     || false;
 let g3guesses     = saved.g3guesses     || [];
 let g3won         = saved.g3won         || false;
@@ -1075,8 +80,7 @@ let g3victoryName = saved.g3victoryName || null;
 // Game 2 skill data (fetched from worker)
 let skillData = null;
 
-// Game 3 silhouette data (fetched from worker)
-let silhouette3Data = null;  // { filename }
+// Game 3 silhouette image is served via ${WORKER_URL}/silhouette3-image (opaque proxy)
 
 let activeSuggestion  = -1;
 let activeSuggestion2 = -1;
@@ -1100,7 +104,6 @@ const hintSection = document.getElementById('hintSection');
 const hintBtn     = document.getElementById('hintBtn');
 const hintPicker  = document.getElementById('hintPicker');
 const hintReveal  = document.getElementById('hintReveal');
-const toastEl     = document.getElementById('toast');
 
 // DOM REFS — GAME 2
 const game2Section  = document.getElementById('game2Section');
@@ -1138,6 +141,11 @@ const finalCookieEl = document.getElementById('finalCookieName');
 const shareBtn      = document.getElementById('shareBtn');
 const nextTimerEl   = document.getElementById('nextTimer');
 
+// Bind suggestion boxes to their inputs for shared autocomplete
+bindSuggestionBox(input,  suggestBox);
+bindSuggestionBox(input2, suggestBox2);
+bindSuggestionBox(input3, suggestBox3);
+
 // ─────────────────────────────────────────
 // RESTORE SESSION
 // ─────────────────────────────────────────
@@ -1160,7 +168,6 @@ function restoreSession() {
 
   if (g2started) {
     showGame2();
-    // Restore game 2 rows
     g2guesses.forEach(name => addGame2Row(name, name === g2victoryName, false));
     updateMeta2();
     updateHint2();
@@ -1182,7 +189,6 @@ function restoreSession() {
 
   if (g3started) {
     showGame3();
-    // Restore game 3 rows
     g3guesses.forEach(name => addGame3Row(name, name === g3victoryName, false));
     updateMeta3();
     updateHint3();
@@ -1195,53 +201,8 @@ function restoreSession() {
 }
 
 // ─────────────────────────────────────────
-// AUTOCOMPLETE (shared)
+// AUTOCOMPLETE — event listeners
 // ─────────────────────────────────────────
-function buildSuggestions(val, usedList, box) {
-  if (!val) { hideSuggestions(box); return; }
-  const q = val.toLowerCase();
-  const scored = COOKIES
-    .map(c => c.cookie_name)
-    .filter(name => {
-      const n = name.toLowerCase();
-      return n.startsWith(q) || n.split(' ').some(word => word !== 'cookie' && word.startsWith(q));
-    })
-    .sort((a, b) => {
-      const an = a.toLowerCase(), bn = b.toLowerCase();
-      const aStart = an.startsWith(q) ? 0 : 1;
-      const bStart = bn.startsWith(q) ? 0 : 1;
-      return aStart - bStart || a.localeCompare(b);
-    })
-    .slice(0, 8);
-  if (!scored.length) { hideSuggestions(box); return; }
-  box.innerHTML = '';
-  scored.forEach(name => {
-    const div = document.createElement('div');
-    div.className = 'suggestion-item' + (usedList.includes(name) ? ' used' : '');
-    div.textContent = name;
-    div.addEventListener('mousedown', e => { e.preventDefault(); selectSuggestion(name, box === suggestBox ? input : (box === suggestBox2 ? input2 : input3), box); });
-    box.appendChild(div);
-  });
-  box.style.display = 'block';
-}
-
-function hideSuggestions(box) {
-  box.style.display = 'none';
-  box.innerHTML = '';
-}
-
-function selectSuggestion(name, inp, box) {
-  inp.value = name;
-  hideSuggestions(box);
-  inp.focus();
-}
-
-function updateActiveSugg(items, activeIdx, inp) {
-  items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
-  if (activeIdx >= 0) inp.value = items[activeIdx].textContent;
-}
-
-// Game 1 autocomplete
 input.addEventListener('input', () => {
   activeSuggestion = -1;
   alreadyEl.textContent = '';
@@ -1256,7 +217,6 @@ input.addEventListener('keydown', e => {
   else if (e.key === 'Escape') { hideSuggestions(suggestBox); }
 });
 
-// Game 2 autocomplete
 input2.addEventListener('input', () => {
   activeSuggestion2 = -1;
   alreadyEl2.textContent = '';
@@ -1271,7 +231,6 @@ input2.addEventListener('keydown', e => {
   else if (e.key === 'Escape') { hideSuggestions(suggestBox2); }
 });
 
-// Game 3 autocomplete
 input3.addEventListener('input', () => {
   activeSuggestion3 = -1;
   alreadyEl3.textContent = '';
@@ -1376,8 +335,6 @@ function addGuessRow(cookieName, traitResults, animate) {
 // ─────────────────────────────────────────
 // GAME 1 — META & HINT
 // ─────────────────────────────────────────
-const TRAIT_LABELS = { primary_color: 'Primary Color', secondary_color: 'Secondary Color', rarity: 'Rarity', type: 'Type', position: 'Position' };
-
 function wrongCount() { return won ? guesses.length - 1 : guesses.length; }
 
 function updateMeta() {
@@ -1471,6 +428,7 @@ async function showGame2() {
     skillCdEl.textContent   = '';
     try {
       const res = await fetch(`${WORKER_URL}/skill`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       skillData = await res.json();
     } catch {
       showToast('Could not load skill — please refresh.');
@@ -1478,13 +436,11 @@ async function showGame2() {
     }
   }
 
-  skillNameEl.textContent = skillData.skill_name;
-  skillCdEl.textContent   = `Cooldown: ${skillData.skill_cooldown}s`;
-  if (skillData.skill_filename) {
-    skillImgEl.src          = `cookie_skill_images/${skillData.skill_filename}`;
-    skillImgEl.alt          = skillData.skill_name;
-    skillImgEl.style.display = '';
-  }
+  skillNameEl.textContent  = skillData.skill_name;
+  skillCdEl.textContent    = `Cooldown: ${skillData.skill_cooldown}s`;
+  skillImgEl.src           = `${WORKER_URL}/skill-image`;
+  skillImgEl.alt           = skillData.skill_name;
+  skillImgEl.style.display = '';
 
   if (!g2won) {
     input2.disabled     = false;
@@ -1559,7 +515,7 @@ async function submitGuess2() {
 
 function addGame2Row(name, correct, animate) {
   const row = document.createElement('div');
-  row.className = `game2-row ${correct ? 'correct' : 'wrong'}${animate ? '' : ''}`;
+  row.className = `game2-row ${correct ? 'correct' : 'wrong'}`;
   if (!animate) row.style.animation = 'none';
   const icon = document.createElement('span');
   icon.className = 'g2-icon';
@@ -1631,19 +587,9 @@ async function showGame3() {
   game3Section.classList.add('show');
   game3Section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  if (!silhouette3Data) {
-    try {
-      const res = await fetch(`${WORKER_URL}/silhouette3`);
-      silhouette3Data = await res.json();
-    } catch {
-      showToast('Could not load silhouette — please refresh.');
-      return;
-    }
-  }
-
-  silhouetteImg.src         = g3won
-    ? `cookie_images/${silhouette3Data.filename}`
-    : `cookie_silhouettes/${silhouette3Data.filename}`;
+  silhouetteImg.src = g3won
+    ? `cookie_images/${g3victoryName.replace(/ /g, '_')}.webp`
+    : `${WORKER_URL}/silhouette3-image`;
   silhouetteImg.style.display = '';
 
   if (!g3won) {
@@ -1702,7 +648,6 @@ async function submitGuess3() {
     input3.disabled     = true;
     submitBtn3.disabled = true;
 
-    // Reveal the real cookie image
     silhouetteImg.classList.add('fading');
     setTimeout(() => {
       silhouetteImg.src = `cookie_images/${data.filename}`;
@@ -1711,9 +656,8 @@ async function submitGuess3() {
 
     setTimeout(() => showFinalVictory(true), 1000);
   } else {
-    // Shake the silhouette on wrong guess
     silhouetteImg.classList.remove('shake');
-    void silhouetteImg.offsetWidth; // force reflow
+    void silhouetteImg.offsetWidth;
     silhouetteImg.classList.add('shake');
     input3.disabled = false; submitBtn3.disabled = false;
     saveState();
@@ -1783,7 +727,7 @@ hintBtn3.addEventListener('click', async () => {
 });
 
 // ─────────────────────────────────────────
-// STATS & STREAK — all localStorage, no server
+// STATS & STREAK
 // ─────────────────────────────────────────
 const STATS_KEY = 'cookiedle-stats';
 
@@ -1806,7 +750,7 @@ function recordCompletion(totalGuesses) {
   const s = loadStats();
   const today = new Date();
   const todayStr = `${today.getUTCFullYear()}-${today.getUTCMonth() + 1}-${today.getUTCDate()}`;
-  if (s.lastCompleted === todayStr) return; // already recorded today
+  if (s.lastCompleted === todayStr) return;
 
   const yesterday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - 1));
   const yestStr = `${yesterday.getUTCFullYear()}-${yesterday.getUTCMonth() + 1}-${yesterday.getUTCDate()}`;
@@ -1828,7 +772,6 @@ function renderStats() {
   document.getElementById('statAvgGuesses').textContent = s.totalWon > 0 ? (s.totalGuesses / s.totalWon).toFixed(1) : '—';
 }
 
-// Stats modal wiring
 const statsModal = document.getElementById('statsModal');
 const statsBtn   = document.getElementById('statsBtn');
 const statsBtn2  = document.getElementById('statsBtn2');
@@ -1844,7 +787,7 @@ statsModal.addEventListener('click', e => { if (e.target === statsModal) closeSt
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeStats(); });
 
 // ─────────────────────────────────────────
-// COUNTDOWN — always visible in header
+// COUNTDOWN
 // ─────────────────────────────────────────
 function startHeaderCountdown() {
   const el = document.getElementById('headerCountdown');
@@ -1892,49 +835,25 @@ function startNextCookieTimer() {
 }
 
 shareBtn.addEventListener('click', () => {
-  const emojiMap = { name: '⬜', correct: '🟢', partial: '🟡', wrong: '🔴' };
-  const g1lines = guesses.map(name => {
-    const traits = results[name] || [];
-    return traits.map(t => emojiMap[t.result] || '⬜').join('');
-  });
+  const g1lines = guesses.map(name => name === victoryData?.name ? '✅' : '❌');
   const g2lines = g2guesses.map(name => name === g2victoryName ? '✅' : '❌');
   const g3lines = g3guesses.map(name => name === g3victoryName ? '✅' : '❌');
   const s = loadStats();
   const text = [
-    `Cookiedle 🍪`,
-    `🔥 Streak: ${s.currentStreak}`,
-    ``,
-    `🧁 Game 1 — ${guesses.length} guess${guesses.length !== 1 ? 'es' : ''}`,
-    ...g1lines,
-    ``,
-    `🔮 Game 2 — ${g2guesses.length} guess${g2guesses.length !== 1 ? 'es' : ''}`,
-    g2lines.join(' '),
-    ``,
-    `🖼️ Game 3 — ${g3guesses.length} guess${g3guesses.length !== 1 ? 'es' : ''}`,
-    g3lines.join(' '),
-    ``,
-    window.location.href,
+    `Cookiedle ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} 🍪`,
+    `Game 1: ${g1lines.join('')} (${guesses.length})`,
+    `Game 2: ${g2lines.join('')} (${g2guesses.length})`,
+    `Game 3: ${g3lines.join('')} (${g3guesses.length})`,
+    `Streak: ${s.currentStreak} 🔥`,
   ].join('\n');
-  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard! 🎉'));
+  navigator.clipboard.writeText(text).then(() => showToast('Results copied!')).catch(() => showToast('Could not copy — try again.'));
 });
-
-// ─────────────────────────────────────────
-// TOAST
-// ─────────────────────────────────────────
-let toastTimer;
-function showToast(msg) {
-  toastEl.textContent = msg;
-  toastEl.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2500);
-}
 
 // ─────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────
 async function init() {
   startHeaderCountdown();
-  if (g2won) statsBtn.style.display = '';
 
   input.disabled     = true;
   submitBtn.disabled = true;
@@ -1961,18 +880,10 @@ async function init() {
 
   try {
     const res = await fetch(`${WORKER_URL}/skill`);
-    skillData = await res.json();
-  } catch {}
-
-  try {
-    const res = await fetch(`${WORKER_URL}/silhouette3`);
-    silhouette3Data = await res.json();
+    if (res.ok) skillData = await res.json();
   } catch {}
 
   restoreSession();
 }
 
 init();
-</script>
-</body>
-</html>

@@ -1,0 +1,58 @@
+/* ─────────────────────────────────────────
+   UNLIMITED STYLES — unlimited.html only
+   ───────────────────────────────────────── */
+
+.back-btn {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 8px 20px;
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.back-btn:hover { border-color: var(--accent); color: var(--text); }
+
+.round-counter {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.round-counter span { color: var(--gold); }
+
+.new-cookie-btn {
+  padding: 12px 36px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.new-cookie-btn:hover  { background: #c73650; }
+.new-cookie-btn:active { transform: scale(0.97); }
+
+.stats-line {
+  margin-top: 16px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.stats-line span { color: var(--gold); font-weight: 800; }

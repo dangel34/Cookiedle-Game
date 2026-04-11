@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cookiedle</title>
+<meta name="description" content="Daily Cookie Run: Kingdom guessing game — three puzzles per day."/>
+<meta property="og:title" content="Cookiedle"/>
+<meta property="og:description" content="Daily Cookie Run: Kingdom guessing game — three puzzles per day."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://cookiedle-worker.dangel33.workers.dev/"/>
+<meta property="og:image" content="https://cookiedle-worker.dangel33.workers.dev/cookie_images/GingerBrave.webp"/>
+<link rel="icon" href="cookie_images/GingerBrave.webp" type="image/webp"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+<link rel="stylesheet" href="game.css"/>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">Cookiedle</div>
+    <div class="subtitle">Cookie Run Kingdom · Guessing Game</div>
+    <div class="countdown-bar">Next cookies in <span id="headerCountdown">--:--:--</span></div>
+    <div class="header-actions">
+      <a class="header-btn" href="unlimited.html">♾️ Unlimited</a>
+      <button class="header-btn" id="statsBtn" style="display:none">📊 Stats</button>
+    </div>
+  </header>
+
+  <!-- ── STATS MODAL ── -->
+  <div class="modal-overlay" id="statsModal">
+    <div class="modal">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div class="modal-title">📊 Your Stats</div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value streak-fire" id="statStreak">0</div>
+          <div class="stat-label">Current Streak 🔥</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statBest">0</div>
+          <div class="stat-label">Best Streak</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statWinRate">0%</div>
+          <div class="stat-label">Win Rate</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statAvgGuesses">—</div>
+          <div class="stat-label">Avg Guesses</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GAME 1 ── -->
+  <div class="how-to">
+    <strong>Game 1:</strong> Guess today's Cookie Run Kingdom cookie! Each guess reveals how close you are across 5 traits.
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Correct</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Color swapped (primary ↔ secondary)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Wrong</div>
+    </div>
+  </div>
+
+  <div class="guess-section">
+    <div class="input-wrap">
+      <input id="guessInput" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
+      <button class="submit-btn" id="submitBtn">Guess</button>
+      <div class="suggestions" id="suggestions" style="display:none"></div>
+    </div>
+    <div class="already-guessed" id="alreadyGuessed"></div>
+    <div class="guess-meta" id="guessMeta"></div>
+  </div>
+
+  <div class="table-header">
+    <div class="col-head">Cookie</div>
+    <div class="col-head">Primary</div>
+    <div class="col-head">Secondary</div>
+    <div class="col-head">Rarity</div>
+    <div class="col-head">Type</div>
+    <div class="col-head">Position</div>
+  </div>
+
+  <div class="guess-history" id="guessHistory"></div>
+
+  <div class="hint-section" id="hintSection">
+    <button class="hint-btn" id="hintBtn">💡 Get Hint</button>
+    <div class="hint-picker" id="hintPicker">
+      <button class="hint-choice" data-trait="primary_color">Primary Color</button>
+      <button class="hint-choice" data-trait="secondary_color">Secondary Color</button>
+      <button class="hint-choice" data-trait="rarity">Rarity</button>
+      <button class="hint-choice" data-trait="type">Type</button>
+      <button class="hint-choice" data-trait="position">Position</button>
+    </div>
+    <div class="hint-reveal" id="hintReveal"></div>
+  </div>
+
+  <div class="victory" id="victoryBanner">
+    <div class="victory-emoji">🎉</div>
+    <div class="victory-title">You got it!</div>
+    <div class="victory-sub" id="victoryGuessCount"></div>
+    <img id="victoryImg" class="victory-img" src="" alt="" width="160" height="160" loading="lazy" style="display:none"/>
+    <div class="victory-cookie" id="victoryCookieName"></div>
+    <div class="victory-skill" id="victorySkill"></div>
+    <button class="next-game-btn" id="nextGameBtn">Next Challenge →</button>
+  </div>
+
+  <!-- ── GAME 2 ── -->
+  <div class="game2-section" id="game2Section">
+    <div class="game2-label">🔮 Game 2 — Skill Guesser</div>
+
+    <div class="skill-display">
+      <img id="skillImg" class="skill-img" src="" alt="Skill" width="80" height="80" style="display:none"/>
+      <div class="skill-name" id="skillName">Loading...</div>
+      <div class="skill-cd" id="skillCd"></div>
+    </div>
+
+    <div class="how-to" style="margin-bottom:20px;">
+      <strong>Game 2:</strong> Which cookie has this skill? Guess the cookie name. You'll get ✅ or ❌ — after 5 wrong guesses a hint unlocks.
+    </div>
+
+    <div class="guess-section">
+      <div class="input-wrap">
+        <input id="guessInput2" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
+        <button class="submit-btn" id="submitBtn2">Guess</button>
+        <div class="suggestions" id="suggestions2" style="display:none"></div>
+      </div>
+      <div class="already-guessed" id="alreadyGuessed2"></div>
+      <div class="guess-meta" id="guessMeta2"></div>
+    </div>
+
+    <div class="game2-history" id="game2History"></div>
+
+    <div class="hint-section" id="hintSection2" style="margin-top:12px;">
+      <button class="hint-btn" id="hintBtn2">💡 Get Hint</button>
+      <div class="game2-hint-reveal" id="hintReveal2"></div>
+    </div>
+    <div class="victory" id="g2NextPrompt">
+      <div class="victory-emoji">🎉</div>
+      <div class="victory-title">You got it!</div>
+      <div class="victory-sub" id="g2VicCount"></div>
+      <img id="g2VictoryImg" class="victory-img" src="" alt="" width="160" height="160" loading="lazy" style="display:none"/>
+      <div class="victory-cookie" id="g2VicName"></div>
+      <button class="next-game-btn" id="g3NextBtn">Next Challenge →</button>
+    </div>
+  </div>
+
+  <!-- ── GAME 3 ── -->
+  <div class="game3-section" id="game3Section">
+    <div class="game3-label">🖼️ Game 3 — Silhouette</div>
+
+    <div class="silhouette-container">
+      <img id="silhouetteImg" class="silhouette-img" src="" alt="Mystery Cookie Silhouette" width="220" height="220" style="display:none"/>
+    </div>
+
+    <div class="how-to" style="margin-bottom:20px;">
+      <strong>Game 3:</strong> Identify the cookie from its silhouette! After 5 wrong guesses a hint unlocks.
+    </div>
+
+    <div class="guess-section">
+      <div class="input-wrap">
+        <input id="guessInput3" class="guess-input" type="text" placeholder="Type a cookie name..." autocomplete="off" spellcheck="false"/>
+        <button class="submit-btn" id="submitBtn3">Guess</button>
+        <div class="suggestions" id="suggestions3" style="display:none"></div>
+      </div>
+      <div class="already-guessed" id="alreadyGuessed3"></div>
+      <div class="guess-meta" id="guessMeta3"></div>
+    </div>
+
+    <div class="game3-history" id="game3History"></div>
+
+    <div class="hint-section" id="hintSection3" style="margin-top:12px;">
+      <button class="hint-btn" id="hintBtn3">💡 Get Hint</button>
+      <div class="game2-hint-reveal" id="hintReveal3"></div>
+    </div>
+  </div>
+
+  <!-- ── FINAL VICTORY ── -->
+  <div class="final-victory" id="finalVictory">
+    <div class="victory-emoji">🏆</div>
+    <div class="victory-title" style="color:var(--gold)">Daily Complete!</div>
+    <div class="victory-sub" id="finalSub"></div>
+    <div class="victory-cookie" id="finalCookieName" style="margin-bottom:20px;"></div>
+    <button class="share-btn" id="shareBtn">Share Results 📋</button>
+    <button class="share-btn" id="statsBtn2" style="background:var(--card);color:var(--text);margin-left:8px;">📊 Stats</button>
+    <div class="next-timer" id="nextTimer"></div>
+  </div>
+
+</div>
+
+<a class="easter-egg" href="secret.html">psst...</a>
+<div class="toast" id="toast"></div>
+
+<script src="shared.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

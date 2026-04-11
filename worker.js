@@ -309,6 +309,7 @@ function sanitizeInput(str, maxLen = 100) {
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
+    try {
     const url    = new URL(request.url);
 
     // Handle preflight
@@ -444,13 +445,22 @@ export default {
     }
 
     // GET /skill — returns today's skill name and cooldown for game 2
-    // Safe to expose: reveals skill but not which cookie owns it
+    // skill_filename intentionally omitted: it encodes the cookie name and would leak the answer
     if (url.pathname === '/skill' && request.method === 'GET') {
       return jsonResponse({
         skill_name:     target2.skill_name,
         skill_cooldown: target2.skill_cooldown,
-        skill_filename: target2.cookie_name.replace(/ /g, '_') + '.webp',
       }, 200, origin);
+    }
+
+    // GET /skill-image — proxy today's skill image without revealing the cookie name in the URL
+    if (url.pathname === '/skill-image' && request.method === 'GET') {
+      const filename = target2.cookie_name.replace(/ /g, '_') + '.webp';
+      const assetReq = new Request(new URL(`/cookie_skill_images/${filename}`, request.url).toString());
+      const assetRes = await env.ASSETS.fetch(assetReq);
+      const headers  = new Headers(assetRes.headers);
+      Object.entries(corsHeaders(origin)).forEach(([k, v]) => headers.set(k, v));
+      return new Response(assetRes.body, { status: assetRes.status, headers });
     }
 
     // POST /guess2 — check a game 2 guess (which cookie owns the skill)
@@ -494,11 +504,14 @@ export default {
       }, 200, origin);
     }
 
-    // GET /silhouette3 — returns the filename of today's silhouette image
-    // The cookie name is embedded in the filename; the server validates guesses.
-    if (url.pathname === '/silhouette3' && request.method === 'GET') {
+    // GET /silhouette3-image — proxy today's silhouette without leaking the cookie name
+    if (url.pathname === '/silhouette3-image' && request.method === 'GET') {
       const filename = target3.cookie_name.replace(/ /g, '_') + '.webp';
-      return jsonResponse({ filename }, 200, origin);
+      const assetReq = new Request(new URL(`/cookie_silhouettes/${filename}`, request.url).toString());
+      const assetRes = await env.ASSETS.fetch(assetReq);
+      const headers  = new Headers(assetRes.headers);
+      Object.entries(corsHeaders(origin)).forEach(([k, v]) => headers.set(k, v));
+      return new Response(assetRes.body, { status: assetRes.status, headers });
     }
 
     // POST /guess3 — check a silhouette guess
@@ -541,10 +554,13 @@ export default {
     }
 
     // GET /cookie-count — how many cookies total (for debugging)
-    if (url.pathname === '/cookie-count') {
+    if (url.pathname === '/cookie-count' && request.method === 'GET') {
       return jsonResponse({ count: COOKIES.length }, 200, origin);
     }
 
     return jsonResponse({ error: 'Not found' }, 404, origin);
+    } catch (err) {
+      return jsonResponse({ error: 'Internal server error' }, 500, origin);
+    }
   },
 };
