@@ -24,7 +24,7 @@ The five traits revealed per guess are: **Primary Color, Secondary Color, Rarity
 After 5 wrong guesses a **💡 Hint** button unlocks — choose one trait to reveal its answer. On a correct guess, the cookie's artwork is revealed.
 
 ### Game 2 — Skill Guesser
-A skill name and cooldown are shown — guess which cookie owns that skill. You get ✅ or ❌ per guess, with a hint after 5 wrong guesses that reveals the cookie's Rarity, Type, and Position. The cookie's artwork is revealed on a correct guess.
+A skill image and cooldown are shown — guess which cookie owns that skill. You get ✅ or ❌ per guess, with a hint after 5 wrong guesses that reveals the cookie's Rarity, Type, and Position. The cookie's artwork is revealed on a correct guess.
 
 ### Game 3 — Silhouette
 A black silhouette of a cookie is shown — identify it from its shape alone. You get ✅ or ❌ per guess, with a hint after 5 wrong guesses that reveals the cookie's Primary Color, Type, and Rarity. On a correct guess, the silhouette animates away to reveal the full cookie artwork.
@@ -41,7 +41,7 @@ After completing all three daily games a **Share** button generates a combined e
 
 - **Three daily games** — Cookie Guesser, Skill Guesser, and Silhouette — all secured server-side
 - **Cookie artwork** — revealed on every correct guess across all three modes
-- **Cheat-proof** — the answer is never in the page source or network traffic
+- **Cheat-proof** — the answer is never in the page source or network traffic; skill and silhouette images are proxied through the worker so filenames never reach the browser
 - **Hint system** — server-verified, unlocks after 5 confirmed wrong guesses
 - **Fuzzy autocomplete** — smart search as you type
 - **Session persistence** — your guesses and revealed images survive page refreshes
@@ -56,21 +56,24 @@ After completing all three daily games a **Share** button generates a combined e
 ## 🏗️ Architecture
 
 ```
-GitHub Pages (index.html)          Cloudflare Worker (worker.js)
+Browser                            Cloudflare Worker (worker.js)
 ──────────────────────────         ──────────────────────────────
-Static frontend                    Secure backend
+Static frontend (docs/)            Secure backend + asset proxy
 - Autocomplete UI                  - Daily cookie selection (SHA-256 hash)
 - Guess rendering                  - Guess checking & hint validation
 - Session state (localStorage)     - HMAC tokens for unlimited mode
-- Cookie & silhouette images
+                                   - Image proxy (skill & silhouette)
                     ↕ fetch API ↕
-          /guess    /hint     /cookies
-          /guess2   /hint2    /skill
-          /guess3   /hint3    /silhouette3
-          /unlimited/new  /unlimited/guess  /unlimited/hint
+          /guess        /hint          /cookies
+          /guess2        /hint2         /skill
+          /guess3        /hint3         /skill-image
+          /silhouette3-image
+          /unlimited/new   /unlimited/guess   /unlimited/hint
 ```
 
 The daily target cookies are computed server-side using `SHA-256(date + suffix + COOKIE_SECRET)` where `COOKIE_SECRET` is an encrypted Cloudflare environment variable — it never touches the browser. Each game uses a different suffix (`-skill`, `-silhouette`) to guarantee three distinct daily cookies.
+
+Skill images and silhouettes are served through opaque worker proxy endpoints (`/skill-image`, `/silhouette3-image`) so the cookie filename — which encodes the answer — is never visible in network traffic.
 
 ---
 
@@ -83,24 +86,24 @@ The daily target cookies are computed server-side using `SHA-256(date + suffix +
 pip install cloudscraper beautifulsoup4
 python scraper.py
 ```
-Images are saved to `cookie_images/` as `Cookie_Name.webp`.
+Images are saved to `docs/cookie_images/` as `Cookie_Name.webp`.
 
 **2. Generate silhouettes for Game 3:**
 ```bash
 pip install Pillow
 python make_silhouettes.py
 ```
-Silhouettes are saved to `cookie_silhouettes/` with matching filenames.
+Silhouettes are saved to `docs/cookie_silhouettes/` with matching filenames.
 
-**3. Commit both folders to the repo** so GitHub Pages can serve them.
+**3. Commit both folders to the repo** so they are included in the next deployment.
 
 ### Updating the cookie database
 
 **1. Edit `worker.js`** — add new entries to the `COOKIES` array at the top.
 
-**2. Redeploy the worker:**
+**2. Deploy everything** (worker + assets):
 ```bash
-wrangler deploy worker.js --name cookiedle-worker --compatibility-date 2025-09-27
+npm run deploy
 ```
 
 **3. Push to GitHub:**
@@ -112,25 +115,43 @@ git push origin master
 
 > **Note:** Adding or reordering cookies in the `COOKIES` array changes the daily hash results, shifting which cookie appears on each date.
 
+### First-time setup
+```bash
+npm install
+npx wrangler login   # opens browser to authenticate with Cloudflare
+npm run deploy
+```
+
 ---
 
 ## 📁 File Structure
 
 ```
 Cookiedle-Game/
-├── index.html              # Main web app (3 daily games)
-├── unlimited.html          # Unlimited mode
-├── secret.html             # 👀
 ├── worker.js               # Cloudflare Worker (all backend logic)
-├── wrangler.jsonc          # Wrangler config
+├── wrangler.jsonc          # Wrangler config (assets directory, bindings)
+├── package.json            # npm scripts (deploy)
+├── package-lock.json       # Lockfile — commit this
 ├── scraper.py              # Downloads cookie images from noff.gg
 ├── make_silhouettes.py     # Generates black silhouettes from cookie images
 ├── cookies_rows.csv        # Cookie database (source of truth)
-├── cookie_images/          # Downloaded cookie artwork (.webp)
-├── cookie_silhouettes/     # Generated silhouette images (.webp)
-├── robots.txt              # Blocks secret.html from search engines
 ├── .gitignore
-└── README.md
+├── README.md
+└── docs/                   # Static frontend (served by Cloudflare + GitHub Pages)
+    ├── index.html          # Main web app (3 daily games)
+    ├── unlimited.html      # Unlimited mode
+    ├── secret.html         # 👀
+    ├── shared.js           # Shared JS (WORKER_URL, cookie list, autocomplete)
+    ├── game.js             # Daily game logic
+    ├── unlimited.js        # Unlimited mode logic
+    ├── shared.css          # Shared styles
+    ├── game.css            # Daily game styles
+    ├── unlimited.css       # Unlimited mode styles
+    ├── _headers            # Cloudflare security headers (CSP, X-Frame-Options, etc.)
+    ├── robots.txt          # Blocks secret.html from search engines
+    ├── cookie_images/      # Cookie artwork (.webp)
+    ├── cookie_skill_images/# Skill icons (.webp)
+    └── cookie_silhouettes/ # Generated silhouette images (.webp)
 ```
 
 ---
@@ -140,9 +161,11 @@ Cookiedle-Game/
 - The daily answer is never sent to the browser unprompted
 - All guess checking and hint validation happens server-side in the Cloudflare Worker
 - Hints require at least 5 server-verified wrong guesses before unlocking
+- Skill images and silhouettes are proxied through the worker — the cookie name never appears in any URL the browser can see
 - Unlimited mode uses HMAC-SHA256 signed tokens — the cookie name never leaves the server
 - `COOKIE_SECRET` is stored as an encrypted environment variable in Cloudflare — not in any file
 - CORS is locked to `dangel34.github.io`
+- Security headers (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy) applied via `docs/_headers`
 - `secret.html` is excluded from search engine indexing via `robots.txt`
 
 ---
