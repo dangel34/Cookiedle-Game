@@ -81,21 +81,30 @@ Skill images and silhouettes are served through opaque worker proxy endpoints (`
 
 ### Adding cookie images
 
-**1. Download cookie artwork from noff.gg:**
+**1. Install Python dependencies:**
 ```bash
-pip install cloudscraper beautifulsoup4
-python scraper.py
+pip install -r requirements.txt
+```
+
+**2. Download cookie artwork from noff.gg:**
+```bash
+python cookie_images_scraper.py
 ```
 Images are saved to `docs/cookie_images/` as `Cookie_Name.webp`.
 
-**2. Generate silhouettes for Game 3:**
+**3. Download cookie skill images:**
 ```bash
-pip install Pillow
+python cookie_skill_scraper.py
+```
+Images are saved to `docs/cookie_skill_images/` as `Cookie_Name.webp`.
+
+**4. Generate silhouettes for Game 3:**
+```bash
 python make_silhouettes.py
 ```
 Silhouettes are saved to `docs/cookie_silhouettes/` with matching filenames.
 
-**3. Commit both folders to the repo** so they are included in the next deployment.
+**5. Commit all asset folders to the repo** so they are included in the next deployment.
 
 ### Updating the cookie database
 
@@ -132,8 +141,10 @@ Cookiedle-Game/
 ├── wrangler.jsonc          # Wrangler config (assets directory, bindings)
 ├── package.json            # npm scripts (deploy)
 ├── package-lock.json       # Lockfile — commit this
-├── scraper.py              # Downloads cookie images from noff.gg
-├── make_silhouettes.py     # Generates black silhouettes from cookie images
+├── cookie_images_scraper.py # Downloads cookie artwork from noff.gg
+├── cookie_skill_scraper.py  # Downloads cookie skill images from noff.gg
+├── make_silhouettes.py      # Generates black silhouettes from cookie images
+├── requirements.txt         # Python dependencies for the scrapers
 ├── cookies_rows.csv        # Cookie database (source of truth)
 ├── .gitignore
 ├── README.md
