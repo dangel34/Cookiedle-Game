@@ -20,17 +20,17 @@ function defaultState() {
   return {
     // Game 1
     guesses: [], results: {}, won: false,
-    hintUsed: false, hintTrait: null, hintValue: null,
+    hintUsed: false, hintTrait: null, hintValue: null, hintAfterGuess: null,
     victoryData: null,
     // Game 2
     g2started: false,
     g2guesses: [], g2won: false,
-    g2hintUsed: false, g2hintValue: null,
+    g2hintUsed: false, g2hintValue: null, g2hintAfterGuess: null,
     g2victoryName: null,
     // Game 3
     g3started: false,
     g3guesses: [], g3won: false,
-    g3hintUsed: false, g3hintValue: null,
+    g3hintUsed: false, g3hintValue: null, g3hintAfterGuess: null,
     g3victoryName: null,
   };
 }
@@ -38,11 +38,11 @@ function defaultState() {
 function saveState() {
   try {
     localStorage.setItem(TODAY_KEY, JSON.stringify({
-      guesses, results, won, hintUsed, hintTrait, hintValue, victoryData,
+      guesses, results, won, hintUsed, hintTrait, hintValue, hintAfterGuess, victoryData,
       g2started, g2guesses, g2won,
-      g2hintUsed, g2hintValue, g2victoryName,
+      g2hintUsed, g2hintValue, g2hintAfterGuess, g2victoryName,
       g3started, g3guesses, g3won,
-      g3hintUsed, g3hintValue, g3victoryName,
+      g3hintUsed, g3hintValue, g3hintAfterGuess, g3victoryName,
     }));
   } catch {}
 }
@@ -56,25 +56,28 @@ const saved = loadState();
 let guesses     = saved.guesses     || [];
 let results     = saved.results     || {};
 let won         = saved.won         || false;
-let hintUsed    = saved.hintUsed    || false;
-let hintTrait   = saved.hintTrait   || null;
-let hintValue   = saved.hintValue   || null;
-let victoryData = saved.victoryData || null;
+let hintUsed       = saved.hintUsed       || false;
+let hintTrait      = saved.hintTrait      || null;
+let hintValue      = saved.hintValue      || null;
+let hintAfterGuess = saved.hintAfterGuess || null;
+let victoryData    = saved.victoryData    || null;
 
 // Game 2
 let g2started     = saved.g2started     || false;
 let g2guesses     = saved.g2guesses     || [];
 let g2won         = saved.g2won         || false;
-let g2hintUsed    = saved.g2hintUsed    || false;
-let g2hintValue   = saved.g2hintValue   || null;
+let g2hintUsed       = saved.g2hintUsed       || false;
+let g2hintValue      = saved.g2hintValue      || null;
+let g2hintAfterGuess = saved.g2hintAfterGuess || null;
 let g2victoryName = saved.g2victoryName || null;
 
 // Game 3
 let g3started     = saved.g3started     || false;
 let g3guesses     = saved.g3guesses     || [];
 let g3won         = saved.g3won         || false;
-let g3hintUsed    = saved.g3hintUsed    || false;
-let g3hintValue   = saved.g3hintValue   || null;
+let g3hintUsed       = saved.g3hintUsed       || false;
+let g3hintValue      = saved.g3hintValue      || null;
+let g3hintAfterGuess = saved.g3hintAfterGuess || null;
 let g3victoryName = saved.g3victoryName || null;
 
 // Game 2 skill data (fetched from worker)
@@ -372,7 +375,7 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
       if (data.error) { showToast(data.error); hintBtn.disabled = false; return; }
       value = data.value;
     } catch { showToast('Could not fetch hint — please try again.'); hintBtn.disabled = false; return; }
-    hintUsed = true; hintTrait = trait; hintValue = value;
+    hintUsed = true; hintTrait = trait; hintValue = value; hintAfterGuess = guesses.length;
     saveState();
     hintBtn.style.display = 'none';
     hintPicker.classList.remove('show');
@@ -566,8 +569,9 @@ hintBtn2.addEventListener('click', async () => {
     const res = await fetch(`${WORKER_URL}/hint2?guesses=${encodeURIComponent(g2guesses.join(','))}`);
     data = await res.json();
   } catch { showToast('Could not fetch hint — please try again.'); hintBtn2.disabled = false; return; }
-  g2hintUsed  = true;
-  g2hintValue = { rarity: data.rarity, type: data.type, position: data.position };
+  g2hintUsed       = true;
+  g2hintValue      = { rarity: data.rarity, type: data.type, position: data.position };
+  g2hintAfterGuess = g2guesses.length;
   saveState();
   hintBtn2.style.display = 'none';
   renderHint2(hintReveal2, g2hintValue);
@@ -718,8 +722,9 @@ hintBtn3.addEventListener('click', async () => {
     data = await res.json();
   } catch { showToast('Could not fetch hint — please try again.'); hintBtn3.disabled = false; return; }
   if (data.error) { showToast(data.error); hintBtn3.disabled = false; return; }
-  g3hintUsed  = true;
-  g3hintValue = { primary_color: data.primary_color, type: data.type, rarity: data.rarity };
+  g3hintUsed       = true;
+  g3hintValue      = { primary_color: data.primary_color, type: data.type, rarity: data.rarity };
+  g3hintAfterGuess = g3guesses.length;
   saveState();
   hintBtn3.style.display = 'none';
   renderHint3(hintReveal3, g3hintValue);
@@ -835,17 +840,53 @@ function startNextCookieTimer() {
 }
 
 shareBtn.addEventListener('click', () => {
-  const g1lines = guesses.map(name => name === victoryData?.name ? '✅' : '❌');
-  const g2lines = g2guesses.map(name => name === g2victoryName ? '✅' : '❌');
-  const g3lines = g3guesses.map(name => name === g3victoryName ? '✅' : '❌');
+  const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const s = loadStats();
-  const text = [
-    `Cookiedle ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} 🍪`,
-    `Game 1: ${g1lines.join('')} (${guesses.length})`,
-    `Game 2: ${g2lines.join('')} (${g2guesses.length})`,
-    `Game 3: ${g3lines.join('')} (${g3guesses.length})`,
-    `Streak: ${s.currentStreak} 🔥`,
-  ].join('\n');
+
+  // Insert a 💡 line after guess index hintAfterGuessNum (1-based), if hint was used
+  function withHint(lines, hintUsedFlag, hintAfterGuessNum) {
+    if (!hintUsedFlag || hintAfterGuessNum == null) return lines;
+    const out = [...lines];
+    out.splice(hintAfterGuessNum, 0, '💡');
+    return out;
+  }
+
+  const sections = [`Cookiedle ${date} 🍪`];
+
+  // Game 1 — trait grid (🟩/🟥 per trait, skip name cell at index 0)
+  if (guesses.length > 0) {
+    const n = guesses.length;
+    const outcome = won ? '✅' : '❌';
+    sections.push(`\nGame 1 — ${n} guess${n !== 1 ? 'es' : ''} ${outcome}`);
+    const rows = guesses.map(name => {
+      const traitCells = (results[name] || []).slice(1); // drop name cell
+      return traitCells.map(t => t.result === 'correct' ? '🟩' : '🟥').join('');
+    });
+    sections.push(...withHint(rows, hintUsed, hintAfterGuess));
+  }
+
+  // Game 2 — binary correct/wrong per guess
+  if (g2started && g2guesses.length > 0) {
+    const n = g2guesses.length;
+    const outcome = g2won ? '✅' : '❌';
+    sections.push(`\nGame 2 — ${n} guess${n !== 1 ? 'es' : ''} ${outcome}`);
+    const rows = g2guesses.map(name => name === g2victoryName ? '✅' : '❌');
+    sections.push(...withHint(rows, g2hintUsed, g2hintAfterGuess));
+  }
+
+  // Game 3 — binary correct/wrong per guess
+  if (g3started && g3guesses.length > 0) {
+    const n = g3guesses.length;
+    const outcome = g3won ? '✅' : '❌';
+    sections.push(`\nGame 3 — ${n} guess${n !== 1 ? 'es' : ''} ${outcome}`);
+    const rows = g3guesses.map(name => name === g3victoryName ? '✅' : '❌');
+    sections.push(...withHint(rows, g3hintUsed, g3hintAfterGuess));
+  }
+
+  sections.push(`\nStreak: ${s.currentStreak} 🔥`);
+  sections.push(`\nThink you can do better? Play Cookiedle!\nhttps://dangel34.github.io/Cookiedle-Game`);
+
+  const text = sections.join('\n');
   navigator.clipboard.writeText(text).then(() => showToast('Results copied!')).catch(() => showToast('Could not copy — try again.'));
 });
 
