@@ -2,6 +2,7 @@
 // STATE
 // ─────────────────────────────────────────
 let token     = null;
+let progressToken = null;
 let guesses   = [];
 let won       = false;
 let round     = 1;
@@ -76,7 +77,7 @@ async function submitGuess() {
     const res = await fetch(`${WORKER_URL}/unlimited/guess`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, guess: cookie.cookie_name }),
+      body: JSON.stringify({ token, progress_token: progressToken, guess: cookie.cookie_name }),
     });
     data = await res.json();
   } catch {
@@ -87,14 +88,16 @@ async function submitGuess() {
 
   if (data.error) {
     if (data.error.includes('expired')) {
-      showToast('Session expired — fetching a new cookie...');
-      await fetchNewToken();
+      showToast('Session expired — starting a fresh round...');
+      await startNewRound();
+      return;
     } else {
       showToast(data.error);
     }
     input.disabled = false; submitBtn.disabled = false;
     return;
   }
+  if (data.progress_token) progressToken = data.progress_token;
 
   const traitResults = [
     { value: cookie.cookie_name,     result: 'name' },
@@ -174,11 +177,12 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
       const res = await fetch(`${WORKER_URL}/unlimited/hint`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, trait }),
+        body: JSON.stringify({ token, progress_token: progressToken, trait }),
       });
       const data = await res.json();
       if (data.error) { showToast(data.error); hintBtn.disabled = false; return; }
       value = data.value;
+      if (data.progress_token) progressToken = data.progress_token;
     } catch { showToast('Could not fetch hint — please try again.'); hintBtn.disabled = false; return; }
     hintUsed = true; hintTrait = trait; hintValue = value;
     hintBtn.style.display = 'none';
@@ -220,6 +224,7 @@ async function startNewRound() {
   hintTrait = null;
   hintValue = null;
   token     = null;
+  progressToken = null;
   round++;
 
   historyEl.innerHTML   = '';
@@ -259,6 +264,7 @@ async function fetchNewToken() {
     const res = await fetch(`${WORKER_URL}/unlimited/new`);
     const data = await res.json();
     token = data.token;
+    progressToken = data.progress_token || null;
   } catch {
     showToast('Could not load a new cookie — please refresh.');
   }

@@ -131,6 +131,52 @@ npx wrangler login   # opens browser to authenticate with Cloudflare
 npm run deploy
 ```
 
+### Deploying with Wrangler (Worker + assets)
+
+This project uses Wrangler with an `ASSETS` binding (configured in `wrangler.jsonc`) so a deploy publishes both:
+- `worker.js` (backend logic)
+- `docs/` (static frontend and images)
+
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+2. **Log in to Cloudflare**
+   ```bash
+   npx wrangler login
+   ```
+3. **Set your worker secret** (first time, and any time you rotate it)
+   ```bash
+   npx wrangler secret put COOKIE_SECRET
+   ```
+4. **Deploy**
+   ```bash
+   npm run deploy
+   ```
+5. **Verify quickly**
+   - Open your worker URL and check the app loads.
+   - Try one guess in Daily and Unlimited to confirm API + asset proxy paths are healthy.
+
+### Endpoint state/progress tokens (security model)
+
+Hint unlocks are server-enforced using signed tokens; clients cannot fake wrong-guess progress.
+
+- **Daily Game 1**
+  - `POST /guess` accepts `{ guess, state_token }` and returns updated `state_token`
+  - `GET /hint?trait=...&state_token=...` requires server-verified `wrong >= 5`
+- **Daily Game 2**
+  - `POST /guess2` accepts `{ guess, state_token }` and returns updated `state_token`
+  - `GET /hint2?state_token=...` requires server-verified `wrong >= 5`
+- **Daily Game 3**
+  - `POST /guess3` accepts `{ guess, state_token }` and returns updated `state_token`
+  - `GET /hint3?state_token=...` requires server-verified `wrong >= 5`
+- **Unlimited**
+  - `GET /unlimited/new` returns `{ token, progress_token }`
+  - `POST /unlimited/guess` accepts `{ token, progress_token, guess }` and returns updated `progress_token`
+  - `POST /unlimited/hint` accepts `{ token, progress_token, trait }`; requires server-verified `wrong >= 5`
+
+If frontend and worker versions are out of sync, users may see token errors. Deploy `worker.js` and `docs/` together.
+
 ---
 
 ## 📁 File Structure

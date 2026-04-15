@@ -262,40 +262,103 @@ function evaluateGuess(guess, target) {
 // ─────────────────────────────────────────
 const TOKEN_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
-async function makeToken(cookieName, secret) {
-  const ts      = Math.floor(Date.now() / TOKEN_TTL_MS); // changes every 2h
-  const payload = `${cookieName}|${ts}`;
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload));
-  // Encode as url-safe base64
-  return btoa(String.fromCharCode(...new Uint8Array(sig)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+const hmacKeyCache = new Map();
+
+function base64UrlEncodeBytes(bytes) {
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
 }
 
-async function verifyToken(cookieName, token, secret) {
-  // Check current window and previous window (handles edge case near boundary)
-  const ts = Math.floor(Date.now() / TOKEN_TTL_MS);
-  for (const t of [ts, ts - 1]) {
-    const payload  = `${cookieName}|${t}`;
-    const key = await crypto.subtle.importKey(
+function base64UrlDecodeToBytes(str) {
+  const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+  return Uint8Array.from(atob(padded), c => c.charCodeAt(0));
+}
+
+async function getHmacKey(secret) {
+  if (!hmacKeyCache.has(secret)) {
+    hmacKeyCache.set(secret, crypto.subtle.importKey(
       'raw',
-      new TextEncoder().encode(secret),
+      encoder.encode(secret),
       { name: 'HMAC', hash: 'SHA-256' },
       false,
       ['sign']
-    );
-    const sig      = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload));
-    const expected = btoa(String.fromCharCode(...new Uint8Array(sig)))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-    if (expected === token) return true;
+    ));
   }
-  return false;
+  return hmacKeyCache.get(secret);
+}
+
+async function signMessage(secret, message) {
+  const key = await getHmacKey(secret);
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(message));
+  return base64UrlEncodeBytes(new Uint8Array(sig));
+}
+
+async function makeToken(cookieIndex, secret) {
+  const ts = Math.floor(Date.now() / TOKEN_TTL_MS); // changes every 2h
+  const payloadObj = { i: cookieIndex, t: ts };
+  const payloadB64 = base64UrlEncodeBytes(encoder.encode(JSON.stringify(payloadObj)));
+  const sig = await signMessage(secret, payloadB64);
+  return `${payloadB64}.${sig}`;
+}
+
+async function verifyAndDecodeToken(token, secret) {
+  if (typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const [payloadB64, sig] = parts;
+  if (!payloadB64 || !sig) return null;
+
+  const expectedSig = await signMessage(secret, payloadB64);
+  if (expectedSig !== sig) return null;
+
+  let payload;
+  try {
+    payload = JSON.parse(decoder.decode(base64UrlDecodeToBytes(payloadB64)));
+  } catch {
+    return null;
+  }
+  if (!payload || !Number.isInteger(payload.i) || !Number.isInteger(payload.t)) return null;
+
+  const nowTs = Math.floor(Date.now() / TOKEN_TTL_MS);
+  if (payload.t !== nowTs && payload.t !== nowTs - 1) return null;
+  if (payload.i < 0 || payload.i >= COOKIES.length) return null;
+
+  return payload;
+}
+
+async function makeProgressToken(progressState, secret) {
+  const payloadB64 = base64UrlEncodeBytes(encoder.encode(JSON.stringify(progressState)));
+  const sig = await signMessage(secret, payloadB64);
+  return `${payloadB64}.${sig}`;
+}
+
+async function verifyProgressToken(token, expectedGame, expectedDate, secret) {
+  if (!token) return { game: expectedGame, date: expectedDate, wrong: 0, hint_used: false };
+  if (typeof token !== 'string') return null;
+
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const [payloadB64, sig] = parts;
+  if (!payloadB64 || !sig) return null;
+
+  const expectedSig = await signMessage(secret, payloadB64);
+  if (expectedSig !== sig) return null;
+
+  let payload;
+  try {
+    payload = JSON.parse(decoder.decode(base64UrlDecodeToBytes(payloadB64)));
+  } catch {
+    return null;
+  }
+  if (!payload || payload.game !== expectedGame || payload.date !== expectedDate) return null;
+  if (!Number.isInteger(payload.wrong) || payload.wrong < 0) return null;
+  if (typeof payload.hint_used !== 'boolean') return null;
+  return payload;
 }
 
 // Input sanitization — strip non-printable chars, enforce max length
@@ -320,13 +383,19 @@ export default {
     const target  = await getDailyTarget(env.COOKIE_SECRET);
     const target2 = await getDailyTarget2(env.COOKIE_SECRET);
     const target3 = await getDailyTarget3(env.COOKIE_SECRET);
+    const now = new Date();
+    const todayStr = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}`;
 
     // GET /unlimited/new — pick a random cookie, return a signed token
     // The cookie name never leaves the server; only the token does.
     if (url.pathname === '/unlimited/new' && request.method === 'GET') {
-      const cookie = COOKIES[crypto.getRandomValues(new Uint32Array(1))[0] % COOKIES.length];
-      const token  = await makeToken(cookie.cookie_name, env.COOKIE_SECRET);
-      return jsonResponse({ token }, 200, origin);
+      const cookieIndex = crypto.getRandomValues(new Uint32Array(1))[0] % COOKIES.length;
+      const token  = await makeToken(cookieIndex, env.COOKIE_SECRET);
+      const progress_token = await makeProgressToken(
+        { game: 'unlimited', date: 'rolling', wrong: 0, hint_used: false, token_bind: token },
+        env.COOKIE_SECRET
+      );
+      return jsonResponse({ token, progress_token }, 200, origin);
     }
 
     // POST /unlimited/guess — client sends { token, guess }
@@ -337,26 +406,31 @@ export default {
         return jsonResponse({ error: 'Invalid JSON' }, 400, origin);
       }
 
-      const token = sanitizeInput(body.token || '', 200);
+      const token = sanitizeInput(body.token || '', 300);
+      const progressToken = sanitizeInput(body.progress_token || '', 500);
       const guess = sanitizeInput(body.guess || '');
 
-      if (!token || !guess) return jsonResponse({ error: 'Missing token or guess' }, 400, origin);
-      if (token.length > 150) return jsonResponse({ error: 'Invalid token' }, 400, origin);
+      if (!token || !guess || !progressToken) return jsonResponse({ error: 'Missing token, progress token, or guess' }, 400, origin);
+      if (token.length > 280 || progressToken.length > 480) return jsonResponse({ error: 'Invalid token' }, 400, origin);
 
-      // Find the cookie whose HMAC matches the token
-      let target_u = null;
-      for (const c of COOKIES) {
-        if (await verifyToken(c.cookie_name, token, env.COOKIE_SECRET)) {
-          target_u = c;
-          break;
-        }
+      const tokenPayload = await verifyAndDecodeToken(token, env.COOKIE_SECRET);
+      if (!tokenPayload) return jsonResponse({ error: 'Invalid or expired token — click New Cookie to get a fresh one.' }, 400, origin);
+      const target_u = COOKIES[tokenPayload.i];
+
+      const progress = await verifyProgressToken(progressToken, 'unlimited', 'rolling', env.COOKIE_SECRET);
+      if (!progress || progress.token_bind !== token) {
+        return jsonResponse({ error: 'Invalid progress token — click New Cookie to start over.' }, 400, origin);
       }
-      if (!target_u) return jsonResponse({ error: 'Invalid or expired token — click New Cookie to get a fresh one.' }, 400, origin);
 
       const guessCookie = COOKIES.find(c => c.cookie_name.toLowerCase() === guess.toLowerCase());
       if (!guessCookie) return jsonResponse({ error: 'Cookie not found' }, 404, origin);
 
       const result = evaluateGuess(guessCookie, target_u);
+      const nextProgress = {
+        ...progress,
+        wrong: result.correct ? progress.wrong : progress.wrong + 1,
+      };
+      result.progress_token = await makeProgressToken(nextProgress, env.COOKIE_SECRET);
       if (result.correct) {
         result.cookie_name    = target_u.cookie_name;
         result.skill_name     = target_u.skill_name     || '';
@@ -371,19 +445,29 @@ export default {
       try { hintBody = await request.json(); } catch {
         return jsonResponse({ error: 'Invalid JSON' }, 400, origin);
       }
-      const token = sanitizeInput(hintBody.token || '', 200);
+      const token = sanitizeInput(hintBody.token || '', 300);
+      const progressToken = sanitizeInput(hintBody.progress_token || '', 500);
       const trait = sanitizeInput(hintBody.trait || '');
       const valid = ['primary_color','secondary_color','rarity','type','position'];
-      if (!token || !valid.includes(trait)) return jsonResponse({ error: 'Invalid request' }, 400, origin);
+      if (!token || !progressToken || !valid.includes(trait)) return jsonResponse({ error: 'Invalid request' }, 400, origin);
 
-      let target_u = null;
-      for (const c of COOKIES) {
-        if (await verifyToken(c.cookie_name, token, env.COOKIE_SECRET)) {
-          target_u = c; break;
-        }
+      const tokenPayload = await verifyAndDecodeToken(token, env.COOKIE_SECRET);
+      if (!tokenPayload) return jsonResponse({ error: 'Invalid or expired token' }, 400, origin);
+      const target_u = COOKIES[tokenPayload.i];
+
+      const progress = await verifyProgressToken(progressToken, 'unlimited', 'rolling', env.COOKIE_SECRET);
+      if (!progress || progress.token_bind !== token) {
+        return jsonResponse({ error: 'Invalid progress token — click New Cookie to start over.' }, 400, origin);
       }
-      if (!target_u) return jsonResponse({ error: 'Invalid or expired token' }, 400, origin);
-      return jsonResponse({ trait, value: target_u[trait] }, 200, origin);
+      if (progress.hint_used) return jsonResponse({ error: 'Hint already used this round' }, 403, origin);
+      if (progress.wrong < 5) return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
+
+      const nextProgress = { ...progress, hint_used: true };
+      return jsonResponse({
+        trait,
+        value: target_u[trait],
+        progress_token: await makeProgressToken(nextProgress, env.COOKIE_SECRET),
+      }, 200, origin);
     }
 
     // POST /guess — check a guess, return trait results
@@ -396,6 +480,7 @@ export default {
       }
 
       const guessName = sanitizeInput(body.guess || '').toLowerCase();
+      const stateToken = sanitizeInput(body.state_token || '', 500);
       if (!guessName) {
         return jsonResponse({ error: 'No guess provided' }, 400, origin);
       }
@@ -406,6 +491,13 @@ export default {
       }
 
       const result = evaluateGuess(guessCookie, target);
+      const state = await verifyProgressToken(stateToken, 'daily1', todayStr, env.COOKIE_SECRET);
+      if (!state) return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400, origin);
+      const nextState = {
+        ...state,
+        wrong: result.correct ? state.wrong : state.wrong + 1,
+      };
+      result.state_token = await makeProgressToken(nextState, env.COOKIE_SECRET);
 
       // If correct, also return skill info for the victory screen
       if (result.correct) {
@@ -417,25 +509,25 @@ export default {
       return jsonResponse(result, 200, origin);
     }
 
-    // GET /hint?trait=rarity&guesses=CookieA,CookieB,... — reveal one trait value
-    // Server verifies at least 5 of the provided guesses are genuinely wrong.
+    // GET /hint?trait=rarity&state_token=... — reveal one trait value
+    // Server verifies hint eligibility from signed progress state.
     if (url.pathname === '/hint' && request.method === 'GET') {
       const trait = sanitizeInput(url.searchParams.get('trait') || '');
+      const stateToken = sanitizeInput(url.searchParams.get('state_token') || '', 500);
       const valid = ['primary_color','secondary_color','rarity','type','position'];
       if (!valid.includes(trait)) {
         return jsonResponse({ error: 'Invalid trait' }, 400, origin);
       }
-      const guessesParam = sanitizeInput(url.searchParams.get('guesses') || '', 2000);
-      const guessNames = [...new Set(guessesParam.split(',').map(s => s.trim()).filter(Boolean))];
-      let wrongCount = 0;
-      for (const name of guessNames) {
-        const gc = COOKIES.find(c => c.cookie_name.toLowerCase() === name.toLowerCase());
-        if (gc && !evaluateGuess(gc, target).correct) wrongCount++;
-      }
-      if (wrongCount < 5) {
-        return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
-      }
-      return jsonResponse({ trait, value: target[trait] }, 200, origin);
+      const state = await verifyProgressToken(stateToken, 'daily1', todayStr, env.COOKIE_SECRET);
+      if (!state) return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400, origin);
+      if (state.hint_used) return jsonResponse({ error: 'Hint already used' }, 403, origin);
+      if (state.wrong < 5) return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
+      const nextState = { ...state, hint_used: true };
+      return jsonResponse({
+        trait,
+        value: target[trait],
+        state_token: await makeProgressToken(nextState, env.COOKIE_SECRET),
+      }, 200, origin);
     }
 
     // GET /cookies — returns full cookie list for autocomplete/display
@@ -473,34 +565,36 @@ export default {
       }
 
       const guessName = sanitizeInput(body.guess || '').toLowerCase();
+      const stateToken = sanitizeInput(body.state_token || '', 500);
       if (!guessName) {
         return jsonResponse({ error: 'No guess provided' }, 400, origin);
       }
 
+      const state = await verifyProgressToken(stateToken, 'daily2', todayStr, env.COOKIE_SECRET);
+      if (!state) return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400, origin);
       const correct = guessName === target2.cookie_name.toLowerCase();
+      const nextState = { ...state, wrong: correct ? state.wrong : state.wrong + 1 };
       return jsonResponse({
         correct,
         cookie_name: correct ? target2.cookie_name : undefined,
+        state_token: await makeProgressToken(nextState, env.COOKIE_SECRET),
       }, 200, origin);
     }
 
-    // GET /hint2?guesses=CookieA,CookieB,... — reveals rarity, type, and position
-    // Server verifies at least 5 of the provided guesses are genuinely wrong.
+    // GET /hint2?state_token=... — reveals rarity, type, and position
+    // Server verifies hint eligibility from signed progress state.
     if (url.pathname === '/hint2' && request.method === 'GET') {
-      const guessesParam = sanitizeInput(url.searchParams.get('guesses') || '', 2000);
-      const guessNames = [...new Set(guessesParam.split(',').map(s => s.trim()).filter(Boolean))];
-      let wrongCount = 0;
-      for (const name of guessNames) {
-        const gc = COOKIES.find(c => c.cookie_name.toLowerCase() === name.toLowerCase());
-        if (gc && gc.cookie_name.toLowerCase() !== target2.cookie_name.toLowerCase()) wrongCount++;
-      }
-      if (wrongCount < 5) {
-        return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
-      }
+      const stateToken = sanitizeInput(url.searchParams.get('state_token') || '', 500);
+      const state = await verifyProgressToken(stateToken, 'daily2', todayStr, env.COOKIE_SECRET);
+      if (!state) return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400, origin);
+      if (state.hint_used) return jsonResponse({ error: 'Hint already used' }, 403, origin);
+      if (state.wrong < 5) return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
+      const nextState = { ...state, hint_used: true };
       return jsonResponse({
         rarity:   target2.rarity,
         type:     target2.type,
         position: target2.position,
+        state_token: await makeProgressToken(nextState, env.COOKIE_SECRET),
       }, 200, origin);
     }
 
@@ -521,35 +615,37 @@ export default {
         return jsonResponse({ error: 'Invalid JSON' }, 400, origin);
       }
       const guessName = sanitizeInput(body.guess || '').toLowerCase();
+      const stateToken = sanitizeInput(body.state_token || '', 500);
       if (!guessName) return jsonResponse({ error: 'No guess provided' }, 400, origin);
 
+      const state = await verifyProgressToken(stateToken, 'daily3', todayStr, env.COOKIE_SECRET);
+      if (!state) return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400, origin);
       const guessCookie = COOKIES.find(c => c.cookie_name.toLowerCase() === guessName);
       if (!guessCookie) return jsonResponse({ error: 'Cookie not found' }, 404, origin);
 
       const correct = guessCookie.cookie_name.toLowerCase() === target3.cookie_name.toLowerCase();
+      const nextState = { ...state, wrong: correct ? state.wrong : state.wrong + 1 };
       return jsonResponse({
         correct,
         cookie_name: correct ? target3.cookie_name : undefined,
         filename:    correct ? target3.cookie_name.replace(/ /g, '_') + '.webp' : undefined,
+        state_token: await makeProgressToken(nextState, env.COOKIE_SECRET),
       }, 200, origin);
     }
 
-    // GET /hint3?guesses=CookieA,CookieB,... — reveals primary color, type, rarity after 5 wrong guesses
+    // GET /hint3?state_token=... — reveals primary color, type, rarity after 5 wrong guesses
     if (url.pathname === '/hint3' && request.method === 'GET') {
-      const guessesParam = sanitizeInput(url.searchParams.get('guesses') || '', 2000);
-      const guessNames = [...new Set(guessesParam.split(',').map(s => s.trim()).filter(Boolean))];
-      let wrongCount = 0;
-      for (const name of guessNames) {
-        const gc = COOKIES.find(c => c.cookie_name.toLowerCase() === name.toLowerCase());
-        if (gc && gc.cookie_name.toLowerCase() !== target3.cookie_name.toLowerCase()) wrongCount++;
-      }
-      if (wrongCount < 5) {
-        return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
-      }
+      const stateToken = sanitizeInput(url.searchParams.get('state_token') || '', 500);
+      const state = await verifyProgressToken(stateToken, 'daily3', todayStr, env.COOKIE_SECRET);
+      if (!state) return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400, origin);
+      if (state.hint_used) return jsonResponse({ error: 'Hint already used' }, 403, origin);
+      if (state.wrong < 5) return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
+      const nextState = { ...state, hint_used: true };
       return jsonResponse({
         primary_color: target3.primary_color,
         type:          target3.type,
         rarity:        target3.rarity,
+        state_token: await makeProgressToken(nextState, env.COOKIE_SECRET),
       }, 200, origin);
     }
 
