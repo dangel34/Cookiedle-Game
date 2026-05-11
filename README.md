@@ -124,6 +124,12 @@ git push origin master
 
 > **Note:** Adding or reordering cookies in the `COOKIES` array changes the daily hash results, shifting which cookie appears on each date.
 
+### Automated deployment (GitHub Actions)
+
+Pushing to `master` triggers `.github/workflows/deploy.yml`, which runs on the self-hosted GitHub Actions runner on the Raspberry Pi and rsyncs `docs/` to `/var/www/cookiedle/`. No manual step is needed — just push.
+
+> **Note:** This deploys the static frontend only. The Cloudflare Worker (`worker.js`) must still be deployed separately with `npm run deploy` when backend logic changes.
+
 ### First-time setup
 ```bash
 npm install
@@ -183,6 +189,8 @@ If frontend and worker versions are out of sync, users may see token errors. Dep
 
 ```
 Cookiedle-Game/
+├── .github/workflows/
+│   └── deploy.yml          # GitHub Actions: rsync docs/ to Pi on push to master
 ├── worker.js               # Cloudflare Worker (all backend logic)
 ├── wrangler.jsonc          # Wrangler config (assets directory, bindings)
 ├── package.json            # npm scripts (deploy)
