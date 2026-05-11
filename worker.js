@@ -211,14 +211,17 @@ async function getDailyTarget3(secret) {
 }
 
 // ─────────────────────────────────────────
-// CORS HEADERS — allow GitHub Pages domain
+// CORS HEADERS — allow GitHub Pages and Pi domains
 // ─────────────────────────────────────────
-const ALLOWED_ORIGIN = 'https://dangel34.github.io';
+const ALLOWED_ORIGINS = new Set([
+  'https://dangel34.github.io',
+  'https://cookiedle.nappi.work',
+]);
 
 function corsHeaders(origin) {
-  const allowed = origin === ALLOWED_ORIGIN;
+  const allowed = ALLOWED_ORIGINS.has(origin);
   return {
-    'Access-Control-Allow-Origin': allowed ? origin : ALLOWED_ORIGIN,
+    'Access-Control-Allow-Origin': allowed ? origin : 'https://dangel34.github.io',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
