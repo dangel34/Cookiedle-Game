@@ -136,14 +136,14 @@ let activeSuggestion3 = -1;
 // ─────────────────────────────────────────
 let turnstileToken = null;
 
-function onTurnstileToken(token) {
+window.onTurnstileToken = function (token) {
   turnstileToken = token;
-}
+};
 
 function consumeTurnstileToken() {
   const token = turnstileToken;
   turnstileToken = null;
-  if (typeof turnstile !== 'undefined') turnstile.reset('#turnstileWidget');
+  window.turnstile?.reset('#turnstileWidget');
   return token || '';
 }
 
