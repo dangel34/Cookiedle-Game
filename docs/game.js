@@ -143,6 +143,7 @@ const victoryEl = document.getElementById('victoryBanner');
 const vicCountEl = document.getElementById('victoryGuessCount');
 const vicNameEl = document.getElementById('victoryCookieName');
 const vicSkillEl = document.getElementById('victorySkill');
+const vicSpotlightEl = document.getElementById('victorySpotlight');
 const submitBtn = document.getElementById('submitBtn');
 const nextGameBtn = document.getElementById('nextGameBtn');
 const hintSection = document.getElementById('hintSection');
@@ -194,6 +195,42 @@ bindSuggestionBox(input3, suggestBox3);
 // ─────────────────────────────────────────
 // RESTORE SESSION
 // ─────────────────────────────────────────
+function restoreGame2Session() {
+  showGame2();
+  g2guesses.forEach((name) => addGame2Row(name, name === g2victoryName, false));
+  updateMeta2();
+  updateHint2();
+  if (g2won) {
+    input2.disabled = true;
+    submitBtn2.disabled = true;
+    if (!g3started) {
+      document.getElementById('g2VicCount').textContent =
+        g2guesses.length === 1
+          ? 'Got it in just 1 guess!'
+          : `Got it in ${g2guesses.length} guesses!`;
+      document.getElementById('g2VicName').textContent = `🍪 ${g2victoryName}`;
+      const g2Img = document.getElementById('g2VictoryImg');
+      g2Img.src = cookieImgSrc(g2victoryName);
+      g2Img.alt = g2victoryName;
+      g2Img.style.animation = 'none';
+      g2Img.style.display = '';
+      g2NextPrompt.classList.add('show');
+    }
+  }
+}
+
+function restoreGame3Session() {
+  showGame3();
+  g3guesses.forEach((name) => addGame3Row(name, name === g3victoryName, false));
+  updateMeta3();
+  updateHint3();
+  if (g3won) {
+    input3.disabled = true;
+    submitBtn3.disabled = true;
+    showFinalVictory(false);
+  }
+}
+
 function restoreSession() {
   // Restore game 1 rows
   guesses.forEach((name) => {
@@ -211,41 +248,8 @@ function restoreSession() {
     victoryImg.style.animation = 'none';
   }
 
-  if (g2started) {
-    showGame2();
-    g2guesses.forEach((name) => addGame2Row(name, name === g2victoryName, false));
-    updateMeta2();
-    updateHint2();
-    if (g2won) {
-      input2.disabled = true;
-      submitBtn2.disabled = true;
-      if (!g3started) {
-        document.getElementById('g2VicCount').textContent =
-          g2guesses.length === 1
-            ? 'Got it in just 1 guess!'
-            : `Got it in ${g2guesses.length} guesses!`;
-        document.getElementById('g2VicName').textContent = `🍪 ${g2victoryName}`;
-        const g2Img = document.getElementById('g2VictoryImg');
-        g2Img.src = cookieImgSrc(g2victoryName);
-        g2Img.alt = g2victoryName;
-        g2Img.style.animation = 'none';
-        g2Img.style.display = '';
-        g2NextPrompt.classList.add('show');
-      }
-    }
-  }
-
-  if (g3started) {
-    showGame3();
-    g3guesses.forEach((name) => addGame3Row(name, name === g3victoryName, false));
-    updateMeta3();
-    updateHint3();
-    if (g3won) {
-      input3.disabled = true;
-      submitBtn3.disabled = true;
-      showFinalVictory(false);
-    }
-  }
+  if (g2started) restoreGame2Session();
+  if (g3started) restoreGame3Session();
 }
 
 // ─────────────────────────────────────────
@@ -410,6 +414,7 @@ async function submitGuess() {
 
   if (data.correct) {
     won = true;
+    addToCollection(data.cookie_name);
     victoryData = {
       name: data.cookie_name,
       skill: data.skill_name || '',
@@ -539,6 +544,27 @@ function showVictory1(animate) {
   victoryImg.style.display = '';
   if (!animate) victoryEl.style.animation = 'none';
   victoryEl.classList.add('show');
+
+  vicSpotlightEl.textContent = '';
+  const cookieData = COOKIES.find((c) => c.cookie_name === victoryData.name);
+  if (cookieData) {
+    [
+      { label: 'Rarity', value: cookieData.rarity },
+      { label: 'Type', value: cookieData.type },
+      { label: 'Position', value: cookieData.position },
+    ].forEach(({ label, value }) => {
+      const chip = document.createElement('div');
+      chip.className = 'spotlight-chip';
+      const lbl = document.createElement('span');
+      lbl.className = 'spotlight-label';
+      lbl.textContent = label;
+      const val = document.createElement('span');
+      val.className = 'spotlight-value';
+      val.textContent = value;
+      chip.append(lbl, val);
+      vicSpotlightEl.appendChild(chip);
+    });
+  }
 }
 
 nextGameBtn.addEventListener('click', async () => {
@@ -637,6 +663,7 @@ async function submitGuess2() {
 
   if (data.correct) {
     g2won = true;
+    addToCollection(data.cookie_name);
     g2victoryName = data.cookie_name;
     saveState();
     input2.disabled = true;
@@ -827,6 +854,7 @@ async function submitGuess3() {
 
   if (data.correct) {
     g3won = true;
+    addToCollection(data.cookie_name);
     g3victoryName = data.cookie_name;
     saveState();
     input3.disabled = true;
@@ -1001,6 +1029,102 @@ const statsBtn = document.getElementById('statsBtn');
 const statsBtn2 = document.getElementById('statsBtn2');
 const modalClose = document.getElementById('modalClose');
 
+// ─────────────────────────────────────────
+// COOKIE COLLECTION
+// ─────────────────────────────────────────
+function getCollection() {
+  try {
+    return JSON.parse(localStorage.getItem('collection') || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function addToCollection(cookieName) {
+  const col = getCollection();
+  if (!col.includes(cookieName)) {
+    col.push(cookieName);
+    localStorage.setItem('collection', JSON.stringify(col));
+  }
+}
+
+const collectionModal = document.getElementById('collectionModal');
+const collectionClose = document.getElementById('collectionClose');
+const collectionBtn = document.getElementById('collectionBtn');
+const collectionBtn2 = document.getElementById('collectionBtn2');
+const collectionGrid = document.getElementById('collectionGrid');
+const collectionCount = document.getElementById('collectionCount');
+
+function renderCollection() {
+  const found = new Set(getCollection());
+  collectionCount.textContent = `${found.size} / ${COOKIES.length} identified`;
+  collectionGrid.textContent = '';
+  COOKIES.forEach((c) => {
+    const item = document.createElement('div');
+    const iFound = found.has(c.cookie_name);
+    item.className = `collection-item ${iFound ? 'found' : 'missing'}`;
+    item.title = iFound ? c.cookie_name : '???';
+    const img = document.createElement('img');
+    img.src = cookieImgSrc(c.cookie_name);
+    img.alt = iFound ? c.cookie_name : '';
+    img.width = 64;
+    img.height = 64;
+    img.loading = 'lazy';
+    const label = document.createElement('div');
+    label.className = 'collection-name';
+    label.textContent = iFound ? c.cookie_name : '???';
+    item.append(img, label);
+    collectionGrid.appendChild(item);
+  });
+}
+
+function openCollection() {
+  renderCollection();
+  collectionModal.classList.add('show');
+}
+function closeCollection() {
+  collectionModal.classList.remove('show');
+}
+
+collectionBtn.addEventListener('click', openCollection);
+collectionBtn2.addEventListener('click', openCollection);
+collectionClose.addEventListener('click', closeCollection);
+collectionModal.addEventListener('click', (e) => {
+  if (e.target === collectionModal) closeCollection();
+});
+
+// ─────────────────────────────────────────
+// TUTORIAL MODAL
+// ─────────────────────────────────────────
+const tutorialModal = document.getElementById('tutorialModal');
+const tutorialBtn = document.getElementById('tutorialBtn');
+const tutorialClose = document.getElementById('tutorialClose');
+const tutorialGotIt = document.getElementById('tutorialGotIt');
+
+function openTutorial() {
+  tutorialModal.classList.add('show');
+}
+function closeTutorial() {
+  tutorialModal.classList.remove('show');
+}
+
+tutorialBtn.addEventListener('click', openTutorial);
+tutorialClose.addEventListener('click', closeTutorial);
+tutorialGotIt.addEventListener('click', () => {
+  localStorage.setItem('seen_tutorial', '1');
+  closeTutorial();
+});
+tutorialModal.addEventListener('click', (e) => {
+  if (e.target === tutorialModal) closeTutorial();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeTutorial();
+    closeStats();
+    closeCollection();
+  }
+});
+
 function openStats() {
   renderStats();
   statsModal.classList.add('show');
@@ -1014,9 +1138,6 @@ statsBtn2.addEventListener('click', openStats);
 modalClose.addEventListener('click', closeStats);
 statsModal.addEventListener('click', (e) => {
   if (e.target === statsModal) closeStats();
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeStats();
 });
 
 // ─────────────────────────────────────────
@@ -1164,6 +1285,8 @@ async function init() {
   } catch {}
 
   restoreSession();
+
+  if (!localStorage.getItem('seen_tutorial')) openTutorial();
 }
 
 init();

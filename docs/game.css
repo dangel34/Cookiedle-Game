@@ -65,6 +65,138 @@
   display: flex;
 }
 
+/* ── COLLECTION MODAL ── */
+.collection-modal {
+  max-width: 580px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.collection-count {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 4px;
+}
+
+.collection-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.collection-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.collection-item img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.collection-item.missing img {
+  filter: grayscale(100%) brightness(0.35);
+}
+
+.collection-name {
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 76px;
+  width: 100%;
+}
+
+.collection-item.found .collection-name {
+  color: var(--text);
+}
+
+/* ── TUTORIAL MODAL ── */
+.tutorial-modal {
+  max-width: 540px;
+  max-height: 88vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.tutorial-section {
+  margin-bottom: 18px;
+}
+
+.tutorial-game-label {
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.tutorial-desc {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+.tutorial-example {
+  font-size: 0.8em;
+  margin-bottom: 10px;
+}
+
+.tutorial-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tutorial-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.tutorial-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.tutorial-hint-note {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0 0 20px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.tutorial-got-it {
+  width: 100%;
+}
+
 .modal {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -359,6 +491,46 @@
   flex-direction: column;
   gap: 6px;
   margin-bottom: 12px;
+}
+
+/* Tighten gap between skill line and spotlight */
+#victoryBanner .victory-skill {
+  margin-bottom: 8px;
+}
+
+/* ── VICTORY SPOTLIGHT ── */
+.victory-spotlight {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 4px 0 20px;
+}
+
+.spotlight-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 14px;
+  min-width: 72px;
+}
+
+.spotlight-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.spotlight-value {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-top: 2px;
 }
 
 /* ── FINAL VICTORY ── */

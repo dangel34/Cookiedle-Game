@@ -42,12 +42,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ## Phase 2 — UX & Accessibility
 
-### 2.1 Tutorial / How-to-Play Modal
-**Problem:** New players have no in-game explanation. The README explains it but most players never read it.
-
-**Solution:** On first visit (localStorage flag `seen_tutorial` not set), show a modal overlay that walks through one example guess with color-coded tiles. Include a "Got it" button. Add a `?` icon in the header to re-open it.
-
-**Effort:** Medium — HTML/CSS modal + ~30 lines of JS logic.
+~~### 2.1 Tutorial / How-to-Play Modal~~ ✅ **Done** — First-visit modal shows an example guess row with color legend and descriptions of all 3 games. `seen_tutorial` localStorage flag prevents re-showing. `? How to Play` button in header re-opens it anytime.
 
 ---
 
@@ -109,12 +104,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-### 3.2 Cookie Collection Tracker
-**Problem:** There's no persistent record of which cookies a player has successfully identified across days.
-
-**Solution:** After each win, add the cookie name to a `localStorage` set (`collection`). Add a `/collection` page (or modal) that shows a grid of all 174+ cookie thumbnails — revealed ones in color, unguessed ones greyed out. This adds a meta-goal beyond the daily streak.
-
-**Effort:** Medium — no API changes needed; entirely client-side using existing cookie data from `/cookies`.
+~~### 3.2 Cookie Collection Tracker~~ ✅ **Done** — After each daily game win, the cookie is added to `localStorage` key `collection`. `🍪 Collection` button in the header (and in the final victory section) opens a modal grid showing all cookies — identified ones in full color, unidentified ones greyed out with a count (`X / Y identified`).
 
 ---
 
@@ -156,16 +146,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-### 4.3 Privacy-Respecting Analytics
-**Problem:** There's no visibility into how many people play, which games they finish, what the average guess count is, or whether new cookies are being identified.
-
-**Solution:** Log aggregated events to [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) (free, no PII). Track:
-- Game played (1/2/3/unlimited), result (win/loss), guess count, whether hint was used
-- No IP, no fingerprint, no cookie name guessed
-
-View results in the Cloudflare dashboard or via the Analytics Engine SQL API.
-
-**Effort:** Medium — ~30 lines in `worker.js`, no frontend changes.
+~~### 4.3 Privacy-Respecting Analytics~~ ✅ **Done** — `ANALYTICS` binding added to `wrangler.jsonc` (`cookiedle_events` dataset). `env.ANALYTICS?.writeDataPoint()` called on every guess (win/wrong) and every hint request, logging event type, game ID, and wrong-count. No PII collected. Gracefully skipped if binding not configured.
 
 ---
 
@@ -216,12 +197,7 @@ View results in the Cloudflare dashboard or via the Analytics Engine SQL API.
 
 ---
 
-### 6.1 Deduplicate Game Handlers in Worker
-**Problem:** `worker.js` has three nearly-identical code paths for Game 1, 2, and 3 (guess handling, hint gating, token verification). A bug fix in one often needs to be applied to all three.
-
-**Solution:** Extract a `handleDailyGame({ gameId, request, env })` function that encapsulates the common logic (token verification, wrong-count gating, CORS). Each game registers its specific suffix and hint payload.
-
-**Effort:** Medium — refactor only, no behavior changes. Add tests (Phase 1.4) before and after to verify.
+~~### 6.1 Deduplicate Game Handlers in Worker~~ ✅ **Done** — Extracted `handleDailyHint()` (shared token verification, 5-wrong gate, hint_used check) and `handleDailyBinaryGuess()` (shared body parsing, token verification, correct check). Games 2 & 3 hint/guess handlers are now thin wrappers. Game 1 kept separate due to `evaluateGuess()` per-trait logic. Analytics (4.3) wired into both shared functions.
 
 ---
 
@@ -263,23 +239,23 @@ These ideas need more design work or have significant tradeoffs:
 | 1.2 | Rate limiting | Foundation | Medium | Low | |
 | 1.3 | Health check endpoint | Foundation | Trivial | Low | ✅ Done |
 | 1.4 | Unit tests for token logic | Foundation | Medium | Low | |
-| 2.1 | Tutorial modal | UX | Medium | Low | |
+| 2.1 | Tutorial modal | UX | Medium | Low | ✅ Done |
 | 2.2 | Countdown timer | UX | Small | Low | ✅ Done |
 | 2.3 | Accessibility pass | UX | Medium | Low | |
 | 2.4 | Canvas share card | UX | Large | Low | |
 | 2.5 | Tile flip animations | UX | Small | Low | ✅ Done |
 | 2.6 | Winner spotlight card | UX | Small | Low | |
 | 3.1 | Game 4 — Cooldown | Content | Large | Medium | |
-| 3.2 | Cookie collection | Content | Medium | Low | |
+| 3.2 | Cookie collection | Content | Medium | Low | ✅ Done |
 | 3.3 | Unlimited filters | Content | Medium | Low | |
 | 3.4 | Puzzle archive | Content | Large | Medium | |
 | 4.1 | KV cookie database | Backend | Large | High | |
 | 4.2 | Admin endpoint | Backend | Large | High | |
-| 4.3 | Analytics Engine | Backend | Medium | Low | |
+| 4.3 | Analytics Engine | Backend | Medium | Low | ✅ Done |
 | 4.4 | Automated cookie sync | Backend | Large | Medium | |
 | 5.1 | PWA / installable | PWA | Medium | Low | |
 | 5.2 | Push notifications | PWA | Very Large | High | |
 | 6.0 | SonarQube analysis | Quality | Small | Low | ✅ Done |
-| 6.1 | Deduplicate worker handlers | Quality | Medium | Low | |
+| 6.1 | Deduplicate worker handlers | Quality | Medium | Low | ✅ Done |
 | 6.2 | Frontend state manager | Quality | Medium | Low | |
 | 6.3 | ESLint + Prettier | Quality | Small | Low | |

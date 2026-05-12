@@ -10,4 +10,7 @@
     "directory": "docs",
     "binding": "ASSETS"
   },
+  "analytics_engine_datasets": [
+    { "binding": "ANALYTICS", "dataset": "cookiedle_events" }
+  ],
 }

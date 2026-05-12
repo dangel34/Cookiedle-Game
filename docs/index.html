@@ -31,6 +31,8 @@
         <div class="countdown-bar">Next cookies in <span id="headerCountdown">--:--:--</span></div>
         <div class="header-actions">
           <a class="header-btn" href="unlimited.html">♾️ Unlimited</a>
+          <button class="header-btn" id="tutorialBtn">? How to Play</button>
+          <button class="header-btn" id="collectionBtn">🍪 Collection</button>
           <button class="header-btn" id="statsBtn" style="display: none">📊 Stats</button>
         </div>
       </header>
@@ -58,6 +60,75 @@
               <div class="stat-label">Avg Guesses</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- ── TUTORIAL MODAL ── -->
+      <div class="modal-overlay" id="tutorialModal">
+        <div class="modal tutorial-modal">
+          <button class="modal-close" id="tutorialClose">✕</button>
+          <div class="modal-title">🍪 How to Play Cookiedle</div>
+
+          <div class="tutorial-section">
+            <div class="tutorial-game-label">Game 1 — Cookie Guesser</div>
+            <p class="tutorial-desc">Guess today's Cookie Run Kingdom cookie. Each guess reveals 5 traits.</p>
+            <div class="tutorial-example">
+              <div class="table-header">
+                <div class="col-head">Cookie</div>
+                <div class="col-head">Primary</div>
+                <div class="col-head">Secondary</div>
+                <div class="col-head">Rarity</div>
+                <div class="col-head">Type</div>
+                <div class="col-head">Position</div>
+              </div>
+              <div class="guess-row">
+                <div class="cell cell-name instant">GingerBrave</div>
+                <div class="cell cell-correct instant">Brown</div>
+                <div class="cell cell-wrong instant">White</div>
+                <div class="cell cell-partial instant">Common</div>
+                <div class="cell cell-wrong instant">Charge</div>
+                <div class="cell cell-correct instant">Front</div>
+              </div>
+            </div>
+            <div class="tutorial-legend">
+              <div class="tutorial-legend-item">
+                <div class="tutorial-dot" style="background: var(--green)"></div>
+                <span><strong>Green</strong> — correct</span>
+              </div>
+              <div class="tutorial-legend-item">
+                <div class="tutorial-dot" style="background: var(--orange)"></div>
+                <span><strong>Orange</strong> — color exists but swapped (primary ↔ secondary)</span>
+              </div>
+              <div class="tutorial-legend-item">
+                <div class="tutorial-dot" style="background: var(--red)"></div>
+                <span><strong>Red</strong> — wrong</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tutorial-section">
+            <div class="tutorial-game-label">Game 2 — Skill Guesser</div>
+            <p class="tutorial-desc">A skill image and cooldown are shown — guess which cookie owns that skill. ✅ or ❌ per guess.</p>
+          </div>
+
+          <div class="tutorial-section">
+            <div class="tutorial-game-label">Game 3 — Silhouette</div>
+            <p class="tutorial-desc">Identify a cookie from its black silhouette alone. ✅ or ❌ per guess.</p>
+          </div>
+
+          <p class="tutorial-hint-note">💡 A hint unlocks after 5 wrong guesses in any game.</p>
+
+          <button class="submit-btn tutorial-got-it" id="tutorialGotIt">Got it!</button>
+        </div>
+      </div>
+
+      <!-- ── COLLECTION MODAL ── -->
+      <div class="modal-overlay" id="collectionModal">
+        <div class="modal collection-modal">
+          <button class="modal-close" id="collectionClose">✕</button>
+          <div class="modal-title">🍪 Cookie Collection</div>
+          <div class="collection-count" id="collectionCount"></div>
+          <div class="collection-grid" id="collectionGrid"></div>
         </div>
       </div>
 
@@ -137,6 +208,7 @@
         />
         <div class="victory-cookie" id="victoryCookieName"></div>
         <div class="victory-skill" id="victorySkill"></div>
+        <div class="victory-spotlight" id="victorySpotlight"></div>
         <button class="next-game-btn" id="nextGameBtn">Next Challenge →</button>
       </div>
 
@@ -264,6 +336,13 @@
           style="background: var(--card); color: var(--text); margin-left: 8px"
         >
           📊 Stats
+        </button>
+        <button
+          class="share-btn"
+          id="collectionBtn2"
+          style="background: var(--card); color: var(--text); margin-left: 8px"
+        >
+          🍪 Collection
         </button>
         <div class="next-timer" id="nextTimer"></div>
       </div>
