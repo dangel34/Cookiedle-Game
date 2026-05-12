@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy Frontend
 
 on:
   push:
@@ -12,28 +12,3 @@ jobs:
 
       - name: Deploy to web root
         run: rsync -a --delete docs/ /var/www/cookiedle/
-
-  deploy-worker:
-    runs-on: ubuntu-latest
-    # Only run when backend files change
-    if: |
-      contains(github.event.commits[*].modified, 'worker.js') ||
-      contains(github.event.commits[*].modified, 'wrangler.jsonc') ||
-      contains(github.event.commits[*].added, 'worker.js') ||
-      contains(github.event.commits[*].added, 'wrangler.jsonc')
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Deploy Cloudflare Worker
-        run: npx wrangler deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

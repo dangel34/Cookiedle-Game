@@ -1,4 +1,4 @@
-// worker.js
+// worker.js Cloudflare Worker
 
 const COOKIES = [
   {cookie_name:"Adventurer Cookie",primary_color:"Brown",secondary_color:"White",rarity:"Rare",type:"Ambush",position:"Middle",skill_name:"Rope Master",skill_cooldown:12},
