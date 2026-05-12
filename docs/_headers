@@ -4,4 +4,4 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' https://cookiedle-worker.dangel33.workers.dev; connect-src https://cookiedle-worker.dangel33.workers.dev; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' https://cookiedle-worker.personal-account-bc0.workers.dev; connect-src https://cookiedle-worker.personal-account-bc0.workers.dev; frame-ancestors 'none'; base-uri 'none'; form-action 'none'

@@ -2,7 +2,7 @@
 // SHARED — loaded on every page
 // ─────────────────────────────────────────
 
-const WORKER_URL = 'https://cookiedle-worker.dangel33.workers.dev';
+const WORKER_URL = 'https://cookiedle-worker.personal-account-bc0.workers.dev';
 
 // Cookie list — populated by each page's init()
 let COOKIES = [];

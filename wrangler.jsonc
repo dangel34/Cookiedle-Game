@@ -10,7 +10,8 @@
     "directory": "docs",
     "binding": "ASSETS"
   },
-  "analytics_engine_datasets": [
-    { "binding": "ANALYTICS", "dataset": "cookiedle_events" }
-  ],
+  // Analytics Engine — uncomment after enabling at dash.cloudflare.com > Workers > Analytics Engine
+  // "analytics_engine_datasets": [
+  //   { "binding": "ANALYTICS", "dataset": "cookiedle_events" }
+  // ],
 }

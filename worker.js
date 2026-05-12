@@ -2037,7 +2037,11 @@ async function handleDailyHint({ url, env, origin, gameId, todayStr, buildPayloa
   if (state.hint_used) return jsonResponse({ error: 'Hint already used' }, 403, origin);
   if (state.wrong < 5) return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
   const nextState = { ...state, hint_used: true };
-  env.ANALYTICS?.writeDataPoint({ blobs: ['hint', gameId], doubles: [state.wrong], indexes: [gameId] });
+  env.ANALYTICS?.writeDataPoint({
+    blobs: ['hint', gameId],
+    doubles: [state.wrong],
+    indexes: [gameId],
+  });
   return jsonResponse(
     { ...buildPayload(), state_token: await makeProgressToken(nextState, env.COOKIE_SECRET) },
     200,
@@ -2114,7 +2118,11 @@ async function handleHint1({ url, env, origin, target, todayStr }) {
   const valid = ['primary_color', 'secondary_color', 'rarity', 'type', 'position'];
   if (!valid.includes(trait)) return jsonResponse({ error: 'Invalid trait' }, 400, origin);
   return handleDailyHint({
-    url, env, origin, gameId: 'daily1', todayStr,
+    url,
+    env,
+    origin,
+    gameId: 'daily1',
+    todayStr,
     buildPayload: () => ({ trait, value: target[trait] }),
   });
 }
@@ -2169,8 +2177,16 @@ async function handleGuess2({ request, env, origin, target2, todayStr }) {
 
 async function handleHint2({ url, env, origin, target2, todayStr }) {
   return handleDailyHint({
-    url, env, origin, gameId: 'daily2', todayStr,
-    buildPayload: () => ({ rarity: target2.rarity, type: target2.type, position: target2.position }),
+    url,
+    env,
+    origin,
+    gameId: 'daily2',
+    todayStr,
+    buildPayload: () => ({
+      rarity: target2.rarity,
+      type: target2.type,
+      position: target2.position,
+    }),
   });
 }
 
@@ -2193,8 +2209,16 @@ async function handleGuess3({ request, env, origin, target3, todayStr }) {
 
 async function handleHint3({ url, env, origin, target3, todayStr }) {
   return handleDailyHint({
-    url, env, origin, gameId: 'daily3', todayStr,
-    buildPayload: () => ({ primary_color: target3.primary_color, type: target3.type, rarity: target3.rarity }),
+    url,
+    env,
+    origin,
+    gameId: 'daily3',
+    todayStr,
+    buildPayload: () => ({
+      primary_color: target3.primary_color,
+      type: target3.type,
+      rarity: target3.rarity,
+    }),
   });
 }
 
