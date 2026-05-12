@@ -163,7 +163,7 @@ function restoreSession() {
   // Restore game 1 rows
   guesses.forEach(name => {
     const traitResults = results[name];
-    if (traitResults) addGuessRow(name, traitResults, false);
+    if (traitResults) addGuessRow(traitResults, false);
   });
   updateMeta();
   updateHint();
@@ -264,14 +264,6 @@ document.addEventListener('click', e => {
 });
 
 // ─────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────
-function cookieImgSrc(name) {
-  const safe = name.replace(/[^a-zA-Z0-9 'À-ɏ-]/g, '');
-  return `cookie_images/${safe.replaceAll(' ', '_')}.webp`;
-}
-
-// ─────────────────────────────────────────
 // GAME 1 — GUESS LOGIC
 // ─────────────────────────────────────────
 submitBtn.addEventListener('click', submitGuess);
@@ -320,7 +312,7 @@ async function submitGuess() {
   input.value = '';
   hideSuggestions(suggestBox);
 
-  addGuessRow(cookie.cookie_name, traitResults, true);
+  addGuessRow(traitResults, true);
   updateMeta();
   updateHint();
 
@@ -337,7 +329,7 @@ async function submitGuess() {
   }
 }
 
-function addGuessRow(cookieName, traitResults, animate) {
+function addGuessRow(traitResults, animate) {
   const row = document.createElement('div');
   row.className = 'guess-row';
   traitResults.forEach((trait, i) => {

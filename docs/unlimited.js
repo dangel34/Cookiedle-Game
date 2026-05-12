@@ -208,7 +208,7 @@ function showVictory(data) {
   }
   vicSolvedEl.textContent = solved;
   const victoryImg = document.getElementById('victoryImg');
-  victoryImg.src   = `cookie_images/${data.cookie_name.replaceAll(' ', '_')}.webp`;
+  victoryImg.src   = cookieImgSrc(data.cookie_name);
   victoryImg.alt   = data.cookie_name;
   victoryImg.style.animation = '';
   victoryImg.style.display   = '';

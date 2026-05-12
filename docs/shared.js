@@ -83,3 +83,8 @@ function updateActiveSugg(items, activeIdx, inp) {
 function bindSuggestionBox(inp, box) {
   box._input = inp;
 }
+
+function cookieImgSrc(name) {
+  const safe = name.replace(/[^a-zA-Z0-9 'À-ɏ]/g, '');
+  return `cookie_images/${safe.replaceAll(' ', '_')}.webp`;
+}

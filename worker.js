@@ -635,16 +635,23 @@ export default {
         return new Response(null, { status: 204, headers: corsHeaders(origin) });
       }
 
-      const target  = await getDailyTarget(env.COOKIE_SECRET);
-      const target2 = await getDailyTarget2(env.COOKIE_SECRET);
-      const target3 = await getDailyTarget3(env.COOKIE_SECRET);
       const now = new Date();
       const todayStr = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}`;
 
       const handler = ROUTES.get(`${request.method} ${url.pathname}`);
-      if (handler) return handler({ request, env, url, origin, target, target2, target3, todayStr });
+      if (!handler) return jsonResponse({ error: 'Not found' }, 404, origin);
 
-      return jsonResponse({ error: 'Not found' }, 404, origin);
+      const needsTarget1 = url.pathname === '/guess'  || url.pathname === '/hint';
+      const needsTarget2 = url.pathname === '/skill'  || url.pathname === '/skill-image' || url.pathname === '/guess2' || url.pathname === '/hint2';
+      const needsTarget3 = url.pathname === '/silhouette3-image' || url.pathname === '/guess3' || url.pathname === '/hint3';
+
+      const [target, target2, target3] = await Promise.all([
+        needsTarget1 ? getDailyTarget(env.COOKIE_SECRET)  : null,
+        needsTarget2 ? getDailyTarget2(env.COOKIE_SECRET) : null,
+        needsTarget3 ? getDailyTarget3(env.COOKIE_SECRET) : null,
+      ]);
+
+      return handler({ request, env, url, origin, target, target2, target3, todayStr });
     } catch (err) {
       console.error(err);
       return jsonResponse({ error: 'Internal server error' }, 500, origin);
