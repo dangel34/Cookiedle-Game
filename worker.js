@@ -1903,6 +1903,18 @@ async function verifyProgressToken(token, expectedGame, expectedDate, secret) {
   return payload;
 }
 
+// Verifies a Cloudflare Turnstile token server-side.
+async function verifyTurnstile(token, secret, ip) {
+  if (!token || !secret) return false;
+  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret, response: token, remoteip: ip }),
+  });
+  const data = await res.json();
+  return data.success === true;
+}
+
 // Input sanitization — strip non-printable chars, enforce max length
 function sanitizeInput(str, maxLen = 100) {
   if (typeof str !== 'string') return '';
@@ -2037,11 +2049,6 @@ async function handleDailyHint({ url, env, origin, gameId, todayStr, buildPayloa
   if (state.hint_used) return jsonResponse({ error: 'Hint already used' }, 403, origin);
   if (state.wrong < 5) return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403, origin);
   const nextState = { ...state, hint_used: true };
-  env.ANALYTICS?.writeDataPoint({
-    blobs: ['hint', gameId],
-    doubles: [state.wrong],
-    indexes: [gameId],
-  });
   return jsonResponse(
     { ...buildPayload(), state_token: await makeProgressToken(nextState, env.COOKIE_SECRET) },
     200,
@@ -2051,20 +2058,19 @@ async function handleDailyHint({ url, env, origin, gameId, todayStr, buildPayloa
 
 // Shared binary guess (Games 2 & 3): verifies token, checks correct, records analytics.
 // Caller must parse the request body and pass it as `body`.
-async function handleDailyBinaryGuess({ body, env, origin, gameId, todayStr, target }) {
+async function handleDailyBinaryGuess({ body, env, origin, gameId, todayStr, target, ip }) {
   const guessName = sanitizeInput(body.guess || '').toLowerCase();
   const stateToken = sanitizeInput(body.state_token || '', 500);
   if (!guessName) return jsonResponse({ error: 'No guess provided' }, 400, origin);
+  if (env.TURNSTILE_SECRET) {
+    const ok = await verifyTurnstile(body.cf_turnstile || '', env.TURNSTILE_SECRET, ip);
+    if (!ok) return jsonResponse({ error: 'Challenge failed — please try again.' }, 403, origin);
+  }
   const state = await verifyProgressToken(stateToken, gameId, todayStr, env.COOKIE_SECRET);
   if (!state)
     return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400, origin);
   const correct = guessName === target.cookie_name.toLowerCase();
   const nextState = { ...state, wrong: correct ? state.wrong : state.wrong + 1 };
-  env.ANALYTICS?.writeDataPoint({
-    blobs: [correct ? 'win' : 'wrong', gameId],
-    doubles: [nextState.wrong],
-    indexes: [gameId],
-  });
   return jsonResponse(
     {
       correct,
@@ -2080,7 +2086,7 @@ async function handleDailyBinaryGuess({ body, env, origin, gameId, todayStr, tar
 // GAME 1 HANDLERS
 // ─────────────────────────────────────────
 
-async function handleGuess1({ request, env, origin, target, todayStr }) {
+async function handleGuess1({ request, env, origin, target, todayStr, ip }) {
   let body;
   try {
     body = await request.json();
@@ -2090,6 +2096,10 @@ async function handleGuess1({ request, env, origin, target, todayStr }) {
   const guessName = sanitizeInput(body.guess || '').toLowerCase();
   const stateToken = sanitizeInput(body.state_token || '', 500);
   if (!guessName) return jsonResponse({ error: 'No guess provided' }, 400, origin);
+  if (env.TURNSTILE_SECRET) {
+    const ok = await verifyTurnstile(body.cf_turnstile || '', env.TURNSTILE_SECRET, ip);
+    if (!ok) return jsonResponse({ error: 'Challenge failed — please try again.' }, 403, origin);
+  }
 
   const guessCookie = COOKIES.find((c) => c.cookie_name.toLowerCase() === guessName);
   if (!guessCookie) return jsonResponse({ error: 'Cookie not found' }, 404, origin);
@@ -2105,11 +2115,6 @@ async function handleGuess1({ request, env, origin, target, todayStr }) {
     result.skill_cooldown = target.skill_cooldown || 0;
     result.cookie_name = target.cookie_name;
   }
-  env.ANALYTICS?.writeDataPoint({
-    blobs: [result.correct ? 'win' : 'wrong', 'daily1'],
-    doubles: [nextState.wrong],
-    indexes: ['daily1'],
-  });
   return jsonResponse(result, 200, origin);
 }
 
@@ -2165,14 +2170,14 @@ async function handleSilhouette3Image({ request, env, origin, target3 }) {
 // GAME 2 HANDLERS
 // ─────────────────────────────────────────
 
-async function handleGuess2({ request, env, origin, target2, todayStr }) {
+async function handleGuess2({ request, env, origin, target2, todayStr, ip }) {
   let body;
   try {
     body = await request.json();
   } catch {
     return jsonResponse({ error: 'Invalid JSON' }, 400, origin);
   }
-  return handleDailyBinaryGuess({ body, env, origin, gameId: 'daily2', todayStr, target: target2 });
+  return handleDailyBinaryGuess({ body, env, origin, gameId: 'daily2', todayStr, target: target2, ip });
 }
 
 async function handleHint2({ url, env, origin, target2, todayStr }) {
@@ -2194,7 +2199,7 @@ async function handleHint2({ url, env, origin, target2, todayStr }) {
 // GAME 3 HANDLERS
 // ─────────────────────────────────────────
 
-async function handleGuess3({ request, env, origin, target3, todayStr }) {
+async function handleGuess3({ request, env, origin, target3, todayStr, ip }) {
   let body;
   try {
     body = await request.json();
@@ -2202,9 +2207,9 @@ async function handleGuess3({ request, env, origin, target3, todayStr }) {
     return jsonResponse({ error: 'Invalid JSON' }, 400, origin);
   }
   const guessName = sanitizeInput(body.guess || '').toLowerCase();
-  if (guessName && !COOKIES.find((c) => c.cookie_name.toLowerCase() === guessName))
+  if (guessName && !COOKIES.some((c) => c.cookie_name.toLowerCase() === guessName))
     return jsonResponse({ error: 'Cookie not found' }, 404, origin);
-  return handleDailyBinaryGuess({ body, env, origin, gameId: 'daily3', todayStr, target: target3 });
+  return handleDailyBinaryGuess({ body, env, origin, gameId: 'daily3', todayStr, target: target3, ip });
 }
 
 async function handleHint3({ url, env, origin, target3, todayStr }) {
@@ -2293,7 +2298,8 @@ export default {
         needsTarget3 ? getDailyTarget3(env.COOKIE_SECRET) : null,
       ]);
 
-      return handler({ request, env, url, origin, target, target2, target3, todayStr });
+      const ip = request.headers.get('CF-Connecting-IP') || '';
+      return handler({ request, env, url, origin, target, target2, target3, todayStr, ip });
     } catch (err) {
       console.error(err);
       return jsonResponse({ error: 'Internal server error' }, 500, origin);

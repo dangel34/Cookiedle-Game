@@ -146,7 +146,16 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-~~### 4.3 Privacy-Respecting Analytics~~ ✅ **Done** — `ANALYTICS` binding added to `wrangler.jsonc` (`cookiedle_events` dataset). `env.ANALYTICS?.writeDataPoint()` called on every guess (win/wrong) and every hint request, logging event type, game ID, and wrong-count. No PII collected. Gracefully skipped if binding not configured.
+### 4.3 Privacy-Respecting Analytics
+**Problem:** There's no visibility into how many people play, which games they finish, what the average guess count is, or whether new cookies are being identified.
+
+**Solution:** Log aggregated events to [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) (free, no PII). Track:
+- Game played (1/2/3/unlimited), result (win/loss), guess count, whether hint was used
+- No IP, no fingerprint, no cookie name guessed
+
+View results in the Cloudflare dashboard or via the Analytics Engine SQL API.
+
+**Effort:** Medium — ~30 lines in `worker.js`, no frontend changes.
 
 ---
 
@@ -251,7 +260,7 @@ These ideas need more design work or have significant tradeoffs:
 | 3.4 | Puzzle archive | Content | Large | Medium | |
 | 4.1 | KV cookie database | Backend | Large | High | |
 | 4.2 | Admin endpoint | Backend | Large | High | |
-| 4.3 | Analytics Engine | Backend | Medium | Low | ✅ Done |
+| 4.3 | Analytics Engine | Backend | Medium | Low | |
 | 4.4 | Automated cookie sync | Backend | Large | Medium | |
 | 5.1 | PWA / installable | PWA | Medium | Low | |
 | 5.2 | Push notifications | PWA | Very Large | High | |
