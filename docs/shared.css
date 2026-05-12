@@ -186,7 +186,7 @@ header {
 
 .suggestion-item:last-child { border-bottom: none; }
 .suggestion-item:hover,
-.suggestion-item.active { background: rgba(233,69,96,0.2); color: #fff; }
+.suggestion-item.active { background: #7a1a33; color: #fff; }
 .suggestion-item.used   { opacity: 0.4; text-decoration: line-through; }
 
 /* ── STATUS BAR ── */

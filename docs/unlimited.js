@@ -132,8 +132,8 @@ function addGuessRow(traitResults, animate) {
     const cell = document.createElement('div');
     cell.className = `cell cell-${trait.result}`;
     cell.textContent = trait.value;
-    if (!animate) cell.classList.add('instant');
-    else setTimeout(() => cell.classList.add('revealed'), i * 700);
+    if (animate) setTimeout(() => cell.classList.add('revealed'), i * 700);
+    else cell.classList.add('instant');
     row.appendChild(cell);
   });
   historyEl.prepend(row);
@@ -208,7 +208,7 @@ function showVictory(data) {
   }
   vicSolvedEl.textContent = solved;
   const victoryImg = document.getElementById('victoryImg');
-  victoryImg.src   = `cookie_images/${data.cookie_name.replace(/ /g, '_')}.webp`;
+  victoryImg.src   = `cookie_images/${data.cookie_name.replaceAll(' ', '_')}.webp`;
   victoryImg.alt   = data.cookie_name;
   victoryImg.style.animation = '';
   victoryImg.style.display   = '';
@@ -278,8 +278,8 @@ async function init() {
 
   try {
     const res = await fetch(`${WORKER_URL}/cookies`);
-    if (!res.ok) throw new Error();
-    COOKIES = await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    COOKIES.splice(0, COOKIES.length, ...await res.json());
   } catch {
     showToast('Could not load cookies — please refresh.');
     return;

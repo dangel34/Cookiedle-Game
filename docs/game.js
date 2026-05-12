@@ -188,7 +188,7 @@ function restoreSession() {
         document.getElementById('g2VicCount').textContent = g2guesses.length === 1 ? 'Got it in just 1 guess!' : `Got it in ${g2guesses.length} guesses!`;
         document.getElementById('g2VicName').textContent  = `🍪 ${g2victoryName}`;
         const g2Img = document.getElementById('g2VictoryImg');
-        g2Img.src   = `cookie_images/${g2victoryName.replace(/ /g, '_')}.webp`;
+        g2Img.src   = cookieImgSrc(g2victoryName);
         g2Img.alt   = g2victoryName;
         g2Img.style.animation = 'none';
         g2Img.style.display   = '';
@@ -264,6 +264,14 @@ document.addEventListener('click', e => {
 });
 
 // ─────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────
+function cookieImgSrc(name) {
+  const safe = name.replace(/[^a-zA-Z0-9 'À-ɏ-]/g, '');
+  return `cookie_images/${safe.replaceAll(' ', '_')}.webp`;
+}
+
+// ─────────────────────────────────────────
 // GAME 1 — GUESS LOGIC
 // ─────────────────────────────────────────
 submitBtn.addEventListener('click', submitGuess);
@@ -336,8 +344,8 @@ function addGuessRow(cookieName, traitResults, animate) {
     const cell = document.createElement('div');
     cell.className = `cell cell-${trait.result}`;
     cell.textContent = trait.value;
-    if (!animate) cell.classList.add('instant');
-    else setTimeout(() => cell.classList.add('revealed'), i * 700);
+    if (animate) setTimeout(() => cell.classList.add('revealed'), i * 700);
+    else cell.classList.add('instant');
     row.appendChild(cell);
   });
   historyEl.prepend(row);
@@ -414,7 +422,7 @@ function showVictory1(animate) {
     vicSkillEl.textContent = '';
   }
   const victoryImg = document.getElementById('victoryImg');
-  victoryImg.src   = `cookie_images/${victoryData.name.replace(/ /g, '_')}.webp`;
+  victoryImg.src   = cookieImgSrc(victoryData.name);
   victoryImg.alt   = victoryData.name;
   if (!animate) victoryImg.style.animation = 'none';
   victoryImg.style.display = '';
@@ -514,7 +522,7 @@ async function submitGuess2() {
       document.getElementById('g2VicCount').textContent = g2guesses.length === 1 ? 'Got it in just 1 guess!' : `Got it in ${g2guesses.length} guesses!`;
       document.getElementById('g2VicName').textContent  = `🍪 ${data.cookie_name}`;
       const g2Img = document.getElementById('g2VictoryImg');
-      g2Img.src   = `cookie_images/${data.cookie_name.replace(/ /g, '_')}.webp`;
+      g2Img.src   = cookieImgSrc(data.cookie_name);
       g2Img.alt   = data.cookie_name;
       g2Img.style.display = '';
       g2NextPrompt.classList.add('show');
@@ -604,7 +612,7 @@ async function showGame3() {
   game3Section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   silhouetteImg.src = g3won
-    ? `cookie_images/${g3victoryName.replace(/ /g, '_')}.webp`
+    ? cookieImgSrc(g3victoryName)
     : `${WORKER_URL}/silhouette3-image`;
   silhouetteImg.style.display = '';
 
@@ -667,14 +675,14 @@ async function submitGuess3() {
 
     silhouetteImg.classList.add('fading');
     setTimeout(() => {
-      silhouetteImg.src = `cookie_images/${data.filename}`;
+      silhouetteImg.src = cookieImgSrc(data.cookie_name);
       silhouetteImg.classList.remove('fading');
     }, 400);
 
     setTimeout(() => showFinalVictory(true), 1000);
   } else {
     silhouetteImg.classList.remove('shake');
-    void silhouetteImg.offsetWidth;
+    silhouetteImg.getBoundingClientRect();
     silhouetteImg.classList.add('shake');
     input3.disabled = false; submitBtn3.disabled = false;
     saveState();
@@ -827,7 +835,7 @@ function startHeaderCountdown() {
 // FINAL VICTORY & SHARE
 // ─────────────────────────────────────────
 function showFinalVictory(animate) {
-  finalSub.textContent      = `Game 1: ${guesses.length} guess${guesses.length !== 1 ? 'es' : ''} · Game 2: ${g2guesses.length} guess${g2guesses.length !== 1 ? 'es' : ''} · Game 3: ${g3guesses.length} guess${g3guesses.length !== 1 ? 'es' : ''}`;
+  finalSub.textContent      = `Game 1: ${guesses.length} guess${guesses.length === 1 ? '' : 'es'} · Game 2: ${g2guesses.length} guess${g2guesses.length === 1 ? '' : 'es'} · Game 3: ${g3guesses.length} guess${g3guesses.length === 1 ? '' : 'es'}`;
   finalCookieEl.textContent = `🍪 ${g3victoryName}`;
   if (!animate) finalVictory.style.animation = 'none';
   finalVictory.classList.add('show');
@@ -836,76 +844,73 @@ function showFinalVictory(animate) {
   startNextCookieTimer();
 }
 
+function tickNextCookieTimer() {
+  const now      = new Date();
+  const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  const diff = tomorrow - now;
+  const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+  const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+  const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+  nextTimerEl.textContent = 'Next cookies in ';
+  const timerSpan = document.createElement('span');
+  timerSpan.textContent = `${h}:${m}:${s}`;
+  nextTimerEl.appendChild(timerSpan);
+}
+
 function startNextCookieTimer() {
-  function tick() {
-    const now      = new Date();
-    const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
-    const diff = tomorrow - now;
-    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-    nextTimerEl.textContent = 'Next cookies in ';
-    const timerSpan = document.createElement('span');
-    timerSpan.textContent = `${h}:${m}:${s}`;
-    nextTimerEl.appendChild(timerSpan);
-  }
-  tick();
-  setInterval(tick, 1000);
+  tickNextCookieTimer();
+  setInterval(tickNextCookieTimer, 1000);
+}
+
+function withHint(lines, hintUsedFlag, hintAfterGuessNum) {
+  if (!hintUsedFlag || hintAfterGuessNum == null) return lines;
+  const out = [...lines];
+  out.splice(hintAfterGuessNum, 0, '💡');
+  return out;
+}
+
+function traitResultEmoji(result) {
+  if (result === 'correct') return '🟩';
+  if (result === 'partial') return '🟨';
+  return '🟥';
 }
 
 shareBtn.addEventListener('click', () => {
   const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const s = loadStats();
-
-  // Insert a 💡 line after guess index hintAfterGuessNum (1-based), if hint was used
-  function withHint(lines, hintUsedFlag, hintAfterGuessNum) {
-    if (!hintUsedFlag || hintAfterGuessNum == null) return lines;
-    const out = [...lines];
-    out.splice(hintAfterGuessNum, 0, '💡');
-    return out;
-  }
-
   const sections = [`Cookiedle ${date} 🍪`];
 
-  // Map trait result state to share emoji.
-  function traitResultEmoji(result) {
-    if (result === 'correct') return '🟩';
-    if (result === 'partial') return '🟨';
-    return '🟥';
-  }
-
-  // Game 1 — trait grid (🟩/🟨/🟥 per trait, skip name cell at index 0)
   if (guesses.length > 0) {
     const n = guesses.length;
     const outcome = won ? '✅' : '❌';
-    sections.push(`\nGame 1 — ${n} guess${n !== 1 ? 'es' : ''} ${outcome}`);
+    sections.push(`\nGame 1 — ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
     const rows = guesses.map(name => {
-      const traitCells = (results[name] || []).slice(1); // drop name cell
+      const traitCells = (results[name] || []).slice(1);
       return traitCells.map(t => traitResultEmoji(t.result)).join('');
     });
     sections.push(...withHint(rows, hintUsed, hintAfterGuess));
   }
 
-  // Game 2 — binary correct/wrong per guess
   if (g2started && g2guesses.length > 0) {
     const n = g2guesses.length;
     const outcome = g2won ? '✅' : '❌';
-    sections.push(`\nGame 2 — ${n} guess${n !== 1 ? 'es' : ''} ${outcome}`);
+    sections.push(`\nGame 2 — ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
     const rows = g2guesses.map(name => name === g2victoryName ? '✅' : '❌');
     sections.push(...withHint(rows, g2hintUsed, g2hintAfterGuess));
   }
 
-  // Game 3 — binary correct/wrong per guess
   if (g3started && g3guesses.length > 0) {
     const n = g3guesses.length;
     const outcome = g3won ? '✅' : '❌';
-    sections.push(`\nGame 3 — ${n} guess${n !== 1 ? 'es' : ''} ${outcome}`);
+    sections.push(`\nGame 3 — ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
     const rows = g3guesses.map(name => name === g3victoryName ? '✅' : '❌');
     sections.push(...withHint(rows, g3hintUsed, g3hintAfterGuess));
   }
 
-  sections.push(`\nStreak: ${s.currentStreak} 🔥`);
-  sections.push(`\nThink you can do better? Play Cookiedle!\nhttps://dangel34.github.io/Cookiedle-Game`);
+  sections.push(
+    `\nStreak: ${s.currentStreak} 🔥`,
+    `\nThink you can do better? Play Cookiedle!\nhttps://cookiedle.nappi.work`
+  );
 
   const text = sections.join('\n');
   navigator.clipboard.writeText(text).then(() => showToast('Results copied!')).catch(() => showToast('Could not copy — try again.'));
@@ -924,7 +929,7 @@ async function init() {
   try {
     const res = await fetch(`${WORKER_URL}/cookies`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    COOKIES = await res.json();
+    COOKIES.splice(0, COOKIES.length, ...await res.json());
   } catch (e) {
     input.placeholder  = 'Type a cookie name...';
     input.disabled     = false;

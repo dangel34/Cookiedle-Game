@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup
 
 BASE_URL   = 'https://www.noff.gg'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_DIR  = os.path.join(SCRIPT_DIR, 'cookie_images')
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, 'cookie_skill_images')
+INPUT_DIR  = os.path.join(SCRIPT_DIR, '..', 'docs', 'cookie_images')
+OUTPUT_DIR = os.path.join(SCRIPT_DIR, '..', 'docs', 'cookie_skill_images')
 
 HEADERS = {
     'User-Agent': (

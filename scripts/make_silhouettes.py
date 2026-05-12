@@ -1,15 +1,16 @@
 from PIL import Image
 import os
 
-INPUT_DIR  = 'cookie_images'
-OUTPUT_DIR = 'cookie_silhouettes'
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+INPUT_DIR  = os.path.join(SCRIPT_DIR, '..', 'docs', 'cookie_images')
+OUTPUT_DIR = os.path.join(SCRIPT_DIR, '..', 'docs', 'cookie_silhouettes')
 
 # Color of the silhouette (dark gray works better than pure black for UI)
 SILHOUETTE_COLOR = (0, 0, 0)
 
 def make_silhouette(src_path, dest_path):
     img = Image.open(src_path).convert('RGBA')
-    r, g, b, a = img.split()
+    _, _, _, a = img.split()
 
     # Fill a solid-color canvas the same size, then stamp the original alpha on it
     silhouette = Image.new('RGBA', img.size, SILHOUETTE_COLOR + (255,))

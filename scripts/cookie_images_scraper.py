@@ -5,7 +5,8 @@ from bs4 import BeautifulSoup
 
 URL      = 'https://www.noff.gg/cookie-run-kingdom/cookies'
 BASE_URL = 'https://www.noff.gg'
-OUTPUT_DIR = 'cookie_images'
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.join(SCRIPT_DIR, '..', 'docs', 'cookie_images')
 
 HEADERS = {
     'User-Agent': (
