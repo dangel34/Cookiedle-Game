@@ -2,9 +2,18 @@
   "name": "cookiedle",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "lint": "eslint worker.js docs/**/*.js",
+    "lint:fix": "eslint --fix worker.js docs/**/*.js",
+    "format": "prettier --write worker.js docs/**/*.js docs/**/*.css docs/**/*.html",
+    "format:check": "prettier --check worker.js docs/**/*.js docs/**/*.css docs/**/*.html"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3",
     "wrangler": "^4"
   }
 }

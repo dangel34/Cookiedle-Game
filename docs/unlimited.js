@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────
-let token     = null;
+let token = null;
 let progressToken = null;
-let guesses   = [];
-let won       = false;
-let round     = 1;
-let solved    = 0;
-let hintUsed  = false;
+let guesses = [];
+let won = false;
+let round = 1;
+let solved = 0;
+let hintUsed = false;
 let hintTrait = null;
 let hintValue = null;
 let activeSuggestion = -1;
@@ -15,23 +15,23 @@ let activeSuggestion = -1;
 // ─────────────────────────────────────────
 // DOM REFS
 // ─────────────────────────────────────────
-const input       = document.getElementById('guessInput');
-const suggestBox  = document.getElementById('suggestions');
-const submitBtn   = document.getElementById('submitBtn');
-const historyEl   = document.getElementById('guessHistory');
-const metaEl      = document.getElementById('guessMeta');
-const alreadyEl   = document.getElementById('alreadyGuessed');
+const input = document.getElementById('guessInput');
+const suggestBox = document.getElementById('suggestions');
+const submitBtn = document.getElementById('submitBtn');
+const historyEl = document.getElementById('guessHistory');
+const metaEl = document.getElementById('guessMeta');
+const alreadyEl = document.getElementById('alreadyGuessed');
 const hintSection = document.getElementById('hintSection');
-const hintBtn     = document.getElementById('hintBtn');
-const hintPicker  = document.getElementById('hintPicker');
-const hintReveal  = document.getElementById('hintReveal');
-const victoryEl   = document.getElementById('victoryBanner');
-const vicCountEl  = document.getElementById('vicCount');
-const vicNameEl   = document.getElementById('vicName');
-const vicSkillEl  = document.getElementById('vicSkill');
+const hintBtn = document.getElementById('hintBtn');
+const hintPicker = document.getElementById('hintPicker');
+const hintReveal = document.getElementById('hintReveal');
+const victoryEl = document.getElementById('victoryBanner');
+const vicCountEl = document.getElementById('vicCount');
+const vicNameEl = document.getElementById('vicName');
+const vicSkillEl = document.getElementById('vicSkill');
 const vicSolvedEl = document.getElementById('vicSolved');
-const newCookieBtn= document.getElementById('newCookieBtn');
-const roundNumEl  = document.getElementById('roundNum');
+const newCookieBtn = document.getElementById('newCookieBtn');
+const roundNumEl = document.getElementById('roundNum');
 const solvedNumEl = document.getElementById('solvedNum');
 
 // Bind suggestion box to its input for shared autocomplete
@@ -46,15 +46,31 @@ input.addEventListener('input', () => {
   buildSuggestions(input.value.trim(), guesses, suggestBox);
 });
 
-input.addEventListener('keydown', e => {
+input.addEventListener('keydown', (e) => {
   const items = suggestBox.querySelectorAll('.suggestion-item');
-  if (e.key === 'ArrowDown') { e.preventDefault(); activeSuggestion = Math.min(activeSuggestion + 1, items.length - 1); updateActiveSugg(items, activeSuggestion, input); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); activeSuggestion = Math.max(activeSuggestion - 1, -1); updateActiveSugg(items, activeSuggestion, input); }
-  else if (e.key === 'Enter') { if (activeSuggestion >= 0 && items[activeSuggestion]) { e.preventDefault(); selectSuggestion(items[activeSuggestion].textContent, input, suggestBox); } else { submitGuess(); } }
-  else if (e.key === 'Escape') { hideSuggestions(suggestBox); }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    activeSuggestion = Math.min(activeSuggestion + 1, items.length - 1);
+    updateActiveSugg(items, activeSuggestion, input);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    activeSuggestion = Math.max(activeSuggestion - 1, -1);
+    updateActiveSugg(items, activeSuggestion, input);
+  } else if (e.key === 'Enter') {
+    if (activeSuggestion >= 0 && items[activeSuggestion]) {
+      e.preventDefault();
+      selectSuggestion(items[activeSuggestion].textContent, input, suggestBox);
+    } else {
+      submitGuess();
+    }
+  } else if (e.key === 'Escape') {
+    hideSuggestions(suggestBox);
+  }
 });
 
-document.addEventListener('click', e => { if (!e.target.closest('.input-wrap')) hideSuggestions(suggestBox); });
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.input-wrap')) hideSuggestions(suggestBox);
+});
 
 // ─────────────────────────────────────────
 // GUESS
@@ -66,11 +82,19 @@ async function submitGuess() {
   const raw = input.value.trim();
   if (!raw) return;
 
-  const cookie = COOKIES.find(c => c.cookie_name.toLowerCase() === raw.toLowerCase());
-  if (!cookie) { showToast('Cookie not found — check your spelling!'); return; }
-  if (guesses.includes(cookie.cookie_name)) { alreadyEl.textContent = `Already guessed ${cookie.cookie_name}!`; return; }
+  const cookie = COOKIES.find((c) => c.cookie_name.toLowerCase() === raw.toLowerCase());
+  if (!cookie) {
+    showToast('Cookie not found — check your spelling!');
+    return;
+  }
+  if (guesses.includes(cookie.cookie_name)) {
+    alreadyEl.textContent = `Already guessed ${cookie.cookie_name}!`;
+    return;
+  }
 
-  input.disabled = true; submitBtn.disabled = true; alreadyEl.textContent = '';
+  input.disabled = true;
+  submitBtn.disabled = true;
+  alreadyEl.textContent = '';
 
   let data;
   try {
@@ -82,7 +106,8 @@ async function submitGuess() {
     data = await res.json();
   } catch {
     showToast('Connection error — please try again.');
-    input.disabled = false; submitBtn.disabled = false;
+    input.disabled = false;
+    submitBtn.disabled = false;
     return;
   }
 
@@ -94,18 +119,19 @@ async function submitGuess() {
     } else {
       showToast(data.error);
     }
-    input.disabled = false; submitBtn.disabled = false;
+    input.disabled = false;
+    submitBtn.disabled = false;
     return;
   }
   if (data.progress_token) progressToken = data.progress_token;
 
   const traitResults = [
-    { value: cookie.cookie_name,     result: 'name' },
-    { value: cookie.primary_color,   result: data.primary_color },
+    { value: cookie.cookie_name, result: 'name' },
+    { value: cookie.primary_color, result: data.primary_color },
     { value: cookie.secondary_color, result: data.secondary_color },
-    { value: cookie.rarity,          result: data.rarity },
-    { value: cookie.type,            result: data.type },
-    { value: cookie.position,        result: data.position },
+    { value: cookie.rarity, result: data.rarity },
+    { value: cookie.type, result: data.type },
+    { value: cookie.position, result: data.position },
   ];
 
   guesses.push(cookie.cookie_name);
@@ -116,12 +142,15 @@ async function submitGuess() {
   updateHint();
 
   if (data.correct) {
-    won = true; solved++;
+    won = true;
+    solved++;
     solvedNumEl.textContent = solved;
-    input.disabled = true; submitBtn.disabled = true;
+    input.disabled = true;
+    submitBtn.disabled = true;
     setTimeout(() => showVictory(data), 6 * 700 + 400);
   } else {
-    input.disabled = false; submitBtn.disabled = false;
+    input.disabled = false;
+    submitBtn.disabled = false;
   }
 }
 
@@ -142,15 +171,23 @@ function addGuessRow(traitResults, animate) {
 // ─────────────────────────────────────────
 // META & HINT
 // ─────────────────────────────────────────
-function wrongCount() { return won ? guesses.length - 1 : guesses.length; }
+function wrongCount() {
+  return won ? guesses.length - 1 : guesses.length;
+}
 
 function updateMeta() {
-  if (!guesses.length) { metaEl.textContent = ''; return; }
+  if (!guesses.length) {
+    metaEl.textContent = '';
+    return;
+  }
   metaEl.textContent = guesses.length === 1 ? '1 guess so far' : `${guesses.length} guesses so far`;
 }
 
 function updateHint() {
-  if (won) { hintSection.classList.remove('show'); return; }
+  if (won) {
+    hintSection.classList.remove('show');
+    return;
+  }
   hintSection.classList.toggle('show', wrongCount() >= 5);
   if (hintUsed && hintTrait && hintValue) {
     hintBtn.style.display = 'none';
@@ -169,7 +206,7 @@ hintBtn.addEventListener('click', () => {
   hintPicker.classList.add('show');
 });
 
-hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
+hintPicker.querySelectorAll('.hint-choice').forEach((btn) => {
   btn.addEventListener('click', async () => {
     const trait = btn.dataset.trait;
     let value;
@@ -180,11 +217,21 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
         body: JSON.stringify({ token, progress_token: progressToken, trait }),
       });
       const data = await res.json();
-      if (data.error) { showToast(data.error); hintBtn.disabled = false; return; }
+      if (data.error) {
+        showToast(data.error);
+        hintBtn.disabled = false;
+        return;
+      }
       value = data.value;
       if (data.progress_token) progressToken = data.progress_token;
-    } catch { showToast('Could not fetch hint — please try again.'); hintBtn.disabled = false; return; }
-    hintUsed = true; hintTrait = trait; hintValue = value;
+    } catch {
+      showToast('Could not fetch hint — please try again.');
+      hintBtn.disabled = false;
+      return;
+    }
+    hintUsed = true;
+    hintTrait = trait;
+    hintValue = value;
     hintBtn.style.display = 'none';
     hintPicker.classList.remove('show');
     hintReveal.textContent = `💡 ${TRAIT_LABELS[trait]}: ${value}`;
@@ -196,8 +243,9 @@ hintPicker.querySelectorAll('.hint-choice').forEach(btn => {
 // VICTORY
 // ─────────────────────────────────────────
 function showVictory(data) {
-  vicCountEl.textContent = guesses.length === 1 ? 'Got it in just 1 guess!' : `Got it in ${guesses.length} guesses!`;
-  vicNameEl.textContent  = `🍪 ${data.cookie_name}`;
+  vicCountEl.textContent =
+    guesses.length === 1 ? 'Got it in just 1 guess!' : `Got it in ${guesses.length} guesses!`;
+  vicNameEl.textContent = `🍪 ${data.cookie_name}`;
   vicSkillEl.textContent = '';
   if (data.skill_name) {
     const skillSpan = document.createElement('span');
@@ -208,27 +256,27 @@ function showVictory(data) {
   }
   vicSolvedEl.textContent = solved;
   const victoryImg = document.getElementById('victoryImg');
-  victoryImg.src   = cookieImgSrc(data.cookie_name);
-  victoryImg.alt   = data.cookie_name;
+  victoryImg.src = cookieImgSrc(data.cookie_name);
+  victoryImg.alt = data.cookie_name;
   victoryImg.style.animation = '';
-  victoryImg.style.display   = '';
+  victoryImg.style.display = '';
   victoryEl.classList.add('show');
 }
 
 newCookieBtn.addEventListener('click', startNewRound);
 
 async function startNewRound() {
-  guesses   = [];
-  won       = false;
-  hintUsed  = false;
+  guesses = [];
+  won = false;
+  hintUsed = false;
   hintTrait = null;
   hintValue = null;
-  token     = null;
+  token = null;
   progressToken = null;
   round++;
 
-  historyEl.innerHTML   = '';
-  metaEl.textContent    = '';
+  historyEl.innerHTML = '';
+  metaEl.textContent = '';
   alreadyEl.textContent = '';
   hintSection.classList.remove('show');
   hintBtn.style.display = '';
@@ -243,14 +291,14 @@ async function startNewRound() {
   victoryImg.src = '';
   roundNumEl.textContent = round;
 
-  input.disabled     = true;
+  input.disabled = true;
   submitBtn.disabled = true;
-  input.placeholder  = 'Loading...';
+  input.placeholder = 'Loading...';
 
   await fetchNewToken();
 
-  input.placeholder  = 'Type a cookie name...';
-  input.disabled     = false;
+  input.placeholder = 'Type a cookie name...';
+  input.disabled = false;
   submitBtn.disabled = false;
   input.focus();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -279,7 +327,7 @@ async function init() {
   try {
     const res = await fetch(`${WORKER_URL}/cookies`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    COOKIES.splice(0, COOKIES.length, ...await res.json());
+    COOKIES.splice(0, COOKIES.length, ...(await res.json()));
   } catch {
     showToast('Could not load cookies — please refresh.');
     return;
@@ -287,8 +335,8 @@ async function init() {
 
   await fetchNewToken();
 
-  input.placeholder  = 'Type a cookie name...';
-  input.disabled     = false;
+  input.placeholder = 'Type a cookie name...';
+  input.disabled = false;
   submitBtn.disabled = false;
   input.focus();
 }

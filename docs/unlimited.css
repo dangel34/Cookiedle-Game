@@ -15,10 +15,15 @@
   font-weight: 700;
   cursor: pointer;
   text-decoration: none;
-  transition: border-color 0.2s, color 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
 }
 
-.back-btn:hover { border-color: var(--accent); color: var(--text); }
+.back-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
 
 .round-counter {
   text-align: center;
@@ -30,7 +35,9 @@
   margin-bottom: 20px;
 }
 
-.round-counter span { color: var(--gold); }
+.round-counter span {
+  color: var(--gold);
+}
 
 .new-cookie-btn {
   padding: 12px 36px;
@@ -42,11 +49,17 @@
   font-size: 0.95rem;
   font-weight: 800;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 }
 
-.new-cookie-btn:hover  { background: #c73650; }
-.new-cookie-btn:active { transform: scale(0.97); }
+.new-cookie-btn:hover {
+  background: #c73650;
+}
+.new-cookie-btn:active {
+  transform: scale(0.97);
+}
 
 .stats-line {
   margin-top: 16px;
@@ -55,4 +68,7 @@
   font-weight: 600;
 }
 
-.stats-line span { color: var(--gold); font-weight: 800; }
+.stats-line span {
+  color: var(--gold);
+  font-weight: 800;
+}

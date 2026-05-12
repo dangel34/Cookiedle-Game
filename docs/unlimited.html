@@ -1,89 +1,125 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Cookiedle ♾️ Unlimited</title>
-<meta name="description" content="Unlimited Cookie Run: Kingdom guessing game — practice as many as you like!"/>
-<meta property="og:title" content="Cookiedle ♾️ Unlimited"/>
-<meta property="og:description" content="Unlimited Cookie Run: Kingdom guessing game — practice as many as you like!"/>
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://cookiedle.nappi.work/unlimited.html"/>
-<meta property="og:image" content="https://cookiedle.nappi.work/cookie_images/GingerBrave.webp"/>
-<link rel="icon" href="cookie_images/GingerBrave.webp" type="image/webp"/>
-<link rel="stylesheet" href="shared.css"/>
-<link rel="stylesheet" href="unlimited.css"/>
-</head>
-<body>
-<div class="wrap">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cookiedle ♾️ Unlimited</title>
+    <meta
+      name="description"
+      content="Unlimited Cookie Run: Kingdom guessing game — practice as many as you like!"
+    />
+    <meta property="og:title" content="Cookiedle ♾️ Unlimited" />
+    <meta
+      property="og:description"
+      content="Unlimited Cookie Run: Kingdom guessing game — practice as many as you like!"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cookiedle.nappi.work/unlimited.html" />
+    <meta
+      property="og:image"
+      content="https://cookiedle.nappi.work/cookie_images/GingerBrave.webp"
+    />
+    <link rel="icon" href="cookie_images/GingerBrave.webp" type="image/webp" />
+    <link rel="stylesheet" href="shared.css" />
+    <link rel="stylesheet" href="unlimited.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="logo">Cookiedle ♾️</div>
+        <div class="subtitle">Unlimited Mode</div>
+        <a class="back-btn" href="index.html">← Back to Daily</a>
+      </header>
 
-  <header>
-    <div class="logo">Cookiedle ♾️</div>
-    <div class="subtitle">Unlimited Mode</div>
-    <a class="back-btn" href="index.html">← Back to Daily</a>
-  </header>
+      <div class="how-to">
+        <strong>Unlimited Mode:</strong> Guess any cookie — no daily limit! Each guess reveals how
+        close you are across 5 traits. Win and hit "New Cookie" to keep playing.
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background: var(--green)"></div>
+            Correct
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background: var(--orange)"></div>
+            Color swapped (primary ↔ secondary)
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background: var(--red)"></div>
+            Wrong
+          </div>
+        </div>
+      </div>
 
-  <div class="how-to">
-    <strong>Unlimited Mode:</strong> Guess any cookie — no daily limit! Each guess reveals how close you are across 5 traits. Win and hit "New Cookie" to keep playing.
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Correct</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Color swapped (primary ↔ secondary)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Wrong</div>
+      <div class="round-counter">
+        Round <span id="roundNum">1</span> · Solved: <span id="solvedNum">0</span>
+      </div>
+
+      <div class="guess-section">
+        <div class="input-wrap">
+          <input
+            id="guessInput"
+            class="guess-input"
+            type="text"
+            placeholder="Loading..."
+            autocomplete="off"
+            spellcheck="false"
+            disabled
+          />
+          <button class="submit-btn" id="submitBtn" disabled>Guess</button>
+          <div class="suggestions" id="suggestions" style="display: none"></div>
+        </div>
+        <div class="already-guessed" id="alreadyGuessed"></div>
+        <div class="guess-meta" id="guessMeta"></div>
+      </div>
+
+      <div class="table-header">
+        <div class="col-head">Cookie</div>
+        <div class="col-head">Primary</div>
+        <div class="col-head">Secondary</div>
+        <div class="col-head">Rarity</div>
+        <div class="col-head">Type</div>
+        <div class="col-head">Position</div>
+      </div>
+
+      <div class="guess-history" id="guessHistory"></div>
+
+      <div class="hint-section" id="hintSection">
+        <button class="hint-btn" id="hintBtn">💡 Get Hint</button>
+        <div class="hint-picker" id="hintPicker">
+          <button class="hint-choice" data-trait="primary_color">Primary Color</button>
+          <button class="hint-choice" data-trait="secondary_color">Secondary Color</button>
+          <button class="hint-choice" data-trait="rarity">Rarity</button>
+          <button class="hint-choice" data-trait="type">Type</button>
+          <button class="hint-choice" data-trait="position">Position</button>
+        </div>
+        <div class="hint-reveal" id="hintReveal"></div>
+      </div>
+
+      <div class="victory" id="victoryBanner">
+        <div class="victory-emoji">🎉</div>
+        <div class="victory-title">You got it!</div>
+        <div class="victory-sub" id="vicCount"></div>
+        <img
+          id="victoryImg"
+          class="victory-img"
+          src=""
+          alt=""
+          width="160"
+          height="160"
+          loading="lazy"
+          style="display: none"
+        />
+        <div class="victory-cookie" id="vicName"></div>
+        <div class="victory-skill" id="vicSkill"></div>
+        <button class="new-cookie-btn" id="newCookieBtn">New Cookie 🍪</button>
+        <div class="stats-line">Total solved: <span id="vicSolved">0</span></div>
+      </div>
     </div>
-  </div>
 
-  <div class="round-counter">Round <span id="roundNum">1</span> · Solved: <span id="solvedNum">0</span></div>
+    <a class="easter-egg" href="secret.html">psst...</a>
+    <div class="toast" id="toast"></div>
 
-  <div class="guess-section">
-    <div class="input-wrap">
-      <input id="guessInput" class="guess-input" type="text" placeholder="Loading..." autocomplete="off" spellcheck="false" disabled/>
-      <button class="submit-btn" id="submitBtn" disabled>Guess</button>
-      <div class="suggestions" id="suggestions" style="display:none"></div>
-    </div>
-    <div class="already-guessed" id="alreadyGuessed"></div>
-    <div class="guess-meta" id="guessMeta"></div>
-  </div>
-
-  <div class="table-header">
-    <div class="col-head">Cookie</div>
-    <div class="col-head">Primary</div>
-    <div class="col-head">Secondary</div>
-    <div class="col-head">Rarity</div>
-    <div class="col-head">Type</div>
-    <div class="col-head">Position</div>
-  </div>
-
-  <div class="guess-history" id="guessHistory"></div>
-
-  <div class="hint-section" id="hintSection">
-    <button class="hint-btn" id="hintBtn">💡 Get Hint</button>
-    <div class="hint-picker" id="hintPicker">
-      <button class="hint-choice" data-trait="primary_color">Primary Color</button>
-      <button class="hint-choice" data-trait="secondary_color">Secondary Color</button>
-      <button class="hint-choice" data-trait="rarity">Rarity</button>
-      <button class="hint-choice" data-trait="type">Type</button>
-      <button class="hint-choice" data-trait="position">Position</button>
-    </div>
-    <div class="hint-reveal" id="hintReveal"></div>
-  </div>
-
-  <div class="victory" id="victoryBanner">
-    <div class="victory-emoji">🎉</div>
-    <div class="victory-title">You got it!</div>
-    <div class="victory-sub" id="vicCount"></div>
-    <img id="victoryImg" class="victory-img" src="" alt="" width="160" height="160" loading="lazy" style="display:none"/>
-    <div class="victory-cookie" id="vicName"></div>
-    <div class="victory-skill" id="vicSkill"></div>
-    <button class="new-cookie-btn" id="newCookieBtn">New Cookie 🍪</button>
-    <div class="stats-line">Total solved: <span id="vicSolved">0</span></div>
-  </div>
-
-</div>
-
-<a class="easter-egg" href="secret.html">psst...</a>
-<div class="toast" id="toast"></div>
-
-<script src="shared.js"></script>
-<script src="unlimited.js"></script>
-</body>
+    <script src="shared.js"></script>
+    <script src="unlimited.js"></script>
+  </body>
 </html>

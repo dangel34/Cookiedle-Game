@@ -9,11 +9,11 @@ let COOKIES = [];
 
 // Trait display labels
 const TRAIT_LABELS = {
-  primary_color:   'Primary Color',
+  primary_color: 'Primary Color',
   secondary_color: 'Secondary Color',
-  rarity:          'Rarity',
-  type:            'Type',
-  position:        'Position',
+  rarity: 'Rarity',
+  type: 'Type',
+  position: 'Position',
 };
 
 // ─────────────────────────────────────────
@@ -33,28 +33,36 @@ function showToast(msg) {
 // AUTOCOMPLETE HELPERS
 // ─────────────────────────────────────────
 function buildSuggestions(val, usedList, box) {
-  if (!val) { hideSuggestions(box); return; }
+  if (!val) {
+    hideSuggestions(box);
+    return;
+  }
   const q = val.toLowerCase();
-  const scored = COOKIES
-    .map(c => c.cookie_name)
-    .filter(name => {
+  const scored = COOKIES.map((c) => c.cookie_name)
+    .filter((name) => {
       const n = name.toLowerCase();
-      return n.startsWith(q) || n.split(' ').some(word => word !== 'cookie' && word.startsWith(q));
+      return (
+        n.startsWith(q) || n.split(' ').some((word) => word !== 'cookie' && word.startsWith(q))
+      );
     })
     .sort((a, b) => {
-      const an = a.toLowerCase(), bn = b.toLowerCase();
+      const an = a.toLowerCase(),
+        bn = b.toLowerCase();
       const aStart = an.startsWith(q) ? 0 : 1;
       const bStart = bn.startsWith(q) ? 0 : 1;
       return aStart - bStart || a.localeCompare(b);
     })
     .slice(0, 8);
-  if (!scored.length) { hideSuggestions(box); return; }
+  if (!scored.length) {
+    hideSuggestions(box);
+    return;
+  }
   box.innerHTML = '';
-  scored.forEach(name => {
+  scored.forEach((name) => {
     const div = document.createElement('div');
     div.className = 'suggestion-item' + (usedList.includes(name) ? ' used' : '');
     div.textContent = name;
-    div.addEventListener('mousedown', e => {
+    div.addEventListener('mousedown', (e) => {
       e.preventDefault();
       selectSuggestion(name, box._input, box);
     });

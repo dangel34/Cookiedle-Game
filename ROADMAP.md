@@ -212,6 +212,10 @@ View results in the Cloudflare dashboard or via the Analytics Engine SQL API.
 
 ## Phase 6 — Code Quality
 
+~~### 6.0 SonarQube Analysis~~ ✅ **Done** — SonarCloud Automatic Analysis enabled. `sonar-project.properties` added to root with `sonar.python.version=3.14`. Analysis runs automatically on every push via SonarCloud's GitHub integration — no CI token or workflow needed.
+
+---
+
 ### 6.1 Deduplicate Game Handlers in Worker
 **Problem:** `worker.js` has three nearly-identical code paths for Game 1, 2, and 3 (guess handling, hint gating, token verification). A bug fix in one often needs to be applied to all three.
 
@@ -275,6 +279,7 @@ These ideas need more design work or have significant tradeoffs:
 | 4.4 | Automated cookie sync | Backend | Large | Medium | |
 | 5.1 | PWA / installable | PWA | Medium | Low | |
 | 5.2 | Push notifications | PWA | Very Large | High | |
+| 6.0 | SonarQube analysis | Quality | Small | Low | ✅ Done |
 | 6.1 | Deduplicate worker handlers | Quality | Medium | Low | |
 | 6.2 | Frontend state manager | Quality | Medium | Low | |
 | 6.3 | ESLint + Prettier | Quality | Small | Low | |
