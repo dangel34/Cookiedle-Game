@@ -595,6 +595,15 @@ function handleCookieCount({ origin }) {
   return jsonResponse({ count: COOKIES.length }, 200, origin);
 }
 
+function handleHealth({ origin }) {
+  const now = new Date();
+  return jsonResponse({
+    ok: true,
+    cookies: COOKIES.length,
+    date: `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}`,
+  }, 200, origin);
+}
+
 // ─────────────────────────────────────────
 // ROUTE TABLE & MAIN HANDLER
 // ─────────────────────────────────────────
@@ -613,6 +622,7 @@ const ROUTES = new Map([
   ['POST /guess3',            handleGuess3],
   ['GET /hint3',              handleHint3],
   ['GET /cookie-count',       handleCookieCount],
+  ['GET /health',             handleHealth],
 ]);
 
 export default {
