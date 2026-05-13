@@ -136,14 +136,20 @@ let activeSuggestion3 = -1;
 // ─────────────────────────────────────────
 let turnstileToken = null;
 let pendingInputEnable = [];
+let turnstileFallbackTimer = null;
+
+function drainPending() {
+  const pending = pendingInputEnable.splice(0);
+  pending.forEach(({ btn }) => {
+    btn.disabled = false;
+  });
+}
 
 window.onTurnstileToken = function (token) {
   turnstileToken = token;
-  const pending = pendingInputEnable.splice(0);
-  pending.forEach(({ inp, btn }) => {
-    inp.disabled = false;
-    btn.disabled = false;
-  });
+  clearTimeout(turnstileFallbackTimer);
+  turnstileFallbackTimer = null;
+  drainPending();
 };
 
 function consumeTurnstileToken() {
@@ -154,11 +160,17 @@ function consumeTurnstileToken() {
 }
 
 function reenableWhenReady(inp, btn) {
+  inp.disabled = false;
   if (turnstileToken) {
-    inp.disabled = false;
     btn.disabled = false;
   } else {
     pendingInputEnable.push({ inp, btn });
+    if (!turnstileFallbackTimer) {
+      turnstileFallbackTimer = setTimeout(() => {
+        turnstileFallbackTimer = null;
+        drainPending();
+      }, 8000);
+    }
   }
 }
 
