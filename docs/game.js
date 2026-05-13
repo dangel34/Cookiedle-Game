@@ -131,52 +131,9 @@ let activeSuggestion = -1;
 let activeSuggestion2 = -1;
 let activeSuggestion3 = -1;
 
-// ─────────────────────────────────────────
-// TURNSTILE
-// ─────────────────────────────────────────
-let turnstileToken = null;
-let pendingInputEnable = [];
-let turnstileFallbackTimer = null;
-
-function drainPending() {
-  const pending = pendingInputEnable.splice(0);
-  pending.forEach(({ btn }) => {
-    btn.disabled = false;
-  });
-}
-
-window.onTurnstileToken = function (token) {
-  turnstileToken = token;
-  clearTimeout(turnstileFallbackTimer);
-  turnstileFallbackTimer = null;
-  drainPending();
-};
-
-// Pick up any token that arrived before game.js loaded (async race condition)
-if (window.__turnstileQueue && window.__turnstileQueue.length) {
-  window.onTurnstileToken(window.__turnstileQueue.shift());
-}
-
-function consumeTurnstileToken() {
-  const token = turnstileToken;
-  turnstileToken = null;
-  window.turnstile?.reset('#turnstileWidget');
-  return token || '';
-}
-
 function reenableWhenReady(inp, btn) {
   inp.disabled = false;
-  if (turnstileToken) {
-    btn.disabled = false;
-  } else {
-    pendingInputEnable.push({ inp, btn });
-    if (!turnstileFallbackTimer) {
-      turnstileFallbackTimer = setTimeout(() => {
-        turnstileFallbackTimer = null;
-        drainPending();
-      }, 8000);
-    }
-  }
+  btn.disabled = false;
 }
 
 // ─────────────────────────────────────────
@@ -414,11 +371,6 @@ async function submitGuess() {
     alreadyEl.textContent = `Already guessed ${cookie.cookie_name}!`;
     return;
   }
-  if (!turnstileToken) {
-    showToast('Challenge loading — please wait a moment.');
-    return;
-  }
-
   input.disabled = true;
   submitBtn.disabled = true;
   alreadyEl.textContent = '';
@@ -431,7 +383,6 @@ async function submitGuess() {
       body: JSON.stringify({
         guess: cookie.cookie_name,
         state_token: g1StateToken,
-        cf_turnstile: consumeTurnstileToken(),
       }),
     });
     data = await res.json();
@@ -677,11 +628,6 @@ async function submitGuess2() {
     alreadyEl2.textContent = `Already guessed ${cookie.cookie_name}!`;
     return;
   }
-  if (!turnstileToken) {
-    showToast('Challenge loading — please wait a moment.');
-    return;
-  }
-
   input2.disabled = true;
   submitBtn2.disabled = true;
   alreadyEl2.textContent = '';
@@ -694,7 +640,6 @@ async function submitGuess2() {
       body: JSON.stringify({
         guess: cookie.cookie_name,
         state_token: g2StateToken,
-        cf_turnstile: consumeTurnstileToken(),
       }),
     });
     data = await res.json();
@@ -872,11 +817,6 @@ async function submitGuess3() {
     alreadyEl3.textContent = `Already guessed ${cookie.cookie_name}!`;
     return;
   }
-  if (!turnstileToken) {
-    showToast('Challenge loading — please wait a moment.');
-    return;
-  }
-
   input3.disabled = true;
   submitBtn3.disabled = true;
   alreadyEl3.textContent = '';
@@ -889,7 +829,6 @@ async function submitGuess3() {
       body: JSON.stringify({
         guess: cookie.cookie_name,
         state_token: g3StateToken,
-        cf_turnstile: consumeTurnstileToken(),
       }),
     });
     data = await res.json();
