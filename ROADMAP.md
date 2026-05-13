@@ -12,7 +12,23 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-### 1.2 Rate Limiting on the Worker
+### 1.2 Bot Protection (Cloudflare Turnstile)
+**Problem:** The daily guess endpoints (`/guess`, `/guess2`, `/guess3`) can be hit by scripts with no friction — anyone can brute-force the daily answer programmatically.
+
+**Solution:** Re-add [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) invisible widget to the daily game page. The frontend generates a one-time token on page load and attaches it to every guess request; the worker verifies it against `TURNSTILE_SECRET` via the Cloudflare siteverify API.
+
+**Previous attempt:** Removed in May 2026 after the widget's `async` loading caused a race condition where the token callback fired before `game.js` had defined the handler — leaving `turnstileToken` permanently null. A pre-defined queue in an inline `<script>` was tried but didn't resolve the issue reliably.
+
+**Recommended re-approach:**
+- Load the Turnstile script as `defer` (not `async defer`) so it always executes after inline scripts
+- Or use the [Turnstile explicit render API](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/#explicitly-render-the-turnstile-widget) (`turnstile.render()`) called from inside `game.js` after it loads — eliminates the race entirely
+- Set `TURNSTILE_SECRET` as a Cloudflare Worker secret (`npx wrangler secret put TURNSTILE_SECRET`)
+
+**Effort:** Small — ~20 lines across `index.html`, `game.js`, and `worker.js`.
+
+---
+
+### 1.3 Rate Limiting on the Worker
 **Problem:** The unlimited mode and daily guess endpoints have no rate limiting. A script could brute-force the unlimited mode or spam guesses.
 
 **Solution:** Use Cloudflare's built-in [Rate Limiting rules](https://developers.cloudflare.com/waf/rate-limiting-rules/) on the worker routes, or implement a lightweight token-bucket counter in a Cloudflare KV namespace (keyed by IP). Suggested limits:
@@ -219,12 +235,7 @@ View results in the Cloudflare dashboard or via the Analytics Engine SQL API.
 
 ---
 
-### 6.3 ESLint + Prettier
-**Problem:** No linting or formatting rules. Inconsistencies accumulate over time and make diffs harder to read.
-
-**Solution:** Add `eslint.config.js` with recommended rules + `prettier` for formatting. Add `npm run lint` and `npm run format` scripts. Optionally enforce via CI (Phase 1.1 GitHub Actions job).
-
-**Effort:** Small — ~30 minutes of config.
+~~### 6.3 ESLint + Prettier~~ ✅ **Done** — `eslint.config.js` and `.prettierrc` added. `npm run lint` (ESLint) and `npm run format` / `npm run format:check` (Prettier) scripts in `package.json`. Enforced in CI via the `deploy-frontend` workflow.
 
 ---
 
@@ -245,9 +256,10 @@ These ideas need more design work or have significant tradeoffs:
 | # | Item | Phase | Effort | Risk | Status |
 |---|------|-------|--------|------|--------|
 | 1.1 | Automate worker CI/CD | Foundation | Small | Low | ✅ Done |
-| 1.2 | Rate limiting | Foundation | Medium | Low | |
-| 1.3 | Health check endpoint | Foundation | Trivial | Low | ✅ Done |
-| 1.4 | Unit tests for token logic | Foundation | Medium | Low | |
+| 1.2 | Bot protection (Turnstile) | Foundation | Small | Low | |
+| 1.3 | Rate limiting | Foundation | Medium | Low | |
+| 1.4 | Health check endpoint | Foundation | Trivial | Low | ✅ Done |
+| 1.5 | Unit tests for token logic | Foundation | Medium | Low | |
 | 2.1 | Tutorial modal | UX | Medium | Low | ✅ Done |
 | 2.2 | Countdown timer | UX | Small | Low | ✅ Done |
 | 2.3 | Accessibility pass | UX | Medium | Low | |
@@ -267,4 +279,4 @@ These ideas need more design work or have significant tradeoffs:
 | 6.0 | SonarQube analysis | Quality | Small | Low | ✅ Done |
 | 6.1 | Deduplicate worker handlers | Quality | Medium | Low | ✅ Done |
 | 6.2 | Frontend state manager | Quality | Medium | Low | |
-| 6.3 | ESLint + Prettier | Quality | Small | Low | |
+| 6.3 | ESLint + Prettier | Quality | Small | Low | ✅ Done |
