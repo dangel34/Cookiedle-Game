@@ -152,6 +152,11 @@ window.onTurnstileToken = function (token) {
   drainPending();
 };
 
+// Pick up any token that arrived before game.js loaded (async race condition)
+if (window.__turnstileQueue && window.__turnstileQueue.length) {
+  window.onTurnstileToken(window.__turnstileQueue.shift());
+}
+
 function consumeTurnstileToken() {
   const token = turnstileToken;
   turnstileToken = null;
