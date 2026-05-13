@@ -409,6 +409,10 @@ async function submitGuess() {
     alreadyEl.textContent = `Already guessed ${cookie.cookie_name}!`;
     return;
   }
+  if (!turnstileToken) {
+    showToast('Challenge loading — please wait a moment.');
+    return;
+  }
 
   input.disabled = true;
   submitBtn.disabled = true;
@@ -428,15 +432,13 @@ async function submitGuess() {
     data = await res.json();
   } catch {
     showToast('Connection error — please try again.');
-    input.disabled = false;
-    submitBtn.disabled = false;
+    reenableWhenReady(input, submitBtn);
     return;
   }
 
   if (data.error) {
     showToast(data.error);
-    input.disabled = false;
-    submitBtn.disabled = false;
+    reenableWhenReady(input, submitBtn);
     return;
   }
   if (data.state_token) g1StateToken = data.state_token;
@@ -670,6 +672,10 @@ async function submitGuess2() {
     alreadyEl2.textContent = `Already guessed ${cookie.cookie_name}!`;
     return;
   }
+  if (!turnstileToken) {
+    showToast('Challenge loading — please wait a moment.');
+    return;
+  }
 
   input2.disabled = true;
   submitBtn2.disabled = true;
@@ -689,15 +695,13 @@ async function submitGuess2() {
     data = await res.json();
   } catch {
     showToast('Connection error — please try again.');
-    input2.disabled = false;
-    submitBtn2.disabled = false;
+    reenableWhenReady(input2, submitBtn2);
     return;
   }
 
   if (data.error) {
     showToast(data.error);
-    input2.disabled = false;
-    submitBtn2.disabled = false;
+    reenableWhenReady(input2, submitBtn2);
     return;
   }
   if (data.state_token) g2StateToken = data.state_token;
@@ -863,6 +867,10 @@ async function submitGuess3() {
     alreadyEl3.textContent = `Already guessed ${cookie.cookie_name}!`;
     return;
   }
+  if (!turnstileToken) {
+    showToast('Challenge loading — please wait a moment.');
+    return;
+  }
 
   input3.disabled = true;
   submitBtn3.disabled = true;
@@ -882,15 +890,13 @@ async function submitGuess3() {
     data = await res.json();
   } catch {
     showToast('Connection error — please try again.');
-    input3.disabled = false;
-    submitBtn3.disabled = false;
+    reenableWhenReady(input3, submitBtn3);
     return;
   }
 
   if (data.error) {
     showToast(data.error);
-    input3.disabled = false;
-    submitBtn3.disabled = false;
+    reenableWhenReady(input3, submitBtn3);
     return;
   }
   if (data.state_token) g3StateToken = data.state_token;
