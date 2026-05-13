@@ -392,7 +392,11 @@ async function submitGuess() {
     const res = await fetch(`${WORKER_URL}/guess`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guess: cookie.cookie_name, state_token: g1StateToken, cf_turnstile: consumeTurnstileToken() }),
+      body: JSON.stringify({
+        guess: cookie.cookie_name,
+        state_token: g1StateToken,
+        cf_turnstile: consumeTurnstileToken(),
+      }),
     });
     data = await res.json();
   } catch {
@@ -651,7 +655,11 @@ async function submitGuess2() {
     const res = await fetch(`${WORKER_URL}/guess2`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guess: cookie.cookie_name, state_token: g2StateToken, cf_turnstile: consumeTurnstileToken() }),
+      body: JSON.stringify({
+        guess: cookie.cookie_name,
+        state_token: g2StateToken,
+        cf_turnstile: consumeTurnstileToken(),
+      }),
     });
     data = await res.json();
   } catch {
@@ -842,7 +850,11 @@ async function submitGuess3() {
     const res = await fetch(`${WORKER_URL}/guess3`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guess: cookie.cookie_name, state_token: g3StateToken, cf_turnstile: consumeTurnstileToken() }),
+      body: JSON.stringify({
+        guess: cookie.cookie_name,
+        state_token: g3StateToken,
+        cf_turnstile: consumeTurnstileToken(),
+      }),
     });
     data = await res.json();
   } catch {
