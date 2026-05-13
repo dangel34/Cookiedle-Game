@@ -1951,10 +1951,7 @@ async function handleUnlimitedGuess({ request, env }) {
     env.COOKIE_SECRET
   );
   if (progress?.token_bind !== token) {
-    return jsonResponse(
-      { error: 'Invalid progress token — click New Cookie to start over.' },
-      400
-    );
+    return jsonResponse({ error: 'Invalid progress token — click New Cookie to start over.' }, 400);
   }
 
   const guessCookie = COOKIES.find((c) => c.cookie_name.toLowerCase() === guess.toLowerCase());
@@ -1996,15 +1993,10 @@ async function handleUnlimitedHint({ request, env }) {
     env.COOKIE_SECRET
   );
   if (progress?.token_bind !== token) {
-    return jsonResponse(
-      { error: 'Invalid progress token — click New Cookie to start over.' },
-      400
-    );
+    return jsonResponse({ error: 'Invalid progress token — click New Cookie to start over.' }, 400);
   }
-  if (progress.hint_used)
-    return jsonResponse({ error: 'Hint already used this round' }, 403);
-  if (progress.wrong < 5)
-    return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403);
+  if (progress.hint_used) return jsonResponse({ error: 'Hint already used this round' }, 403);
+  if (progress.wrong < 5) return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403);
 
   const nextProgress = { ...progress, hint_used: true };
   return jsonResponse({
@@ -2022,8 +2014,7 @@ async function handleUnlimitedHint({ request, env }) {
 async function handleDailyHint({ url, env, gameId, todayStr, buildPayload }) {
   const stateToken = sanitizeInput(url.searchParams.get('state_token') || '', 500);
   const state = await verifyProgressToken(stateToken, gameId, todayStr, env.COOKIE_SECRET);
-  if (!state)
-    return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400);
+  if (!state) return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400);
   if (state.hint_used) return jsonResponse({ error: 'Hint already used' }, 403);
   if (state.wrong < 5) return jsonResponse({ error: 'Hint requires 5 wrong guesses' }, 403);
   const nextState = { ...state, hint_used: true };
@@ -2040,8 +2031,7 @@ async function handleDailyBinaryGuess({ body, env, gameId, todayStr, target }) {
   const stateToken = sanitizeInput(body.state_token || '', 500);
   if (!guessName) return jsonResponse({ error: 'No guess provided' }, 400);
   const state = await verifyProgressToken(stateToken, gameId, todayStr, env.COOKIE_SECRET);
-  if (!state)
-    return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400);
+  if (!state) return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400);
   const correct = guessName === target.cookie_name.toLowerCase();
   const nextState = { ...state, wrong: correct ? state.wrong : state.wrong + 1 };
   return jsonResponse({
@@ -2071,8 +2061,7 @@ async function handleGuess1({ request, env, target, todayStr }) {
 
   const result = evaluateGuess(guessCookie, target);
   const state = await verifyProgressToken(stateToken, 'daily1', todayStr, env.COOKIE_SECRET);
-  if (!state)
-    return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400);
+  if (!state) return jsonResponse({ error: 'Invalid state token. Refresh to continue.' }, 400);
   const nextState = { ...state, wrong: result.correct ? state.wrong : state.wrong + 1 };
   result.state_token = await makeProgressToken(nextState, env.COOKIE_SECRET);
   if (result.correct) {
@@ -2144,7 +2133,11 @@ async function handleHint2({ url, env, target2, todayStr }) {
     env,
     gameId: 'daily2',
     todayStr,
-    buildPayload: () => ({ rarity: target2.rarity, type: target2.type, position: target2.position }),
+    buildPayload: () => ({
+      rarity: target2.rarity,
+      type: target2.type,
+      position: target2.position,
+    }),
   });
 }
 
