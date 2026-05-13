@@ -1093,23 +1093,19 @@ const collectionBtn2 = document.getElementById('collectionBtn2');
 const collectionGrid = document.getElementById('collectionGrid');
 const collectionCount = document.getElementById('collectionCount');
 
+function loadImgWithRetry(img, src, attempt = 0) {
+  img.src = src;
+  img.onerror = () => {
+    if (attempt < 4) {
+      setTimeout(() => loadImgWithRetry(img, src, attempt + 1), 400 * (attempt + 1));
+    }
+  };
+}
+
 function renderCollection() {
   const found = new Set(getCollection());
   collectionCount.textContent = `${found.size} / ${COOKIES.length} identified`;
   collectionGrid.textContent = '';
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          img.src = img.dataset.src;
-          observer.unobserve(img);
-        }
-      });
-    },
-    { root: collectionGrid, rootMargin: '150px' }
-  );
 
   COOKIES.forEach((c) => {
     const item = document.createElement('div');
@@ -1117,16 +1113,15 @@ function renderCollection() {
     item.className = `collection-item ${iFound ? 'found' : 'missing'}`;
     item.title = iFound ? c.cookie_name : '???';
     const img = document.createElement('img');
-    img.dataset.src = cookieImgSrc(c.cookie_name);
     img.alt = iFound ? c.cookie_name : '';
     img.width = 64;
     img.height = 64;
+    loadImgWithRetry(img, cookieImgSrc(c.cookie_name));
     const label = document.createElement('div');
     label.className = 'collection-name';
     label.textContent = iFound ? c.cookie_name : '???';
     item.append(img, label);
     collectionGrid.appendChild(item);
-    observer.observe(img);
   });
 }
 
