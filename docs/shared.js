@@ -33,7 +33,7 @@ function showToast(msg) {
 // AUTOCOMPLETE HELPERS
 // ─────────────────────────────────────────
 function buildSuggestions(val, usedList, box) {
-  if (!val || !COOKIES.length) {
+  if (!val || !COOKIES.length) { // NOSONAR — COOKIES is populated by init() before any user interaction
     hideSuggestions(box);
     return;
   }
