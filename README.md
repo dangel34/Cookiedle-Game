@@ -2,7 +2,7 @@
 
 A daily Cookie Run Kingdom guessing game inspired by Wordle, Loldle, and Pokedle — now fully playable in the browser.
 
-**[▶ Play Now](https://dangel34.github.io/Cookiedle-Game)**
+**[▶ Play Now](https://cookiedle.nappi.work)**
 
 ---
 
@@ -56,20 +56,29 @@ After completing all three daily games a **Share** button generates a combined e
 ## 🏗️ Architecture
 
 ```
-Browser                            Cloudflare Worker (worker.js)
-──────────────────────────         ──────────────────────────────
-Static frontend (docs/)            Secure backend + asset proxy
-- Autocomplete UI                  - Daily cookie selection (SHA-256 hash)
-- Guess rendering                  - Guess checking & hint validation
-- Session state (localStorage)     - HMAC tokens for unlimited mode
-                                   - Image proxy (skill & silhouette)
-                    ↕ fetch API ↕
-          /guess        /hint          /cookies
-          /guess2        /hint2         /skill
-          /guess3        /hint3         /skill-image
-          /silhouette3-image
-          /unlimited/new   /unlimited/guess   /unlimited/hint
+Browser
+  │
+  ├── HTML / JS / CSS ──► Cloudflare CDN ──► Raspberry Pi nginx (/var/www/cookiedle/)
+  │                                           (deployed via GitHub Actions rsync)
+  │
+  ├── Cookie images ──────► Cloudflare Worker assets
+  │   (cookieImgSrc)        (cookiedle-worker.*.workers.dev/cookie_images/)
+  │
+  └── API calls ──────────► Cloudflare Worker (worker.js)
+        /cookies               Daily cookie selection (SHA-256 hash)
+        /guess  /hint          Guess checking & hint validation
+        /guess2 /hint2         HMAC tokens for unlimited mode
+        /guess3 /hint3         Image proxy (skill & silhouette)
+        /skill-image
+        /silhouette3-image
+        /unlimited/new  /unlimited/guess  /unlimited/hint
 ```
+
+**Two separate deployments:**
+- **GitHub Actions** (`deploy.yml`) — rsyncs `docs/` to the Pi on every push to `master`; purges Cloudflare CDN cache for HTML/JS/CSS files so browsers always get the latest frontend
+- **Wrangler** (`npm run deploy`) — deploys `worker.js` + `docs/` to Cloudflare; run manually when backend logic or images change
+
+Cookie artwork (`docs/cookie_images/`) is intentionally served from the **Cloudflare Worker URL** (`WORKER_URL` in `shared.js`) rather than the Pi, so image requests hit Cloudflare's edge CDN instead of overloading the Pi with 170+ simultaneous requests on collection modal open.
 
 The daily target cookies are computed server-side using `SHA-256(date + suffix + COOKIE_SECRET)` where `COOKIE_SECRET` is an encrypted Cloudflare environment variable — it never touches the browser. Each game uses a different suffix (`-skill`, `-silhouette`) to guarantee three distinct daily cookies.
 
@@ -126,9 +135,20 @@ git push origin master
 
 ### Automated deployment (GitHub Actions)
 
-Pushing to `master` triggers `.github/workflows/deploy.yml`, which runs on the self-hosted GitHub Actions runner on the Raspberry Pi and rsyncs `docs/` to `/var/www/cookiedle/`. No manual step is needed — just push.
+Pushing to `master` triggers `.github/workflows/deploy.yml`, which:
+1. Rsyncs `docs/` to `/var/www/cookiedle/` on the self-hosted Raspberry Pi runner
+2. Purges Cloudflare CDN cache for HTML/JS/CSS files so browsers immediately get the new code (images are intentionally left cached)
 
-> **Note:** This deploys the static frontend only. The Cloudflare Worker (`worker.js`) must still be deployed separately with `npm run deploy` when backend logic changes.
+> **Note:** This deploys the static frontend only. The Cloudflare Worker (`worker.js`) must still be deployed separately with `npm run deploy` when backend logic or images change.
+
+#### Required GitHub Actions secrets
+
+| Secret | Where to get it |
+|--------|----------------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare Dashboard → My Profile → API Tokens → create token with **Zone → Cache Purge** permission for the nappi.work zone |
+| `CF_ZONE_ID` | Cloudflare Dashboard → nappi.work zone → Overview → Zone ID (right sidebar) |
+
+Without both secrets the cache purge step silently fails and Cloudflare CDN continues serving stale JS/CSS.
 
 ### First-time setup
 ```bash
@@ -229,7 +249,7 @@ Cookiedle-Game/
 - Skill images and silhouettes are proxied through the worker — the cookie name never appears in any URL the browser can see
 - Unlimited mode uses HMAC-SHA256 signed tokens — the cookie name never leaves the server
 - `COOKIE_SECRET` is stored as an encrypted environment variable in Cloudflare — not in any file
-- CORS is locked to `dangel34.github.io`
+- **Cloudflare Turnstile** (invisible widget) protects the daily guess endpoints from bot submissions — the token is single-use and regenerated after every guess
 - Security headers (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy) applied via `docs/_headers`
 - `secret.html` is excluded from search engine indexing via `robots.txt`
 
