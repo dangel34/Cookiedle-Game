@@ -1107,7 +1107,6 @@ function renderCollection() {
     img.alt = iFound ? c.cookie_name : '';
     img.width = 64;
     img.height = 64;
-    img.loading = 'lazy';
     const label = document.createElement('div');
     label.className = 'collection-name';
     label.textContent = iFound ? c.cookie_name : '???';
