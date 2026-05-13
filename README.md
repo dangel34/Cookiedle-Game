@@ -1,6 +1,6 @@
 # Cookiedle 🍪
 
-A daily Cookie Run Kingdom guessing game inspired by Wordle, Loldle, and Pokedle — now fully playable in the browser.
+A daily Cookie Run Kingdom guessing game inspired by Wordle, Loldle, and Pokedle, now fully playable in the browser.
 
 **[▶ Play Now](https://cookiedle.nappi.work)**
 
@@ -8,9 +8,9 @@ A daily Cookie Run Kingdom guessing game inspired by Wordle, Loldle, and Pokedle
 
 ## 🎮 How to Play
 
-Cookiedle has **three daily game modes** that reset at midnight UTC every day. Complete them in order — each one unlocks after the previous.
+Cookiedle has **three daily game modes** that reset at midnight UTC every day. Complete them in order; each one unlocks after the previous.
 
-### Game 1 — Cookie Guesser
+### Game 1: Cookie Guesser
 Guess the mystery Cookie Run Kingdom cookie. After each guess, tiles reveal how close you are across five traits.
 
 | Color | Meaning |
@@ -21,16 +21,16 @@ Guess the mystery Cookie Run Kingdom cookie. After each guess, tiles reveal how 
 
 The five traits revealed per guess are: **Primary Color, Secondary Color, Rarity, Type, Position**
 
-After 5 wrong guesses a **💡 Hint** button unlocks — choose one trait to reveal its answer. On a correct guess, the cookie's artwork is revealed.
+After 5 wrong guesses a **💡 Hint** button unlocks; choose one trait to reveal its answer. On a correct guess, the cookie's artwork is revealed.
 
-### Game 2 — Skill Guesser
-A skill image and cooldown are shown — guess which cookie owns that skill. You get ✅ or ❌ per guess, with a hint after 5 wrong guesses that reveals the cookie's Rarity, Type, and Position. The cookie's artwork is revealed on a correct guess.
+### Game 2: Skill Guesser
+A skill image and cooldown are shown. Guess which cookie owns that skill. You get ✅ or ❌ per guess, with a hint after 5 wrong guesses that reveals the cookie's Rarity, Type, and Position. The cookie's artwork is revealed on a correct guess.
 
-### Game 3 — Silhouette
-A black silhouette of a cookie is shown — identify it from its shape alone. You get ✅ or ❌ per guess, with a hint after 5 wrong guesses that reveals the cookie's Primary Color, Type, and Rarity. On a correct guess, the silhouette animates away to reveal the full cookie artwork.
+### Game 3: Silhouette
+A black silhouette of a cookie is shown. Identify it from its shape alone. You get ✅ or ❌ per guess, with a hint after 5 wrong guesses that reveals the cookie's Primary Color, Type, and Rarity. On a correct guess, the silhouette animates away to reveal the full cookie artwork.
 
 ### Unlimited Mode
-A separate endless mode accessible from the header. Play as many rounds as you want — each round picks a random cookie. Hints are available after 5 wrong guesses.
+A separate endless mode accessible from the header. Play as many rounds as you want; each round picks a random cookie. Hints are available after 5 wrong guesses.
 
 ### Sharing
 After completing all three daily games a **Share** button generates a combined emoji grid you can copy and send to friends.
@@ -39,17 +39,17 @@ After completing all three daily games a **Share** button generates a combined e
 
 ## ✨ Features
 
-- **Three daily games** — Cookie Guesser, Skill Guesser, and Silhouette — all secured server-side
-- **Cookie artwork** — revealed on every correct guess across all three modes
-- **Cheat-proof** — the answer is never in the page source or network traffic; skill and silhouette images are proxied through the worker so filenames never reach the browser
-- **Hint system** — server-verified, unlocks after 5 confirmed wrong guesses
-- **Fuzzy autocomplete** — smart search as you type
-- **Session persistence** — your guesses and revealed images survive page refreshes
-- **Streak & stats** — tracks your current streak, best streak, win rate, and avg guesses
-- **Unlimited mode** — endless random rounds with HMAC-signed tokens (expire after 2 hours)
+- **Three daily games**: Cookie Guesser, Skill Guesser, and Silhouette, all secured server-side
+- **Cookie artwork**: revealed on every correct guess across all three modes
+- **Cheat-proof**: the answer is never in the page source or network traffic; skill and silhouette images are proxied through the worker so filenames never reach the browser
+- **Hint system**: server-verified, unlocks after 5 confirmed wrong guesses
+- **Fuzzy autocomplete**: smart search as you type
+- **Session persistence**: your guesses and revealed images survive page refreshes
+- **Streak & stats**: tracks your current streak, best streak, win rate, and avg guesses
+- **Unlimited mode**: endless random rounds with HMAC-signed tokens (expire after 2 hours)
 - **170+ cookies** in the database
-- **Mobile friendly** — responsive layout
-- **Easter egg** — keep an eye on the bottom right 👀
+- **Mobile friendly**: responsive layout
+- **Easter egg**: keep an eye on the bottom right 👀
 
 ---
 
@@ -75,14 +75,14 @@ Browser
 ```
 
 **Two separate deployments, both automated via GitHub Actions:**
-- **`deploy.yml`** — triggers on every push to `master`; rsyncs `docs/` to the Pi, then purges Cloudflare CDN cache for HTML/JS/CSS so browsers immediately get the latest frontend
-- **`deploy-worker.yml`** — triggers when `worker.js` or `wrangler.jsonc` change; runs `npm run deploy` to publish the worker and all `docs/` assets to Cloudflare Workers
+- **`deploy.yml`**: triggers on every push to `master`; rsyncs `docs/` to the Pi, then purges Cloudflare CDN cache for HTML/JS/CSS so browsers immediately get the latest frontend
+- **`deploy-worker.yml`**: triggers when `worker.js` or `wrangler.jsonc` change; runs `npm run deploy` to publish the worker and all `docs/` assets to Cloudflare Workers
 
 Cookie artwork (`docs/cookie_images/`) is intentionally served from the **Cloudflare Worker URL** (`WORKER_URL` in `shared.js`) rather than the Pi, so image requests hit Cloudflare's edge CDN instead of overloading the Pi with 170+ simultaneous requests on collection modal open.
 
-The daily target cookies are computed server-side using `SHA-256(date + suffix + COOKIE_SECRET)` where `COOKIE_SECRET` is an encrypted Cloudflare environment variable — it never touches the browser. Each game uses a different suffix (`-skill`, `-silhouette`) to guarantee three distinct daily cookies.
+The daily target cookies are computed server-side using `SHA-256(date + suffix + COOKIE_SECRET)` where `COOKIE_SECRET` is an encrypted Cloudflare environment variable; it never touches the browser. Each game uses a different suffix (`-skill`, `-silhouette`) to guarantee three distinct daily cookies.
 
-Skill images and silhouettes are served through opaque worker proxy endpoints (`/skill-image`, `/silhouette3-image`) so the cookie filename — which encodes the answer — is never visible in network traffic. The worker reads these images via `env.ASSETS.fetch()` (the `ASSETS` binding declared in `wrangler.jsonc`) so the lookup goes directly to the asset store rather than making a network subrequest.
+Skill images and silhouettes are served through opaque worker proxy endpoints (`/skill-image`, `/silhouette3-image`) so the cookie filename (which encodes the answer) is never visible in network traffic. The worker reads these images via `env.ASSETS.fetch()` (the `ASSETS` binding declared in `wrangler.jsonc`), reading directly from the asset store with no network subrequest.
 
 ---
 
@@ -117,7 +117,7 @@ Silhouettes are saved to `docs/cookie_silhouettes/` with matching filenames.
 
 ### Updating the cookie database
 
-**1. Edit `worker.js`** — add new entries to the `COOKIES` array at the top.
+**1. Edit `worker.js`** to add new entries to the `COOKIES` array at the top.
 
 **2. Deploy everything** (worker + assets):
 ```bash
@@ -137,11 +137,11 @@ git push origin master
 
 Two workflows run automatically on push to `master`:
 
-**`deploy.yml`** — frontend only (self-hosted Pi runner):
+**`deploy.yml`** (frontend only, self-hosted Pi runner):
 1. Rsyncs `docs/` to `/var/www/cookiedle/` on the Raspberry Pi
 2. Purges Cloudflare CDN cache for HTML/JS/CSS so browsers immediately get the new code (images are intentionally left cached)
 
-**`deploy-worker.yml`** — Cloudflare Worker (ubuntu-latest runner), triggers only when `worker.js` or `wrangler.jsonc` change:
+**`deploy-worker.yml`** (Cloudflare Worker, ubuntu-latest runner) triggers only when `worker.js` or `wrangler.jsonc` change:
 1. Installs dependencies with `npm ci --ignore-scripts`
 2. Runs `npm run deploy` (wrangler) to publish the worker and all `docs/` assets to Cloudflare Workers
 
@@ -149,9 +149,9 @@ Two workflows run automatically on push to `master`:
 
 | Secret | Used by | Where to get it |
 |--------|---------|----------------|
-| `CLOUDFLARE_API_TOKEN` | both workflows | Cloudflare Dashboard → My Profile → API Tokens — needs **Zone → Cache Purge** (for `deploy.yml`) and **Workers Scripts → Edit** (for `deploy-worker.yml`) permissions |
-| `CF_ZONE_ID` | `deploy.yml` | Cloudflare Dashboard → nappi.work zone → Overview → Zone ID (right sidebar) |
-| `CLOUDFLARE_ACCOUNT_ID` | `deploy-worker.yml` | Cloudflare Dashboard → account home → Account ID (right sidebar) |
+| `CLOUDFLARE_API_TOKEN` | both workflows | Cloudflare Dashboard > My Profile > API Tokens. Needs Zone > Cache Purge (for `deploy.yml`) and Workers Scripts > Edit (for `deploy-worker.yml`) permissions |
+| `CF_ZONE_ID` | `deploy.yml` | Cloudflare Dashboard > nappi.work zone > Overview > Zone ID (right sidebar) |
+| `CLOUDFLARE_ACCOUNT_ID` | `deploy-worker.yml` | Cloudflare Dashboard > account home > Account ID (right sidebar) |
 
 Secrets are passed to shell steps via `env:` variables rather than inline `${{ secrets.* }}` expansion, which prevents accidental injection if a secret value contains shell metacharacters.
 
@@ -221,7 +221,7 @@ Cookiedle-Game/
 ├── worker.js               # Cloudflare Worker (all backend logic)
 ├── wrangler.jsonc          # Wrangler config (assets directory, bindings)
 ├── package.json            # npm scripts (deploy)
-├── package-lock.json       # Lockfile — commit this
+├── package-lock.json       # Lockfile; commit this
 ├── cookie_images_scraper.py # Downloads cookie artwork from noff.gg
 ├── cookie_skill_scraper.py  # Downloads cookie skill images from noff.gg
 ├── make_silhouettes.py      # Generates black silhouettes from cookie images
@@ -253,9 +253,9 @@ Cookiedle-Game/
 - The daily answer is never sent to the browser unprompted
 - All guess checking and hint validation happens server-side in the Cloudflare Worker
 - Hints require at least 5 server-verified wrong guesses before unlocking
-- Skill images and silhouettes are proxied through the worker via `env.ASSETS.fetch()` — the cookie name never appears in any URL the browser can see
-- Unlimited mode uses HMAC-SHA256 signed tokens — the cookie name never leaves the server
-- `COOKIE_SECRET` is stored as an encrypted environment variable in Cloudflare — not in any file
+- Skill images and silhouettes are proxied through the worker via `env.ASSETS.fetch()`; the cookie name never appears in any URL the browser can see
+- Unlimited mode uses HMAC-SHA256 signed tokens; the cookie name never leaves the server
+- `COOKIE_SECRET` is stored as an encrypted environment variable in Cloudflare, not in any file
 - GitHub Actions secrets are injected via `env:` variables, not interpolated directly into shell scripts
 - Security headers (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy) applied via `docs/_headers`
 - `secret.html` is excluded from search engine indexing via `robots.txt`
@@ -269,4 +269,4 @@ Cookiedle-Game/
 
 ---
 
-*Made with ❤️ — For Rayn, From Derek* 🍪
+*Made with ❤️, for Rayn, from Derek* 🍪
