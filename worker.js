@@ -2097,17 +2097,21 @@ function handleSkill({ target2 }) {
   return jsonResponse({ skill_name: target2.skill_name, skill_cooldown: target2.skill_cooldown });
 }
 
-async function handleSkillImage({ request, target2 }) {
+async function handleSkillImage({ request, env, target2 }) {
   const filename = target2.cookie_name.replaceAll(' ', '_') + '.webp';
-  const imageRes = await fetch(new URL(`/cookie_skill_images/${filename}`, request.url).toString());
+  const imageRes = await env.ASSETS.fetch(
+    new Request(new URL(`/cookie_skill_images/${filename}`, request.url))
+  );
   const headers = new Headers(imageRes.headers);
   Object.entries(corsHeaders()).forEach(([k, v]) => headers.set(k, v));
   return new Response(imageRes.body, { status: imageRes.status, headers });
 }
 
-async function handleSilhouette3Image({ request, target3 }) {
+async function handleSilhouette3Image({ request, env, target3 }) {
   const filename = target3.cookie_name.replaceAll(' ', '_') + '.webp';
-  const imageRes = await fetch(new URL(`/cookie_silhouettes/${filename}`, request.url).toString());
+  const imageRes = await env.ASSETS.fetch(
+    new Request(new URL(`/cookie_silhouettes/${filename}`, request.url))
+  );
   const headers = new Headers(imageRes.headers);
   Object.entries(corsHeaders()).forEach(([k, v]) => headers.set(k, v));
   return new Response(imageRes.body, { status: imageRes.status, headers });

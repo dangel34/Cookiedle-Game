@@ -199,6 +199,9 @@
   transform: none;
   margin-top: 4px;
 }
+.tutorial-got-it:active {
+  transform: scale(0.96);
+}
 
 .modal {
   background: var(--surface);
