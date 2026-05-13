@@ -194,7 +194,10 @@
 }
 
 .tutorial-got-it {
+  position: static;
   width: 100%;
+  transform: none;
+  margin-top: 4px;
 }
 
 .modal {
