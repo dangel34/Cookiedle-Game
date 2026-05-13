@@ -1751,7 +1751,7 @@ function corsHeaders() {
   };
 }
 
-function jsonResponse(data, status = 200, origin = '') {
+function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
