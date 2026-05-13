@@ -7,7 +7,6 @@
     "enabled": true
   },
   "assets": {
-    "directory": "docs",
-    "binding": "ASSETS"
+    "directory": "docs"
   },
 }

@@ -135,9 +135,15 @@ let activeSuggestion3 = -1;
 // TURNSTILE
 // ─────────────────────────────────────────
 let turnstileToken = null;
+let pendingInputEnable = [];
 
 window.onTurnstileToken = function (token) {
   turnstileToken = token;
+  const pending = pendingInputEnable.splice(0);
+  pending.forEach(({ inp, btn }) => {
+    inp.disabled = false;
+    btn.disabled = false;
+  });
 };
 
 function consumeTurnstileToken() {
@@ -145,6 +151,15 @@ function consumeTurnstileToken() {
   turnstileToken = null;
   window.turnstile?.reset('#turnstileWidget');
   return token || '';
+}
+
+function reenableWhenReady(inp, btn) {
+  if (turnstileToken) {
+    inp.disabled = false;
+    btn.disabled = false;
+  } else {
+    pendingInputEnable.push({ inp, btn });
+  }
 }
 
 // ─────────────────────────────────────────
@@ -445,8 +460,7 @@ async function submitGuess() {
     submitBtn.disabled = true;
     setTimeout(() => showVictory1(true), 6 * 700 + 400);
   } else {
-    input.disabled = false;
-    submitBtn.disabled = false;
+    reenableWhenReady(input, submitBtn);
     saveState();
   }
 }
@@ -620,8 +634,7 @@ async function showGame2() {
   skillImgEl.style.display = '';
 
   if (!g2won) {
-    input2.disabled = false;
-    submitBtn2.disabled = false;
+    reenableWhenReady(input2, submitBtn2);
     input2.focus();
   }
 }
@@ -706,8 +719,7 @@ async function submitGuess2() {
       g2NextPrompt.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 600);
   } else {
-    input2.disabled = false;
-    submitBtn2.disabled = false;
+    reenableWhenReady(input2, submitBtn2);
     saveState();
   }
 }
@@ -815,8 +827,7 @@ async function showGame3() {
   silhouetteImg.style.display = '';
 
   if (!g3won) {
-    input3.disabled = false;
-    submitBtn3.disabled = false;
+    reenableWhenReady(input3, submitBtn3);
     input3.focus();
   }
 }
@@ -899,8 +910,7 @@ async function submitGuess3() {
     silhouetteImg.classList.remove('shake');
     silhouetteImg.getBoundingClientRect();
     silhouetteImg.classList.add('shake');
-    input3.disabled = false;
-    submitBtn3.disabled = false;
+    reenableWhenReady(input3, submitBtn3);
     saveState();
   }
 }
@@ -1303,8 +1313,7 @@ async function init() {
 
   input.placeholder = 'Type a cookie name...';
   if (!won) {
-    input.disabled = false;
-    submitBtn.disabled = false;
+    reenableWhenReady(input, submitBtn);
   }
 
   try {

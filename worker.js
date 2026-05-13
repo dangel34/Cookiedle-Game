@@ -1743,12 +1743,9 @@ async function getDailyTarget3(secret) {
 // ─────────────────────────────────────────
 // CORS HEADERS
 // ─────────────────────────────────────────
-const ALLOWED_ORIGINS = new Set(['https://cookiedle.nappi.work']);
-
-function corsHeaders(origin) {
-  const allowed = ALLOWED_ORIGINS.has(origin);
+function corsHeaders() {
   return {
-    'Access-Control-Allow-Origin': allowed ? origin : 'https://cookiedle.nappi.work',
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
@@ -1760,7 +1757,7 @@ function jsonResponse(data, status = 200, origin = '') {
     headers: {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-store',
-      ...corsHeaders(origin),
+      ...corsHeaders(),
     },
   });
 }
@@ -2148,22 +2145,20 @@ function handleSkill({ origin, target2 }) {
   );
 }
 
-async function handleSkillImage({ request, env, origin, target2 }) {
+async function handleSkillImage({ request, target2 }) {
   const filename = target2.cookie_name.replaceAll(' ', '_') + '.webp';
-  const assetReq = new Request(new URL(`/cookie_skill_images/${filename}`, request.url).toString());
-  const assetRes = await env.ASSETS.fetch(assetReq);
-  const headers = new Headers(assetRes.headers);
-  Object.entries(corsHeaders(origin)).forEach(([k, v]) => headers.set(k, v));
-  return new Response(assetRes.body, { status: assetRes.status, headers });
+  const imageRes = await fetch(new URL(`/cookie_skill_images/${filename}`, request.url).toString());
+  const headers = new Headers(imageRes.headers);
+  Object.entries(corsHeaders()).forEach(([k, v]) => headers.set(k, v));
+  return new Response(imageRes.body, { status: imageRes.status, headers });
 }
 
-async function handleSilhouette3Image({ request, env, origin, target3 }) {
+async function handleSilhouette3Image({ request, target3 }) {
   const filename = target3.cookie_name.replaceAll(' ', '_') + '.webp';
-  const assetReq = new Request(new URL(`/cookie_silhouettes/${filename}`, request.url).toString());
-  const assetRes = await env.ASSETS.fetch(assetReq);
-  const headers = new Headers(assetRes.headers);
-  Object.entries(corsHeaders(origin)).forEach(([k, v]) => headers.set(k, v));
-  return new Response(assetRes.body, { status: assetRes.status, headers });
+  const imageRes = await fetch(new URL(`/cookie_silhouettes/${filename}`, request.url).toString());
+  const headers = new Headers(imageRes.headers);
+  Object.entries(corsHeaders()).forEach(([k, v]) => headers.set(k, v));
+  return new Response(imageRes.body, { status: imageRes.status, headers });
 }
 
 // ─────────────────────────────────────────
@@ -2288,7 +2283,7 @@ export default {
       const url = new URL(request.url);
 
       if (request.method === 'OPTIONS') {
-        return new Response(null, { status: 204, headers: corsHeaders(origin) });
+        return new Response(null, { status: 204, headers: corsHeaders() });
       }
 
       const now = new Date();

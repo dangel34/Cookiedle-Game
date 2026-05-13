@@ -93,6 +93,6 @@ function bindSuggestionBox(inp, box) {
 }
 
 function cookieImgSrc(name) {
-  const safe = name.replace(/[^a-zA-Z0-9 'À-ɏ]/g, '');
+  const safe = name.replace(/[^a-zA-Z0-9 '\-À-ɏ]/g, '');
   return `cookie_images/${safe.replaceAll(' ', '_')}.webp`;
 }
