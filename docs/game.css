@@ -131,8 +131,8 @@
 }
 
 /* ── TUTORIAL MODAL ── */
-.tutorial-modal {
-  max-width: 540px;
+.modal.tutorial-modal {
+  max-width: 600px;
   max-height: 88vh;
   overflow-y: auto;
   text-align: left;
