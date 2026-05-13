@@ -74,15 +74,15 @@ Browser
         /unlimited/new  /unlimited/guess  /unlimited/hint
 ```
 
-**Two separate deployments:**
-- **GitHub Actions** (`deploy.yml`) — rsyncs `docs/` to the Pi on every push to `master`; purges Cloudflare CDN cache for HTML/JS/CSS files so browsers always get the latest frontend
-- **Wrangler** (`npm run deploy`) — deploys `worker.js` + `docs/` to Cloudflare; run manually when backend logic or images change
+**Two separate deployments, both automated via GitHub Actions:**
+- **`deploy.yml`** — triggers on every push to `master`; rsyncs `docs/` to the Pi, then purges Cloudflare CDN cache for HTML/JS/CSS so browsers immediately get the latest frontend
+- **`deploy-worker.yml`** — triggers when `worker.js` or `wrangler.jsonc` change; runs `npm run deploy` to publish the worker and all `docs/` assets to Cloudflare Workers
 
 Cookie artwork (`docs/cookie_images/`) is intentionally served from the **Cloudflare Worker URL** (`WORKER_URL` in `shared.js`) rather than the Pi, so image requests hit Cloudflare's edge CDN instead of overloading the Pi with 170+ simultaneous requests on collection modal open.
 
 The daily target cookies are computed server-side using `SHA-256(date + suffix + COOKIE_SECRET)` where `COOKIE_SECRET` is an encrypted Cloudflare environment variable — it never touches the browser. Each game uses a different suffix (`-skill`, `-silhouette`) to guarantee three distinct daily cookies.
 
-Skill images and silhouettes are served through opaque worker proxy endpoints (`/skill-image`, `/silhouette3-image`) so the cookie filename — which encodes the answer — is never visible in network traffic.
+Skill images and silhouettes are served through opaque worker proxy endpoints (`/skill-image`, `/silhouette3-image`) so the cookie filename — which encodes the answer — is never visible in network traffic. The worker reads these images via `env.ASSETS.fetch()` (the `ASSETS` binding declared in `wrangler.jsonc`) so the lookup goes directly to the asset store rather than making a network subrequest.
 
 ---
 
@@ -135,20 +135,25 @@ git push origin master
 
 ### Automated deployment (GitHub Actions)
 
-Pushing to `master` triggers `.github/workflows/deploy.yml`, which:
-1. Rsyncs `docs/` to `/var/www/cookiedle/` on the self-hosted Raspberry Pi runner
-2. Purges Cloudflare CDN cache for HTML/JS/CSS files so browsers immediately get the new code (images are intentionally left cached)
+Two workflows run automatically on push to `master`:
 
-> **Note:** This deploys the static frontend only. The Cloudflare Worker (`worker.js`) must still be deployed separately with `npm run deploy` when backend logic or images change.
+**`deploy.yml`** — frontend only (self-hosted Pi runner):
+1. Rsyncs `docs/` to `/var/www/cookiedle/` on the Raspberry Pi
+2. Purges Cloudflare CDN cache for HTML/JS/CSS so browsers immediately get the new code (images are intentionally left cached)
+
+**`deploy-worker.yml`** — Cloudflare Worker (ubuntu-latest runner), triggers only when `worker.js` or `wrangler.jsonc` change:
+1. Installs dependencies with `npm ci --ignore-scripts`
+2. Runs `npm run deploy` (wrangler) to publish the worker and all `docs/` assets to Cloudflare Workers
 
 #### Required GitHub Actions secrets
 
-| Secret | Where to get it |
-|--------|----------------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare Dashboard → My Profile → API Tokens → create token with **Zone → Cache Purge** permission for the nappi.work zone |
-| `CF_ZONE_ID` | Cloudflare Dashboard → nappi.work zone → Overview → Zone ID (right sidebar) |
+| Secret | Used by | Where to get it |
+|--------|---------|----------------|
+| `CLOUDFLARE_API_TOKEN` | both workflows | Cloudflare Dashboard → My Profile → API Tokens — needs **Zone → Cache Purge** (for `deploy.yml`) and **Workers Scripts → Edit** (for `deploy-worker.yml`) permissions |
+| `CF_ZONE_ID` | `deploy.yml` | Cloudflare Dashboard → nappi.work zone → Overview → Zone ID (right sidebar) |
+| `CLOUDFLARE_ACCOUNT_ID` | `deploy-worker.yml` | Cloudflare Dashboard → account home → Account ID (right sidebar) |
 
-Without both secrets the cache purge step silently fails and Cloudflare CDN continues serving stale JS/CSS.
+Secrets are passed to shell steps via `env:` variables rather than inline `${{ secrets.* }}` expansion, which prevents accidental injection if a secret value contains shell metacharacters.
 
 ### First-time setup
 ```bash
@@ -210,7 +215,9 @@ If frontend and worker versions are out of sync, users may see token errors. Dep
 ```
 Cookiedle-Game/
 ├── .github/workflows/
-│   └── deploy.yml          # GitHub Actions: rsync docs/ to Pi on push to master
+│   ├── deploy.yml          # GitHub Actions: rsync docs/ to Pi + CDN cache purge
+│   ├── deploy-worker.yml   # GitHub Actions: wrangler deploy on worker.js / wrangler.jsonc changes
+│   └── lint.yml            # GitHub Actions: ESLint + Prettier check on every push and PR
 ├── worker.js               # Cloudflare Worker (all backend logic)
 ├── wrangler.jsonc          # Wrangler config (assets directory, bindings)
 ├── package.json            # npm scripts (deploy)
@@ -246,10 +253,10 @@ Cookiedle-Game/
 - The daily answer is never sent to the browser unprompted
 - All guess checking and hint validation happens server-side in the Cloudflare Worker
 - Hints require at least 5 server-verified wrong guesses before unlocking
-- Skill images and silhouettes are proxied through the worker — the cookie name never appears in any URL the browser can see
+- Skill images and silhouettes are proxied through the worker via `env.ASSETS.fetch()` — the cookie name never appears in any URL the browser can see
 - Unlimited mode uses HMAC-SHA256 signed tokens — the cookie name never leaves the server
 - `COOKIE_SECRET` is stored as an encrypted environment variable in Cloudflare — not in any file
-- **Cloudflare Turnstile** (invisible widget) protects the daily guess endpoints from bot submissions — the token is single-use and regenerated after every guess
+- GitHub Actions secrets are injected via `env:` variables, not interpolated directly into shell scripts
 - Security headers (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy) applied via `docs/_headers`
 - `secret.html` is excluded from search engine indexing via `robots.txt`
 

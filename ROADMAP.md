@@ -8,7 +8,7 @@ This document tracks planned improvements across features, code quality, perform
 
 These are improvements that pay dividends across all future work and carry no risk of breaking the game.
 
-~~### 1.1 Automate Worker Deployment~~ ✅ **Done** — `deploy-worker` job added to `.github/workflows/deploy.yml`. Triggers on changes to `worker.js` or `wrangler.jsonc`; requires `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` GitHub secrets.
+~~### 1.1 Automate Worker Deployment~~ ✅ **Done** — Separate `deploy-worker.yml` workflow triggers on changes to `worker.js` or `wrangler.jsonc`. Runs `npm ci --ignore-scripts` then `npm run deploy` (uses the exact wrangler version from `package-lock.json`). Requires `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` GitHub secrets, both injected via `env:` variables rather than inline secret expansion.
 
 ---
 
@@ -218,11 +218,15 @@ View results in the Cloudflare dashboard or via the Analytics Engine SQL API.
 
 ## Phase 6 — Code Quality
 
-~~### 6.0 SonarQube Analysis~~ ✅ **Done** — SonarCloud Automatic Analysis enabled. `sonar-project.properties` added to root with `sonar.python.version=3.14`. Analysis runs automatically on every push via SonarCloud's GitHub integration — no CI token or workflow needed.
+~~### 6.0 SonarQube Analysis~~ ✅ **Done** — SonarCloud Automatic Analysis enabled. `sonar-project.properties` added to root with `sonar.python.version=3.14`. Analysis runs automatically on every push via SonarCloud's GitHub integration — no CI token or workflow needed. Outstanding issues addressed: S5852 ReDoS hotspot marked SAFE (simple negated character class, no backtracking); S4158 false positive in `shared.js` suppressed with `// NOSONAR` (COOKIES is populated before user interaction); S3776 cognitive complexity resolved by Turnstile removal; dead `origin` parameter removed from all 29 `jsonResponse` call sites in `worker.js`.
 
 ---
 
-~~### 6.1 Deduplicate Game Handlers in Worker~~ ✅ **Done** — Extracted `handleDailyHint()` (shared token verification, 5-wrong gate, hint_used check) and `handleDailyBinaryGuess()` (shared body parsing, token verification, correct check). Games 2 & 3 hint/guess handlers are now thin wrappers. Game 1 kept separate due to `evaluateGuess()` per-trait logic. Analytics (4.3) wired into both shared functions.
+~~### 6.1 Deduplicate Game Handlers in Worker~~ ✅ **Done** — Extracted `handleDailyHint()` (shared token verification, 5-wrong gate, hint_used check) and `handleDailyBinaryGuess()` (shared body parsing, token verification, correct check). Games 2 & 3 hint/guess handlers are now thin wrappers. Game 1 kept separate due to `evaluateGuess()` per-trait logic.
+
+~~### 6.4 Fix Skill & Silhouette Image Proxy~~ ✅ **Done** — `handleSkillImage` and `handleSilhouette3Image` were using `fetch(new URL(..., request.url))` which re-entered the worker's own fetch handler and returned a JSON 404. Fixed by switching to `env.ASSETS.fetch()` with `"binding": "ASSETS"` declared in `wrangler.jsonc`, reading directly from the asset store with no network round-trip.
+
+~~### 6.5 Fix "Got it!" Button Click Registration~~ ✅ **Done** — The tutorial modal's "Got it!" button has class `submit-btn`, which applies `position: absolute; transform: translateY(-50%)`. The `.tutorial-got-it` override correctly resets this at rest (`position: static; transform: none`), but `.submit-btn:active` (specificity 0,2,0) won out over `.tutorial-got-it` (0,1,0) on mousedown, sliding the button upward mid-press so the click never registered. Fixed by adding `.tutorial-got-it:active { transform: scale(0.96); }` to match the active-state specificity.
 
 ---
 
@@ -276,7 +280,9 @@ These ideas need more design work or have significant tradeoffs:
 | 4.4 | Automated cookie sync | Backend | Large | Medium | |
 | 5.1 | PWA / installable | PWA | Medium | Low | |
 | 5.2 | Push notifications | PWA | Very Large | High | |
-| 6.0 | SonarQube analysis | Quality | Small | Low | ✅ Done |
+| 6.0 | SonarQube analysis + cleanup | Quality | Small | Low | ✅ Done |
 | 6.1 | Deduplicate worker handlers | Quality | Medium | Low | ✅ Done |
 | 6.2 | Frontend state manager | Quality | Medium | Low | |
 | 6.3 | ESLint + Prettier | Quality | Small | Low | ✅ Done |
+| 6.4 | Fix skill/silhouette image proxy | Quality | Small | Low | ✅ Done |
+| 6.5 | Fix tutorial "Got it!" click | Quality | Trivial | Low | ✅ Done |
