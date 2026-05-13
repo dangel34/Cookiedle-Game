@@ -25,4 +25,4 @@ jobs:
           curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/purge_cache" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -H "Content-Type: application/json" \
-            --data '{"purge_everything":true}'
+            --data '{"files":["https://cookiedle.nappi.work/","https://cookiedle.nappi.work/index.html","https://cookiedle.nappi.work/unlimited.html","https://cookiedle.nappi.work/secret.html","https://cookiedle.nappi.work/shared.js","https://cookiedle.nappi.work/game.js","https://cookiedle.nappi.work/unlimited.js","https://cookiedle.nappi.work/shared.css","https://cookiedle.nappi.work/game.css","https://cookiedle.nappi.work/unlimited.css","https://cookiedle.nappi.work/robots.txt"]}'

@@ -1097,13 +1097,27 @@ function renderCollection() {
   const found = new Set(getCollection());
   collectionCount.textContent = `${found.size} / ${COOKIES.length} identified`;
   collectionGrid.textContent = '';
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.dataset.src;
+          observer.unobserve(img);
+        }
+      });
+    },
+    { root: collectionGrid, rootMargin: '150px' }
+  );
+
   COOKIES.forEach((c) => {
     const item = document.createElement('div');
     const iFound = found.has(c.cookie_name);
     item.className = `collection-item ${iFound ? 'found' : 'missing'}`;
     item.title = iFound ? c.cookie_name : '???';
     const img = document.createElement('img');
-    img.src = cookieImgSrc(c.cookie_name);
+    img.dataset.src = cookieImgSrc(c.cookie_name);
     img.alt = iFound ? c.cookie_name : '';
     img.width = 64;
     img.height = 64;
@@ -1112,6 +1126,7 @@ function renderCollection() {
     label.textContent = iFound ? c.cookie_name : '???';
     item.append(img, label);
     collectionGrid.appendChild(item);
+    observer.observe(img);
   });
 }
 
