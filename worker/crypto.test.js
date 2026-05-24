@@ -37,9 +37,9 @@ describe('HMAC tokens', () => {
 });
 
 describe('progress tokens', () => {
-  it('empty token starts at zero wrong', async () => {
-    const state = await verifyProgressToken(null, 'daily1', '2026-5-24', SECRET);
-    expect(state).toEqual({ game: 'daily1', date: '2026-5-24', wrong: 0, hint_used: false });
+  it('rejects empty/null token (callers must use /daily-state to get an initial token)', async () => {
+    expect(await verifyProgressToken(null, 'daily1', '2026-5-24', SECRET)).toBeNull();
+    expect(await verifyProgressToken('', 'daily1', '2026-5-24', SECRET)).toBeNull();
   });
 
   it('round-trips progress state', async () => {
