@@ -1,4 +1,11 @@
 // Sliding-window counter via Cache API (no KV binding required).
+//
+// Known limitation: the read-check-write is non-atomic. Under high concurrency,
+// multiple requests that arrive before any cache.put completes will all read the
+// same stale counter and all pass the limit check simultaneously. The burst
+// over-allowance equals the number of truly concurrent requests, which is
+// negligible for normal traffic but cannot be fully prevented without an atomic
+// store (KV / Durable Objects).
 
 const RATE_LIMITS = {
   'POST /guess': { limit: 30, windowSec: 60 },
@@ -7,6 +14,15 @@ const RATE_LIMITS = {
   'POST /unlimited/guess': { limit: 120, windowSec: 60 },
   'POST /unlimited/hint': { limit: 60, windowSec: 60 },
   'GET /unlimited/new': { limit: 60, windowSec: 60 },
+  'GET /hint': { limit: 20, windowSec: 60 },
+  'GET /hint2': { limit: 20, windowSec: 60 },
+  'GET /hint3': { limit: 20, windowSec: 60 },
+  'GET /skill': { limit: 30, windowSec: 60 },
+  'GET /skill-image': { limit: 30, windowSec: 60 },
+  'GET /silhouette3-image': { limit: 30, windowSec: 60 },
+  'GET /roster': { limit: 20, windowSec: 60 },
+  'GET /cookies': { limit: 20, windowSec: 60 },
+  'GET /daily-state': { limit: 30, windowSec: 3600 },
 };
 
 export function getClientIp(request) {

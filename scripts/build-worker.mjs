@@ -1,4 +1,13 @@
-import fs from 'fs';
+import fs from 'node:fs';
+
+if (!fs.existsSync('worker-body.tmp.js')) {
+  console.error(
+    'Error: worker-body.tmp.js not found.\n' +
+    'This is a legacy build script that requires an intermediate temp file.\n' +
+    'Edit worker.js directly instead of running this script.'
+  );
+  process.exit(1);
+}
 
 let b = fs.readFileSync('worker-body.tmp.js', 'utf8');
 

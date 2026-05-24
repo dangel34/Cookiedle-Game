@@ -21,16 +21,14 @@ export function base64UrlDecodeToBytes(str) {
 
 async function getHmacKey(secret) {
   if (!hmacKeyCache.has(secret)) {
-    hmacKeyCache.set(
-      secret,
-      crypto.subtle.importKey(
-        'raw',
-        encoder.encode(secret),
-        { name: 'HMAC', hash: 'SHA-256' },
-        false,
-        ['sign']
-      )
-    );
+    const promise = crypto.subtle
+      .importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+      .catch((err) => {
+        // Remove poisoned entry so the next call retries instead of re-throwing forever
+        hmacKeyCache.delete(secret);
+        throw err;
+      });
+    hmacKeyCache.set(secret, promise);
   }
   return hmacKeyCache.get(secret);
 }
@@ -81,7 +79,8 @@ export async function makeProgressToken(progressState, secret) {
 }
 
 export async function verifyProgressToken(token, expectedGame, expectedDate, secret) {
-  if (!token) return { game: expectedGame, date: expectedDate, wrong: 0, hint_used: false };
+  // Empty token is invalid — callers must provide a signed token (issued by /daily-state or prior guess)
+  if (!token) return null;
   if (typeof token !== 'string') return null;
 
   const parts = token.split('.');

@@ -602,6 +602,7 @@ async function showGame2() {
       skillData = await res.json();
     } catch {
       showToast('Could not load skill — please refresh.');
+      if (!g2won) reenableWhenReady(input2, submitBtn2);
       return;
     }
   }
@@ -1308,6 +1309,21 @@ async function init() {
     showToast('Could not load cookie list — please refresh.');
     console.error('Failed to load cookies:', e);
     return;
+  }
+
+  // Fetch initial signed state tokens for all three daily games if not already stored.
+  // This ensures every guess carries a server-validated token, preventing hint-gate resets.
+  if (!g1StateToken || !g2StateToken || !g3StateToken) {
+    try {
+      const res = await fetch(`${WORKER_URL}/daily-state`);
+      if (res.ok) {
+        const data = await res.json();
+        if (!g1StateToken && data.g1) g1StateToken = data.g1;
+        if (!g2StateToken && data.g2) g2StateToken = data.g2;
+        if (!g3StateToken && data.g3) g3StateToken = data.g3;
+        saveState();
+      }
+    } catch {}
   }
 
   input.placeholder = 'Type a cookie name...';
