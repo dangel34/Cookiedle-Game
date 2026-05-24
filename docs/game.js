@@ -1109,7 +1109,7 @@ function getCollectionObserver() {
         _collectionObserver.unobserve(img);
       });
     },
-    { rootMargin: '200px' },
+    { rootMargin: '200px' }
   );
   return _collectionObserver;
 }
