@@ -19,9 +19,4 @@ export async function verifyTurnstile(token, secret, remoteip) {
   return data.success === true;
 }
 
-export const DAILY_GUESS_PATHS = new Set([
-  '/guess',
-  '/guess2',
-  '/guess3',
-  '/unlimited/guess',
-]);
+export const DAILY_GUESS_PATHS = new Set(['/guess', '/guess2', '/guess3', '/unlimited/guess']);

@@ -292,7 +292,14 @@ async function handleGuess2({ request, env, target2, todayStr }) {
   } catch {
     return jsonResponse(request, { error: 'Invalid JSON' }, 400);
   }
-  return handleDailyBinaryGuess({ request, body, env, gameId: 'daily2', todayStr, target: target2 });
+  return handleDailyBinaryGuess({
+    request,
+    body,
+    env,
+    gameId: 'daily2',
+    todayStr,
+    target: target2,
+  });
 }
 
 async function handleHint2({ request, url, env, target2, todayStr }) {
@@ -324,7 +331,14 @@ async function handleGuess3({ request, env, target3, todayStr }) {
   const guessName = sanitizeInput(body.guess || '').toLowerCase();
   if (guessName && !COOKIES.some((c) => c.cookie_name.toLowerCase() === guessName))
     return jsonResponse(request, { error: 'Cookie not found' }, 404);
-  return handleDailyBinaryGuess({ request, body, env, gameId: 'daily3', todayStr, target: target3 });
+  return handleDailyBinaryGuess({
+    request,
+    body,
+    env,
+    gameId: 'daily3',
+    todayStr,
+    target: target3,
+  });
 }
 
 async function handleHint3({ request, url, env, target3, todayStr }) {
