@@ -2,7 +2,11 @@
 // SHARED — loaded on every page
 // ─────────────────────────────────────────
 
-const WORKER_URL = 'https://cookiedle-worker.personal-account-bc0.workers.dev';
+// Production: same-origin /api/ proxy (see deploy/nginx/). Dev/other hosts: workers.dev directly.
+const WORKER_URL =
+  typeof location !== 'undefined' && location.hostname === 'cookiedle.nappi.work'
+    ? `${location.origin}/api`
+    : 'https://cookiedle-worker.personal-account-bc0.workers.dev';
 
 // Cookie list — populated by each page's init()
 let COOKIES = [];
