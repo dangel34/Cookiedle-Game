@@ -35,7 +35,8 @@ async function initTurnstile() {
     anchor = document.createElement('div');
     anchor.id = 'turnstile-anchor';
     anchor.setAttribute('aria-hidden', 'true');
-    anchor.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
+    anchor.style.cssText =
+      'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
     document.body.appendChild(anchor);
   }
 

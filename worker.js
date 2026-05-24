@@ -18,7 +18,8 @@ async function requireTurnstile(request, env, body) {
   if (!env.TURNSTILE_SECRET) return null;
   const token = sanitizeInput(body?.turnstile_token || '', 2048);
   const ok = await verifyTurnstile(token, env.TURNSTILE_SECRET, getClientIp(request));
-  if (!ok) return jsonResponse(activeRequest, { error: 'Bot check failed — refresh and try again.' }, 403);
+  if (!ok)
+    return jsonResponse(activeRequest, { error: 'Bot check failed — refresh and try again.' }, 403);
   return null;
 }
 
@@ -80,7 +81,8 @@ async function handleUnlimitedGuess({ request, env }) {
 
   const tokenPayload = await verifyAndDecodeToken(token, env.COOKIE_SECRET, COOKIES.length);
   if (!tokenPayload)
-    return jsonResponse(activeRequest, 
+    return jsonResponse(
+      activeRequest,
       { error: 'Invalid or expired token — click New Cookie to get a fresh one.' },
       400
     );
@@ -93,7 +95,11 @@ async function handleUnlimitedGuess({ request, env }) {
     env.COOKIE_SECRET
   );
   if (progress?.token_bind !== token) {
-    return jsonResponse(activeRequest, { error: 'Invalid progress token — click New Cookie to start over.' }, 400);
+    return jsonResponse(
+      activeRequest,
+      { error: 'Invalid progress token — click New Cookie to start over.' },
+      400
+    );
   }
 
   const guessCookie = COOKIES.find((c) => c.cookie_name.toLowerCase() === guess.toLowerCase());
@@ -135,10 +141,16 @@ async function handleUnlimitedHint({ request, env }) {
     env.COOKIE_SECRET
   );
   if (progress?.token_bind !== token) {
-    return jsonResponse(activeRequest, { error: 'Invalid progress token — click New Cookie to start over.' }, 400);
+    return jsonResponse(
+      activeRequest,
+      { error: 'Invalid progress token — click New Cookie to start over.' },
+      400
+    );
   }
-  if (progress.hint_used) return jsonResponse(activeRequest, { error: 'Hint already used this round' }, 403);
-  if (progress.wrong < 5) return jsonResponse(activeRequest, { error: 'Hint requires 5 wrong guesses' }, 403);
+  if (progress.hint_used)
+    return jsonResponse(activeRequest, { error: 'Hint already used this round' }, 403);
+  if (progress.wrong < 5)
+    return jsonResponse(activeRequest, { error: 'Hint requires 5 wrong guesses' }, 403);
 
   const nextProgress = { ...progress, hint_used: true };
   return jsonResponse(activeRequest, {
@@ -156,9 +168,11 @@ async function handleUnlimitedHint({ request, env }) {
 async function handleDailyHint({ url, env, gameId, todayStr, buildPayload }) {
   const stateToken = sanitizeInput(url.searchParams.get('state_token') || '', 500);
   const state = await verifyProgressToken(stateToken, gameId, todayStr, env.COOKIE_SECRET);
-  if (!state) return jsonResponse(activeRequest, { error: 'Invalid state token. Refresh to continue.' }, 400);
+  if (!state)
+    return jsonResponse(activeRequest, { error: 'Invalid state token. Refresh to continue.' }, 400);
   if (state.hint_used) return jsonResponse(activeRequest, { error: 'Hint already used' }, 403);
-  if (state.wrong < 5) return jsonResponse(activeRequest, { error: 'Hint requires 5 wrong guesses' }, 403);
+  if (state.wrong < 5)
+    return jsonResponse(activeRequest, { error: 'Hint requires 5 wrong guesses' }, 403);
   const nextState = { ...state, hint_used: true };
   return jsonResponse(activeRequest, {
     ...buildPayload(),
@@ -173,7 +187,8 @@ async function handleDailyBinaryGuess({ body, env, gameId, todayStr, target }) {
   const stateToken = sanitizeInput(body.state_token || '', 500);
   if (!guessName) return jsonResponse(activeRequest, { error: 'No guess provided' }, 400);
   const state = await verifyProgressToken(stateToken, gameId, todayStr, env.COOKIE_SECRET);
-  if (!state) return jsonResponse(activeRequest, { error: 'Invalid state token. Refresh to continue.' }, 400);
+  if (!state)
+    return jsonResponse(activeRequest, { error: 'Invalid state token. Refresh to continue.' }, 400);
   const correct = guessName === target.cookie_name.toLowerCase();
   const nextState = { ...state, wrong: correct ? state.wrong : state.wrong + 1 };
   return jsonResponse(activeRequest, {
@@ -203,7 +218,8 @@ async function handleGuess1({ request, env, target, todayStr }) {
 
   const result = evaluateGuess(guessCookie, target);
   const state = await verifyProgressToken(stateToken, 'daily1', todayStr, env.COOKIE_SECRET);
-  if (!state) return jsonResponse(activeRequest, { error: 'Invalid state token. Refresh to continue.' }, 400);
+  if (!state)
+    return jsonResponse(activeRequest, { error: 'Invalid state token. Refresh to continue.' }, 400);
   const nextState = { ...state, wrong: result.correct ? state.wrong : state.wrong + 1 };
   result.state_token = await makeProgressToken(nextState, env.COOKIE_SECRET);
   if (result.correct) {
@@ -243,7 +259,10 @@ function handleRoster() {
 }
 
 function handleSkill({ target2 }) {
-  return jsonResponse(activeRequest, { skill_name: target2.skill_name, skill_cooldown: target2.skill_cooldown });
+  return jsonResponse(activeRequest, {
+    skill_name: target2.skill_name,
+    skill_cooldown: target2.skill_cooldown,
+  });
 }
 
 async function handleSkillImage({ request, env, target2 }) {
@@ -362,7 +381,7 @@ const ROUTES = new Map([
 
 export default {
   async fetch(request, env) {
-      activeRequest = request;
+    activeRequest = request;
     try {
       const url = new URL(request.url);
 
