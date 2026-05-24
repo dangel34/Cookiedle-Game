@@ -3,6 +3,9 @@ name: Deploy Frontend
 on:
   push:
     branches: [master]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy.yml'
 
 permissions:
   contents: read
@@ -12,10 +15,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Prettier
+        run: npm run format:check
+
   deploy-frontend:
+    needs: lint
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Inject Turnstile site key
+        env:
+          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
+        run: node scripts/inject-turnstile-site-key.mjs
 
       - name: Deploy to web root
         run: rsync -a --delete docs/ /var/www/cookiedle/
@@ -28,4 +56,4 @@ jobs:
           curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            --data '{"files":["https://cookiedle.nappi.work/","https://cookiedle.nappi.work/index.html","https://cookiedle.nappi.work/unlimited.html","https://cookiedle.nappi.work/secret.html","https://cookiedle.nappi.work/shared.js","https://cookiedle.nappi.work/game.js","https://cookiedle.nappi.work/unlimited.js","https://cookiedle.nappi.work/shared.css","https://cookiedle.nappi.work/game.css","https://cookiedle.nappi.work/unlimited.css","https://cookiedle.nappi.work/robots.txt"]}'
+            --data '{"files":["https://cookiedle.nappi.work/","https://cookiedle.nappi.work/index.html","https://cookiedle.nappi.work/unlimited.html","https://cookiedle.nappi.work/secret.html","https://cookiedle.nappi.work/shared.js","https://cookiedle.nappi.work/turnstile.js","https://cookiedle.nappi.work/game.js","https://cookiedle.nappi.work/unlimited.js","https://cookiedle.nappi.work/shared.css","https://cookiedle.nappi.work/game.css","https://cookiedle.nappi.work/unlimited.css","https://cookiedle.nappi.work/robots.txt"]}'

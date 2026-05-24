@@ -15,11 +15,31 @@ export default [
   },
   // Cloudflare Worker (ES module)
   {
-    files: ['worker.js'],
+    files: ['worker.js', 'worker/**/*.js'],
+    ignores: ['worker/**/*.test.js'],
     languageOptions: {
       globals: globals.browser,
       ecmaVersion: 2024,
       sourceType: 'module',
+    },
+  },
+  {
+    files: ['worker/**/*.test.js'],
+    languageOptions: {
+      globals: globals.node,
+      ecmaVersion: 2024,
+      sourceType: 'module',
+    },
+  },
+  {
+    files: ['docs/turnstile.js'],
+    languageOptions: {
+      globals: { ...globals.browser, turnstile: 'readonly' },
+      ecmaVersion: 2024,
+      sourceType: 'script',
+    },
+    rules: {
+      'no-unused-vars': 'off',
     },
   },
   // shared.js — defines globals consumed by other pages; disable no-unused-vars
@@ -50,6 +70,11 @@ export default [
         updateActiveSugg: 'readonly',
         bindSuggestionBox: 'readonly',
         cookieImgSrc: 'readonly',
+        initTurnstile: 'readonly',
+        turnstileEnabled: 'readonly',
+        ensureTurnstileToken: 'readonly',
+        turnstileBodyExtra: 'readonly',
+        resetTurnstile: 'readonly',
       },
       ecmaVersion: 2024,
       sourceType: 'script',

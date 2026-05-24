@@ -2,7 +2,7 @@
 // SHARED — loaded on every page
 // ─────────────────────────────────────────
 
-// Production: same-origin /api/ proxy (see deploy/nginx/). Dev/other hosts: workers.dev directly.
+// Production: same-origin /api/ nginx proxy on cookiedle.nappi.work. Dev: workers.dev directly.
 const WORKER_URL =
   typeof location !== 'undefined' && location.hostname === 'cookiedle.nappi.work'
     ? `${location.origin}/api`
@@ -99,5 +99,9 @@ function bindSuggestionBox(inp, box) {
 
 function cookieImgSrc(name) {
   const safe = name.replace(/[^a-zA-Z0-9 '\-À-ɏ]/g, '');
-  return `${WORKER_URL}/cookie_images/${safe.replaceAll(' ', '_')}.webp`;
+  const file = `${safe.replaceAll(' ', '_')}.webp`;
+  if (typeof location !== 'undefined' && location.hostname === 'cookiedle.nappi.work') {
+    return `${location.origin}/cookie_images/${file}`;
+  }
+  return `${WORKER_URL}/cookie_images/${file}`;
 }

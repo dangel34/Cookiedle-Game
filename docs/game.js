@@ -377,12 +377,20 @@ async function submitGuess() {
 
   let data;
   try {
+    await ensureTurnstileToken();
+  } catch {
+    showToast('Bot check failed — refresh and try again.');
+    reenableWhenReady(input, submitBtn);
+    return;
+  }
+  try {
     const res = await fetch(`${WORKER_URL}/guess`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         guess: cookie.cookie_name,
         state_token: g1StateToken,
+        ...turnstileBodyExtra(),
       }),
     });
     data = await res.json();
@@ -398,6 +406,7 @@ async function submitGuess() {
     return;
   }
   if (data.state_token) g1StateToken = data.state_token;
+  resetTurnstile();
 
   const traitResults = [
     { value: cookie.cookie_name, result: 'name' },
@@ -634,12 +643,20 @@ async function submitGuess2() {
 
   let data;
   try {
+    await ensureTurnstileToken();
+  } catch {
+    showToast('Bot check failed — refresh and try again.');
+    reenableWhenReady(input2, submitBtn2);
+    return;
+  }
+  try {
     const res = await fetch(`${WORKER_URL}/guess2`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         guess: cookie.cookie_name,
         state_token: g2StateToken,
+        ...turnstileBodyExtra(),
       }),
     });
     data = await res.json();
@@ -655,6 +672,7 @@ async function submitGuess2() {
     return;
   }
   if (data.state_token) g2StateToken = data.state_token;
+  resetTurnstile();
 
   g2guesses.push(cookie.cookie_name);
   input2.value = '';
@@ -823,12 +841,20 @@ async function submitGuess3() {
 
   let data;
   try {
+    await ensureTurnstileToken();
+  } catch {
+    showToast('Bot check failed — refresh and try again.');
+    reenableWhenReady(input3, submitBtn3);
+    return;
+  }
+  try {
     const res = await fetch(`${WORKER_URL}/guess3`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         guess: cookie.cookie_name,
         state_token: g3StateToken,
+        ...turnstileBodyExtra(),
       }),
     });
     data = await res.json();
@@ -844,6 +870,7 @@ async function submitGuess3() {
     return;
   }
   if (data.state_token) g3StateToken = data.state_token;
+  resetTurnstile();
 
   g3guesses.push(cookie.cookie_name);
   input3.value = '';
@@ -1078,6 +1105,7 @@ function renderCollection() {
     img.alt = iFound ? c.cookie_name : '';
     img.width = 64;
     img.height = 64;
+    img.loading = 'lazy';
     loadImgWithRetry(img, cookieImgSrc(c.cookie_name));
     const label = document.createElement('div');
     label.className = 'collection-name';
@@ -1270,7 +1298,7 @@ async function init() {
   input.placeholder = 'Loading cookies...';
 
   try {
-    const res = await fetch(`${WORKER_URL}/cookies`);
+    const res = await fetch(`${WORKER_URL}/roster`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     COOKIES.splice(0, COOKIES.length, ...(await res.json()));
   } catch (e) {
@@ -1295,6 +1323,12 @@ async function init() {
   restoreSession();
 
   if (!localStorage.getItem('seen_tutorial')) openTutorial();
+
+  try {
+    await initTurnstile();
+  } catch (e) {
+    console.warn('Turnstile unavailable:', e);
+  }
 }
 
 init();

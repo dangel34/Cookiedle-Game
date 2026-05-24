@@ -325,7 +325,7 @@ async function init() {
   input.placeholder = 'Loading cookies...';
 
   try {
-    const res = await fetch(`${WORKER_URL}/cookies`);
+    const res = await fetch(`${WORKER_URL}/roster`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     COOKIES.splice(0, COOKIES.length, ...(await res.json()));
   } catch {

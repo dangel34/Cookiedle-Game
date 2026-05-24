@@ -59,26 +59,25 @@ After completing all three daily games a **Share** button generates a combined e
 Browser
   │
   ├── HTML / JS / CSS ──► Cloudflare CDN ──► Raspberry Pi nginx (/var/www/cookiedle/)
-  │                                           (deployed via GitHub Actions rsync)
+  │   Cookie images (/cookie_images/)         (deployed via GitHub Actions rsync)
   │
-  ├── Cookie images ──────► Cloudflare Worker assets
-  │   (cookieImgSrc)        (cookiedle-worker.*.workers.dev/cookie_images/)
-  │
-  └── API calls ──────────► Cloudflare Worker (worker.js)
-        /cookies               Daily cookie selection (SHA-256 hash)
-        /guess  /hint          Guess checking & hint validation
-        /guess2 /hint2         HMAC tokens for unlimited mode
-        /guess3 /hint3         Image proxy (skill & silhouette)
-        /skill-image
-        /silhouette3-image
-        /unlimited/new  /unlimited/guess  /unlimited/hint
+  └── API (production) ───► same host /api/* ──► Cloudflare Worker (worker.js)
+        /roster              Cookie trait list (cached 1h)
+        /guess  /hint        Daily game 1 + signed progress tokens
+        /guess2 /hint2       Daily game 2
+        /guess3 /hint3       Daily game 3
+        /skill-image         Skill art proxy (no filename leak)
+        /silhouette3-image   Silhouette proxy
+        /unlimited/*         Unlimited mode (HMAC tokens)
 ```
 
-**Two separate deployments, both automated via GitHub Actions:**
-- **`deploy.yml`**: triggers on every push to `master`; rsyncs `docs/` to the Pi, then purges Cloudflare CDN cache for HTML/JS/CSS so browsers immediately get the latest frontend
-- **`deploy-worker.yml`**: triggers when `worker.js` or `wrangler.jsonc` change; runs `npm run deploy` to publish the worker and all `docs/` assets to Cloudflare Workers
+**Two deployments (GitHub Actions):**
+- **`deploy.yml`**: on `docs/**` changes — lint on GitHub, rsync to Pi, purge Cloudflare HTML/JS cache
+- **`deploy-worker.yml`**: on worker/data/docs changes — unit tests, `wrangler deploy` (worker + assets)
 
-Cookie artwork (`docs/cookie_images/`) is intentionally served from the **Cloudflare Worker URL** (`WORKER_URL` in `shared.js`) rather than the Pi, so image requests hit Cloudflare's edge CDN instead of overloading the Pi with 170+ simultaneous requests on collection modal open.
+Production API URL is **`/api`** on `cookiedle.nappi.work` (nginx on the Pi proxies to the worker).
+
+Cookie artwork is served from the **Pi** (`/cookie_images/`) in production so CSP stays `img-src 'self'`. Local dev may use the worker URL directly.
 
 The daily target cookies are computed server-side using `SHA-256(date + suffix + COOKIE_SECRET)` where `COOKIE_SECRET` is an encrypted Cloudflare environment variable; it never touches the browser. Each game uses a different suffix (`-skill`, `-silhouette`) to guarantee three distinct daily cookies.
 
@@ -117,9 +116,9 @@ Silhouettes are saved to `docs/cookie_silhouettes/` with matching filenames.
 
 ### Updating the cookie database
 
-**1. Edit `worker.js`** to add new entries to the `COOKIES` array at the top.
+**1. Edit `data/cookies.json`** to add new cookie entries.
 
-**2. Deploy everything** (worker + assets):
+**2. Deploy the worker** (and assets if images changed):
 ```bash
 npm run deploy
 ```
@@ -131,7 +130,7 @@ git commit -m "Add new cookies"
 git push origin master
 ```
 
-> **Note:** Adding or reordering cookies in the `COOKIES` array changes the daily hash results, shifting which cookie appears on each date.
+> **Note:** Reordering the JSON array changes daily hash results. Prefer appending new cookies at the end.
 
 ### Automated deployment (GitHub Actions)
 
@@ -141,7 +140,7 @@ Two workflows run automatically on push to `master`:
 1. Rsyncs `docs/` to `/var/www/cookiedle/` on the Raspberry Pi
 2. Purges Cloudflare CDN cache for HTML/JS/CSS so browsers immediately get the new code (images are intentionally left cached)
 
-**`deploy-worker.yml`** (Cloudflare Worker, ubuntu-latest runner) triggers only when `worker.js` or `wrangler.jsonc` change:
+**`deploy-worker.yml`** (Cloudflare Worker) runs tests then deploys when `worker.js`, `worker/`, `data/`, or `docs/` change:
 1. Installs dependencies with `npm ci --ignore-scripts`
 2. Runs `npm run deploy` (wrangler) to publish the worker and all `docs/` assets to Cloudflare Workers
 
@@ -152,8 +151,13 @@ Two workflows run automatically on push to `master`:
 | `CLOUDFLARE_API_TOKEN` | both workflows | Cloudflare Dashboard > My Profile > API Tokens. Needs Zone > Cache Purge (for `deploy.yml`) and Workers Scripts > Edit (for `deploy-worker.yml`) permissions |
 | `CF_ZONE_ID` | `deploy.yml` | Cloudflare Dashboard > nappi.work zone > Overview > Zone ID (right sidebar) |
 | `CLOUDFLARE_ACCOUNT_ID` | `deploy-worker.yml` | Cloudflare Dashboard > account home > Account ID (right sidebar) |
+| `TURNSTILE_SITE_KEY` | `deploy.yml` | Turnstile widget **Site Key** (injected into `index.html` on deploy) |
+
+Set the Turnstile **Secret Key** on the worker manually: `npx wrangler secret put TURNSTILE_SECRET` (not stored in GitHub).
 
 Secrets are passed to shell steps via `env:` variables rather than inline `${{ secrets.* }}` expansion, which prevents accidental injection if a secret value contains shell metacharacters.
+
+**Turnstile test keys** (always pass): site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`. Replace with real keys from the Cloudflare Turnstile dashboard for production.
 
 ### First-time setup
 ```bash
@@ -251,14 +255,17 @@ Cookiedle-Game/
 ## 🔒 Security
 
 - The daily answer is never sent to the browser unprompted
-- All guess checking and hint validation happens server-side in the Cloudflare Worker
-- Hints require at least 5 server-verified wrong guesses before unlocking
-- Skill images and silhouettes are proxied through the worker via `env.ASSETS.fetch()`; the cookie name never appears in any URL the browser can see
-- Unlimited mode uses HMAC-SHA256 signed tokens; the cookie name never leaves the server
-- `COOKIE_SECRET` is stored as an encrypted environment variable in Cloudflare, not in any file
-- GitHub Actions secrets are injected via `env:` variables, not interpolated directly into shell scripts
-- Security headers (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy) applied via `docs/_headers`
-- `secret.html` is excluded from search engine indexing via `robots.txt`
+- All guess checking and hint validation happen server-side in the Cloudflare Worker
+- Hints require at least 5 server-verified wrong guesses (signed `state_token`)
+- Skill/silhouette images proxied via `env.ASSETS.fetch()` — filenames never exposed to the client
+- Unlimited mode uses HMAC-SHA256 tokens; cookie names never leave the server
+- `COOKIE_SECRET` (and optional `TURNSTILE_SECRET`) are Cloudflare Worker secrets only
+- Production CSP via **`/etc/nginx/snippets/security-headers-cookiedle.conf`** (`connect-src 'self'`, Turnstile allowed)
+- Same-origin `/api/` nginx proxy to the worker (configured on the Pi, not in this repo)
+- Per-IP rate limits on guess endpoints (worker Cache API)
+- Optional Cloudflare Turnstile on daily guesses (`docs/turnstile.js` + meta site key)
+- `npm test` — Vitest coverage for token signing and hint progress
+- `secret.html` is excluded from search engine indexing via `robots.txt` (not access control)
 
 ---
 

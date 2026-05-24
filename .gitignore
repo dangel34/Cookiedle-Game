@@ -4,11 +4,21 @@ node_modules/
 # wrangler files
 .wrangler
 .dev.vars*
-!.dev.vars.example
 .env*
-!.env.example
 
 # python
 .venv/
 __pycache__/
 *.pyc
+
+# Legacy duplicate asset dirs (canonical copy is under docs/)
+/cookie_images/
+/cookie_skill_images/
+/cookie_silhouettes/
+
+# build artifacts
+worker-body.tmp.js
+worker-core.tmp.js
+
+# Pi nginx configs (kept locally on the server, not in git)
+deploy/nginx/

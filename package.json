@@ -3,10 +3,12 @@
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
-    "lint": "eslint worker.js docs/**/*.js",
-    "lint:fix": "eslint --fix worker.js docs/**/*.js",
-    "format": "prettier --write worker.js docs/**/*.js docs/**/*.css docs/**/*.html",
-    "format:check": "prettier --check worker.js docs/**/*.js docs/**/*.css docs/**/*.html"
+    "lint": "eslint worker.js worker/**/*.js docs/**/*.js",
+    "lint:fix": "eslint --fix worker.js worker/**/*.js docs/**/*.js",
+    "format": "prettier --write worker.js worker/**/*.js docs/**/*.js docs/**/*.css docs/**/*.html data/**/*.json",
+    "format:check": "prettier --check worker.js worker/**/*.js docs/**/*.js docs/**/*.css docs/**/*.html data/**/*.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -14,6 +16,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.6.0",
     "prettier": "^3.8.3",
+    "vitest": "^3.2.4",
     "wrangler": "^4"
   }
 }
