@@ -1092,10 +1092,33 @@ function loadImgWithRetry(img, src, attempt = 0) {
   };
 }
 
+let _collectionObserver = null;
+
+function getCollectionObserver() {
+  if (_collectionObserver) _collectionObserver.disconnect();
+  _collectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const img = entry.target;
+        const src = img.dataset.lazySrc;
+        if (src) {
+          loadImgWithRetry(img, src);
+          delete img.dataset.lazySrc;
+        }
+        _collectionObserver.unobserve(img);
+      });
+    },
+    { rootMargin: '200px' },
+  );
+  return _collectionObserver;
+}
+
 function renderCollection() {
   const found = new Set(getCollection());
   collectionCount.textContent = `${found.size} / ${COOKIES.length} identified`;
   collectionGrid.textContent = '';
+  const observer = getCollectionObserver();
 
   COOKIES.forEach((c) => {
     const item = document.createElement('div');
@@ -1106,8 +1129,8 @@ function renderCollection() {
     img.alt = iFound ? c.cookie_name : '';
     img.width = 64;
     img.height = 64;
-    img.loading = 'lazy';
-    loadImgWithRetry(img, cookieImgSrc(c.cookie_name));
+    img.dataset.lazySrc = cookieImgSrc(c.cookie_name);
+    observer.observe(img);
     const label = document.createElement('div');
     label.className = 'collection-name';
     label.textContent = iFound ? c.cookie_name : '???';
