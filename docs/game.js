@@ -1096,7 +1096,7 @@ let _collectionObserver = null;
 
 function getCollectionObserver() {
   if (_collectionObserver) _collectionObserver.disconnect();
-  _collectionObserver = new IntersectionObserver(
+  const obs = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
@@ -1106,12 +1106,13 @@ function getCollectionObserver() {
           loadImgWithRetry(img, src);
           delete img.dataset.lazySrc;
         }
-        _collectionObserver.unobserve(img);
+        obs.unobserve(img);
       });
     },
-    { rootMargin: '200px' }
+    { root: collectionGrid, rootMargin: '200px' }
   );
-  return _collectionObserver;
+  _collectionObserver = obs;
+  return obs;
 }
 
 function renderCollection() {
