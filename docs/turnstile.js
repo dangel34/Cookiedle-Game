@@ -42,7 +42,8 @@ async function initTurnstile() {
 
   turnstileWidgetId = turnstile.render('#turnstile-anchor', {
     sitekey: siteKey,
-    size: 'invisible',
+    appearance: 'interaction-only',
+    execution: 'execute',
     callback: (token) => {
       turnstileToken = token;
     },
