@@ -104,7 +104,7 @@ def main():
 
         if img_tag is None:
             slugs = filename_to_slugs(filename)
-            print(f'  [err]  {filename} — skill image not found (tried: {slugs})')
+            print(f'  [err]  {filename} - skill image not found (tried: {slugs})')
             err += 1
             continue
 
@@ -120,7 +120,7 @@ def main():
             print(f'  [ok]   {filename}  ← {os.path.basename(src)}')
             ok += 1
         except Exception as e:
-            print(f'  [err]  {filename} — image download failed: {e}')
+            print(f'  [err]  {filename} - image download failed: {e}')
             err += 1
 
         time.sleep(0.3)

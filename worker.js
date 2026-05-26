@@ -1,4 +1,4 @@
-// worker.js — Cloudflare Worker entry
+// worker.js - Cloudflare Worker entry
 import COOKIES from './data/cookies.json';
 import { getDailyTarget, getDailyTarget2, getDailyTarget3 } from './worker/daily.js';
 import { corsHeaders, jsonResponse } from './worker/cors.js';
@@ -93,7 +93,7 @@ async function handleUnlimitedGuess({ request, env }) {
   if (!tokenPayload)
     return jsonResponse(
       request,
-      { error: 'Invalid or expired token — click New Cookie to get a fresh one.' },
+      { error: 'Invalid or expired token - click New Cookie to get a fresh one.' },
       400
     );
   const target_u = COOKIES[tokenPayload.i];
@@ -107,7 +107,7 @@ async function handleUnlimitedGuess({ request, env }) {
   if (progress?.token_bind !== token) {
     return jsonResponse(
       request,
-      { error: 'Invalid progress token — click New Cookie to start over.' },
+      { error: 'Invalid progress token - click New Cookie to start over.' },
       400
     );
   }
@@ -153,7 +153,7 @@ async function handleUnlimitedHint({ request, env }) {
   if (progress?.token_bind !== token) {
     return jsonResponse(
       request,
-      { error: 'Invalid progress token — click New Cookie to start over.' },
+      { error: 'Invalid progress token - click New Cookie to start over.' },
       400
     );
   }
@@ -445,7 +445,7 @@ export default {
       if (rateCfg) {
         const allowed = await checkRateLimit(request, routeKey);
         if (!allowed) {
-          return jsonResponse(request, { error: 'Too many requests — slow down.' }, 429);
+          return jsonResponse(request, { error: 'Too many requests - slow down.' }, 429);
         }
       }
 

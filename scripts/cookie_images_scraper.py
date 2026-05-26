@@ -66,7 +66,7 @@ def main():
                 f.write(r.content)
             print(f'  [ok]   {filename}')
         except Exception as e:
-            print(f'  [err]  {src} — {e}')
+            print(f'  [err]  {src} - {e}')
 
     print(f'\nDone. Images saved to ./{OUTPUT_DIR}/')
 

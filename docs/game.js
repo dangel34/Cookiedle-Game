@@ -137,7 +137,7 @@ function reenableWhenReady(inp, btn) {
 }
 
 // ─────────────────────────────────────────
-// DOM REFS — GAME 1
+// DOM REFS - GAME 1
 // ─────────────────────────────────────────
 const input = document.getElementById('guessInput');
 const suggestBox = document.getElementById('suggestions');
@@ -156,7 +156,7 @@ const hintBtn = document.getElementById('hintBtn');
 const hintPicker = document.getElementById('hintPicker');
 const hintReveal = document.getElementById('hintReveal');
 
-// DOM REFS — GAME 2
+// DOM REFS - GAME 2
 const game2Section = document.getElementById('game2Section');
 const input2 = document.getElementById('guessInput2');
 const suggestBox2 = document.getElementById('suggestions2');
@@ -171,7 +171,7 @@ const skillNameEl = document.getElementById('skillName');
 const skillCdEl = document.getElementById('skillCd');
 const skillImgEl = document.getElementById('skillImg');
 
-// DOM REFS — GAME 3
+// DOM REFS - GAME 3
 const game3Section = document.getElementById('game3Section');
 const input3 = document.getElementById('guessInput3');
 const suggestBox3 = document.getElementById('suggestions3');
@@ -185,7 +185,7 @@ const hintReveal3 = document.getElementById('hintReveal3');
 const silhouetteImg = document.getElementById('silhouetteImg');
 const g2NextPrompt = document.getElementById('g2NextPrompt');
 
-// DOM REFS — FINAL
+// DOM REFS - FINAL
 const finalVictory = document.getElementById('finalVictory');
 const finalSub = document.getElementById('finalSub');
 const finalCookieEl = document.getElementById('finalCookieName');
@@ -258,7 +258,7 @@ function restoreSession() {
 }
 
 // ─────────────────────────────────────────
-// AUTOCOMPLETE — event listeners
+// AUTOCOMPLETE - event listeners
 // ─────────────────────────────────────────
 input.addEventListener('input', () => {
   activeSuggestion = -1;
@@ -353,7 +353,7 @@ document.addEventListener('click', (e) => {
 });
 
 // ─────────────────────────────────────────
-// GAME 1 — GUESS LOGIC
+// GAME 1 - GUESS LOGIC
 // ─────────────────────────────────────────
 submitBtn.addEventListener('click', submitGuess);
 
@@ -364,7 +364,7 @@ async function submitGuess() {
 
   const cookie = COOKIES.find((c) => c.cookie_name.toLowerCase() === raw.toLowerCase());
   if (!cookie) {
-    showToast('Cookie not found — check your spelling!');
+    showToast('Cookie not found - check your spelling!');
     return;
   }
   if (guesses.includes(cookie.cookie_name)) {
@@ -387,7 +387,7 @@ async function submitGuess() {
     });
     data = await res.json();
   } catch {
-    showToast('Connection error — please try again.');
+    showToast('Connection error - please try again.');
     reenableWhenReady(input, submitBtn);
     return;
   }
@@ -460,7 +460,7 @@ function addGuessRow(traitResults, animate) {
     cell.textContent = trait.value;
     const label = trait.label ?? CELL_LABELS[i] ?? '';
     const resultWord = trait.result === 'partial' ? 'close' : trait.result;
-    const resultText = trait.result === 'name' ? '' : ` — ${resultWord}`;
+    const resultText = trait.result === 'name' ? '' : ` - ${resultWord}`;
     cell.setAttribute('aria-label', `${label}: ${trait.value}${resultText}`);
     if (animate) setTimeout(() => cell.classList.add('revealed'), i * 700);
     else cell.classList.add('instant');
@@ -470,7 +470,7 @@ function addGuessRow(traitResults, animate) {
 }
 
 // ─────────────────────────────────────────
-// GAME 1 — META & HINT
+// GAME 1 - META & HINT
 // ─────────────────────────────────────────
 function wrongCount() {
   return won ? guesses.length - 1 : guesses.length;
@@ -524,7 +524,7 @@ hintPicker.querySelectorAll('.hint-choice').forEach((btn) => {
       value = data.value;
       if (data.state_token) g1StateToken = data.state_token;
     } catch {
-      showToast('Could not fetch hint — please try again.');
+      showToast('Could not fetch hint - please try again.');
       hintBtn.disabled = false;
       return;
     }
@@ -541,7 +541,7 @@ hintPicker.querySelectorAll('.hint-choice').forEach((btn) => {
 });
 
 // ─────────────────────────────────────────
-// GAME 1 — VICTORY
+// GAME 1 - VICTORY
 // ─────────────────────────────────────────
 function showVictory1(animate) {
   vicCountEl.textContent =
@@ -601,7 +601,7 @@ nextGameBtn.addEventListener('click', async () => {
 });
 
 // ─────────────────────────────────────────
-// GAME 2 — SHOW & LOAD SKILL
+// GAME 2 - SHOW & LOAD SKILL
 // ─────────────────────────────────────────
 async function showGame2() {
   game2Section.classList.add('show');
@@ -615,7 +615,7 @@ async function showGame2() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       skillData = await res.json();
     } catch {
-      showToast('Could not load skill — please refresh.');
+      showToast('Could not load skill - please refresh.');
       if (!g2won) reenableWhenReady(input2, submitBtn2);
       return;
     }
@@ -634,7 +634,7 @@ async function showGame2() {
 }
 
 // ─────────────────────────────────────────
-// GAME 2 — GUESS LOGIC
+// GAME 2 - GUESS LOGIC
 // ─────────────────────────────────────────
 submitBtn2.addEventListener('click', submitGuess2);
 
@@ -645,7 +645,7 @@ async function submitGuess2() {
 
   const cookie = COOKIES.find((c) => c.cookie_name.toLowerCase() === raw.toLowerCase());
   if (!cookie) {
-    showToast('Cookie not found — check your spelling!');
+    showToast('Cookie not found - check your spelling!');
     return;
   }
   if (g2guesses.includes(cookie.cookie_name)) {
@@ -668,7 +668,7 @@ async function submitGuess2() {
     });
     data = await res.json();
   } catch {
-    showToast('Connection error — please try again.');
+    showToast('Connection error - please try again.');
     reenableWhenReady(input2, submitBtn2);
     return;
   }
@@ -732,7 +732,7 @@ function addGame2Row(name, correct, animate) {
 }
 
 // ─────────────────────────────────────────
-// GAME 2 — META & HINT
+// GAME 2 - META & HINT
 // ─────────────────────────────────────────
 function g2wrongCount() {
   return g2won ? g2guesses.length - 1 : g2guesses.length;
@@ -784,7 +784,7 @@ hintBtn2.addEventListener('click', async () => {
     );
     data = await res.json();
   } catch {
-    showToast('Could not fetch hint — please try again.');
+    showToast('Could not fetch hint - please try again.');
     hintBtn2.disabled = false;
     return;
   }
@@ -804,7 +804,7 @@ hintBtn2.addEventListener('click', async () => {
 });
 
 // ─────────────────────────────────────────
-// GAME 3 — SHOW & LOAD SILHOUETTE
+// GAME 3 - SHOW & LOAD SILHOUETTE
 // ─────────────────────────────────────────
 document.getElementById('g3NextBtn').addEventListener('click', async () => {
   g3started = true;
@@ -826,7 +826,7 @@ async function showGame3() {
 }
 
 // ─────────────────────────────────────────
-// GAME 3 — GUESS LOGIC
+// GAME 3 - GUESS LOGIC
 // ─────────────────────────────────────────
 submitBtn3.addEventListener('click', submitGuess3);
 
@@ -837,7 +837,7 @@ async function submitGuess3() {
 
   const cookie = COOKIES.find((c) => c.cookie_name.toLowerCase() === raw.toLowerCase());
   if (!cookie) {
-    showToast('Cookie not found — check your spelling!');
+    showToast('Cookie not found - check your spelling!');
     return;
   }
   if (g3guesses.includes(cookie.cookie_name)) {
@@ -860,7 +860,7 @@ async function submitGuess3() {
     });
     data = await res.json();
   } catch {
-    showToast('Connection error — please try again.');
+    showToast('Connection error - please try again.');
     reenableWhenReady(input3, submitBtn3);
     return;
   }
@@ -922,7 +922,7 @@ function addGame3Row(name, correct, animate) {
 }
 
 // ─────────────────────────────────────────
-// GAME 3 — META & HINT
+// GAME 3 - META & HINT
 // ─────────────────────────────────────────
 function g3wrongCount() {
   return g3won ? g3guesses.length - 1 : g3guesses.length;
@@ -974,7 +974,7 @@ hintBtn3.addEventListener('click', async () => {
     );
     data = await res.json();
   } catch {
-    showToast('Could not fetch hint — please try again.');
+    showToast('Could not fetch hint - please try again.');
     hintBtn3.disabled = false;
     return;
   }
@@ -1051,7 +1051,7 @@ function renderStats() {
   document.getElementById('statWinRate').textContent =
     s.totalPlayed > 0 ? Math.round((s.totalWon / s.totalPlayed) * 100) + '%' : '0%';
   document.getElementById('statAvgGuesses').textContent =
-    s.totalWon > 0 ? (s.totalGuesses / s.totalWon).toFixed(1) : '—';
+    s.totalWon > 0 ? (s.totalGuesses / s.totalWon).toFixed(1) : '-';
 }
 
 const statsModal = document.getElementById('statsModal');
@@ -1281,7 +1281,7 @@ shareBtn.addEventListener('click', () => {
   if (guesses.length > 0) {
     const n = guesses.length;
     const outcome = won ? '✅' : '❌';
-    sections.push(`\nGame 1 — ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
+    sections.push(`\nGame 1 - ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
     const rows = guesses.map((name) => {
       const traitCells = (results[name] || []).slice(1);
       return traitCells.map((t) => traitResultEmoji(t.result)).join('');
@@ -1292,7 +1292,7 @@ shareBtn.addEventListener('click', () => {
   if (g2started && g2guesses.length > 0) {
     const n = g2guesses.length;
     const outcome = g2won ? '✅' : '❌';
-    sections.push(`\nGame 2 — ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
+    sections.push(`\nGame 2 - ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
     const rows = g2guesses.map((name) => (name === g2victoryName ? '✅' : '❌'));
     sections.push(...withHint(rows, g2hintUsed, g2hintAfterGuess));
   }
@@ -1300,7 +1300,7 @@ shareBtn.addEventListener('click', () => {
   if (g3started && g3guesses.length > 0) {
     const n = g3guesses.length;
     const outcome = g3won ? '✅' : '❌';
-    sections.push(`\nGame 3 — ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
+    sections.push(`\nGame 3 - ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
     const rows = g3guesses.map((name) => (name === g3victoryName ? '✅' : '❌'));
     sections.push(...withHint(rows, g3hintUsed, g3hintAfterGuess));
   }
@@ -1314,7 +1314,7 @@ shareBtn.addEventListener('click', () => {
   navigator.clipboard
     .writeText(text)
     .then(() => showToast('Results copied!'))
-    .catch(() => showToast('Could not copy — try again.'));
+    .catch(() => showToast('Could not copy - try again.'));
 });
 
 // ─────────────────────────────────────────
@@ -1335,7 +1335,7 @@ async function init() {
     input.placeholder = 'Type a cookie name...';
     input.disabled = false;
     submitBtn.disabled = false;
-    showToast('Could not load cookie list — please refresh.');
+    showToast('Could not load cookie list - please refresh.');
     console.error('Failed to load cookies:', e);
     return;
   }

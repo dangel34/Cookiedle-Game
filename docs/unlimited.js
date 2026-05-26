@@ -49,7 +49,7 @@ const solvedNumEl = document.getElementById('solvedNum');
 bindSuggestionBox(input, suggestBox);
 
 // ─────────────────────────────────────────
-// AUTOCOMPLETE — event listeners
+// AUTOCOMPLETE - event listeners
 // ─────────────────────────────────────────
 input.addEventListener('input', () => {
   activeSuggestion = -1;
@@ -95,7 +95,7 @@ async function submitGuess() {
 
   const cookie = COOKIES.find((c) => c.cookie_name.toLowerCase() === raw.toLowerCase());
   if (!cookie) {
-    showToast('Cookie not found — check your spelling!');
+    showToast('Cookie not found - check your spelling!');
     return;
   }
   if (guesses.includes(cookie.cookie_name)) {
@@ -120,7 +120,7 @@ async function submitGuess() {
     });
     data = await res.json();
   } catch {
-    showToast('Connection error — please try again.');
+    showToast('Connection error - please try again.');
     input.disabled = false;
     submitBtn.disabled = false;
     return;
@@ -128,7 +128,7 @@ async function submitGuess() {
 
   if (data.error) {
     if (data.error.includes('expired')) {
-      showToast('Session expired — starting a fresh round...');
+      showToast('Session expired - starting a fresh round...');
       await startNewRound();
       return;
     } else {
@@ -183,7 +183,7 @@ function addGuessRow(traitResults, animate) {
     cell.textContent = trait.value;
     const label = trait.label ?? CELL_LABELS[i] ?? '';
     const resultWord = trait.result === 'partial' ? 'close' : trait.result;
-    const resultText = trait.result === 'name' ? '' : ` — ${resultWord}`;
+    const resultText = trait.result === 'name' ? '' : ` - ${resultWord}`;
     cell.setAttribute('aria-label', `${label}: ${trait.value}${resultText}`);
     if (animate) setTimeout(() => cell.classList.add('revealed'), i * 700);
     else cell.classList.add('instant');
@@ -249,7 +249,7 @@ hintPicker.querySelectorAll('.hint-choice').forEach((btn) => {
       value = data.value;
       if (data.progress_token) progressToken = data.progress_token;
     } catch {
-      showToast('Could not fetch hint — please try again.');
+      showToast('Could not fetch hint - please try again.');
       hintBtn.disabled = false;
       return;
     }
@@ -364,7 +364,7 @@ async function fetchNewToken() {
     filterNoteEl.textContent = '';
     return true;
   } catch {
-    showToast('Could not load a new cookie — please refresh.');
+    showToast('Could not load a new cookie - please refresh.');
     return false;
   }
 }
@@ -380,12 +380,12 @@ async function init() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     COOKIES.splice(0, COOKIES.length, ...(await res.json()));
   } catch {
-    showToast('Could not load cookies — please refresh.');
+    showToast('Could not load cookies - please refresh.');
     return;
   }
 
   const ok = await fetchNewToken();
-  input.placeholder = ok ? 'Type a cookie name...' : 'Could not load — please refresh.';
+  input.placeholder = ok ? 'Type a cookie name...' : 'Could not load - please refresh.';
   if (!ok) return;
 
   input.disabled = false;

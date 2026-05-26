@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// SHARED — loaded on every page
+// SHARED - loaded on every page
 // ─────────────────────────────────────────
 
 // Production: same-origin /api/ nginx proxy on cookiedle.nappi.work. Dev: workers.dev directly.
@@ -8,7 +8,7 @@ const WORKER_URL =
     ? `${location.origin}/api`
     : 'https://cookiedle-worker.personal-account-bc0.workers.dev';
 
-// Cookie list — populated by each page's init()
+// Cookie list - populated by each page's init()
 let COOKIES = [];
 
 // Trait display labels
@@ -38,7 +38,7 @@ function showToast(msg) {
 // ─────────────────────────────────────────
 function buildSuggestions(val, usedList, box) {
   if (!val || !COOKIES.length) {
-    // NOSONAR — COOKIES is populated by init() before any user interaction
+    // NOSONAR - COOKIES is populated by init() before any user interaction
     hideSuggestions(box);
     return;
   }

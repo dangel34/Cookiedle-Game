@@ -33,7 +33,7 @@ def main():
             make_silhouette(src, dest)
             print(f'  [ok]   {filename}')
         except Exception as e:
-            print(f'  [err]  {filename} — {e}')
+            print(f'  [err]  {filename} - {e}')
 
     print(f'\nDone. Silhouettes saved to ./{OUTPUT_DIR}/')
 

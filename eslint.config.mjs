@@ -31,7 +31,7 @@ export default [
       sourceType: 'module',
     },
   },
-  // shared.js — defines globals consumed by other pages; disable no-unused-vars
+  // shared.js - defines globals consumed by other pages; disable no-unused-vars
   {
     files: ['docs/shared.js'],
     languageOptions: {
@@ -43,7 +43,7 @@ export default [
       'no-unused-vars': 'off',
     },
   },
-  // game.js and unlimited.js — consume globals from shared.js
+  // game.js and unlimited.js - consume globals from shared.js
   {
     files: ['docs/game.js', 'docs/unlimited.js'],
     languageOptions: {

@@ -44,7 +44,7 @@ b = b.replace(
   "'GET /roster', handleRoster,\n  ['GET /cookies', handleRoster]"
 );
 
-const header = `// worker.js — Cloudflare Worker entry
+const header = `// worker.js - Cloudflare Worker entry
 import COOKIES from './data/cookies.json';
 import { getDailyTarget, getDailyTarget2, getDailyTarget3 } from './worker/daily.js';
 import { corsHeaders, jsonResponse } from './worker/cors.js';
@@ -73,7 +73,7 @@ const fetchPatched = fetchBlock.replace(
       if (rateCfg) {
         const allowed = await checkRateLimit(request, routeKey);
         if (!allowed) {
-          return jsonResponse(request, { error: 'Too many requests — slow down.' }, 429);
+          return jsonResponse(request, { error: 'Too many requests - slow down.' }, 429);
         }
       }
 

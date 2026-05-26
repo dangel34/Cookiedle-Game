@@ -16,7 +16,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-~~### 1.3 Rate Limiting on the Worker~~ ✅ **Done** - Sliding-window counter via Cache API (no KV required). `worker/rate-limit.js` defines per-route limits (e.g. `/guess` 30/min, `/unlimited/new` 60/min, `/daily-state` 30/hr). `checkRateLimit()` called in the main fetch handler before route dispatch; returns 429 on breach. Known limitation: read-check-write is non-atomic, so burst over-allowance equals truly concurrent requests — acceptable without Durable Objects.
+~~### 1.3 Rate Limiting on the Worker~~ ✅ **Done** - Sliding-window counter via Cache API (no KV required). `worker/rate-limit.js` defines per-route limits (e.g. `/guess` 30/min, `/unlimited/new` 60/min, `/daily-state` 30/hr). `checkRateLimit()` called in the main fetch handler before route dispatch; returns 429 on breach. Known limitation: read-check-write is non-atomic, so burst over-allowance equals truly concurrent requests - acceptable without Durable Objects.
 
 ---
 
@@ -38,7 +38,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-~~### 2.3 Accessibility Pass~~ ✅ **Done** - All three modals converted from `<div role="dialog">` to native `<dialog>` elements (built-in focus-trap, Escape-to-close, `::backdrop`; manual Escape keydown handler removed). `aria-label` added to all three guess inputs and all modal close buttons. Every guess tile gets a descriptive `aria-label` (e.g. `"Primary: Brown — correct"`), falling back to index-based labels for restored localStorage data. `<output>` live region announces guess summaries and victory to screen readers. Game 2/3 emoji icons marked `aria-hidden="true"` to avoid double-reading. `.sr-only` utility class and global `:focus-visible` ring (3px accent outline) added to `shared.css`.
+~~### 2.3 Accessibility Pass~~ ✅ **Done** - All three modals converted from `<div role="dialog">` to native `<dialog>` elements (built-in focus-trap, Escape-to-close, `::backdrop`; manual Escape keydown handler removed). `aria-label` added to all three guess inputs and all modal close buttons. Every guess tile gets a descriptive `aria-label` (e.g. `"Primary: Brown - correct"`), falling back to index-based labels for restored localStorage data. `<output>` live region announces guess summaries and victory to screen readers. Game 2/3 emoji icons marked `aria-hidden="true"` to avoid double-reading. `.sr-only` utility class and global `:focus-visible` ring (3px accent outline) added to `shared.css`.
 
 ---
 
@@ -78,7 +78,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-~~### 3.2 Cookie Collection Tracker~~ ✅ **Done** - After each daily game win, the cookie is added to `localStorage` key `collection`. `🍪 Collection` button in the header (and in the final victory section) opens a modal grid showing all cookies; identified ones in full color, unidentified ones as a CSS placeholder (no image loaded). Count shown as `X / Y identified`. **503 fix:** unidentified cookie images are no longer fetched at all — only found cookies load lazily via IntersectionObserver, eliminating burst-request 503s on modal open.
+~~### 3.2 Cookie Collection Tracker~~ ✅ **Done** - After each daily game win, the cookie is added to `localStorage` key `collection`. `🍪 Collection` button in the header (and in the final victory section) opens a modal grid showing all cookies; identified ones in full color, unidentified ones as a CSS placeholder (no image loaded). Count shown as `X / Y identified`. **503 fix:** unidentified cookie images are no longer fetched at all - only found cookies load lazily via IntersectionObserver, eliminating burst-request 503s on modal open.
 
 ---
 

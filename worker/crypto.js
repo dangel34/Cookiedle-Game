@@ -1,4 +1,4 @@
-// HMAC token helpers — unlimited mode + daily progress tokens
+// HMAC token helpers - unlimited mode + daily progress tokens
 
 export const TOKEN_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
@@ -79,7 +79,7 @@ export async function makeProgressToken(progressState, secret) {
 }
 
 export async function verifyProgressToken(token, expectedGame, expectedDate, secret) {
-  // Empty token is invalid — callers must provide a signed token (issued by /daily-state or prior guess)
+  // Empty token is invalid - callers must provide a signed token (issued by /daily-state or prior guess)
   if (!token) return null;
   if (typeof token !== 'string') return null;
 

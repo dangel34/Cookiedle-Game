@@ -75,8 +75,8 @@ Browser
 ```
 
 **Two deployments (GitHub Actions):**
-- **`deploy.yml`**: on `docs/**` changes — lint on GitHub, rsync to Pi, purge Cloudflare HTML/JS cache
-- **`deploy-worker.yml`**: on worker/data/docs changes — unit tests, `wrangler deploy` (worker + assets)
+- **`deploy.yml`**: on `docs/**` changes - lint on GitHub, rsync to Pi, purge Cloudflare HTML/JS cache
+- **`deploy-worker.yml`**: on worker/data/docs changes - unit tests, `wrangler deploy` (worker + assets)
 
 Production API URL is **`/api`** on `cookiedle.nappi.work` (nginx on the Pi proxies to the worker).
 
@@ -261,14 +261,14 @@ Cookiedle-Game/
 - The daily answer is never sent to the browser unprompted
 - All guess checking and hint validation happen server-side in the Cloudflare Worker
 - Hints require at least 5 server-verified wrong guesses (signed `state_token`)
-- Skill/silhouette images proxied via `env.ASSETS.fetch()` — filenames never exposed to the client
+- Skill/silhouette images proxied via `env.ASSETS.fetch()` - filenames never exposed to the client
 - Unlimited mode uses HMAC-SHA256 tokens; cookie names never leave the server
 - `COOKIE_SECRET` (and optional `TURNSTILE_SECRET`) are Cloudflare Worker secrets only
 - Production CSP via **`/etc/nginx/snippets/security-headers-cookiedle.conf`** (`connect-src 'self'`, Turnstile allowed)
 - Same-origin `/api/` nginx proxy to the worker (configured on the Pi, not in this repo)
 - Per-IP rate limits on guess endpoints (worker Cache API)
 - Optional Cloudflare Turnstile on daily guesses (`docs/turnstile.js` + meta site key)
-- `npm test` — Vitest coverage for token signing and hint progress
+- `npm test` - Vitest coverage for token signing and hint progress
 - `secret.html` is excluded from search engine indexing via `robots.txt` (not access control)
 
 ---
