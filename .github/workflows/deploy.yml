@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - 'docs/**'
+      - 'nginx/**'
       - '.github/workflows/deploy.yml'
 
 permissions:
@@ -48,6 +49,11 @@ jobs:
         env:
           TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
         run: node scripts/inject-turnstile-site-key.mjs
+
+      - name: Deploy nginx headers config
+        run: |
+          sudo cp nginx/security-headers-cookiedle.conf /etc/nginx/snippets/security-headers-cookiedle.conf
+          sudo nginx -t && sudo systemctl reload nginx
 
       - name: Deploy to web root
         run: rsync -a --delete docs/ /var/www/cookiedle/
