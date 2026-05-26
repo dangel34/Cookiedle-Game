@@ -45,11 +45,6 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Inject Turnstile site key
-        env:
-          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
-        run: node scripts/inject-turnstile-site-key.mjs
-
       - name: Deploy nginx headers config
         run: |
           sudo cp nginx/security-headers-cookiedle.conf /etc/nginx/snippets/security-headers-cookiedle.conf

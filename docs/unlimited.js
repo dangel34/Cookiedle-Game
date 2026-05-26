@@ -107,15 +107,6 @@ async function submitGuess() {
   submitBtn.disabled = true;
   alreadyEl.textContent = '';
 
-  try {
-    await ensureTurnstileToken();
-  } catch {
-    showToast('Bot check failed — refresh and try again.');
-    input.disabled = false;
-    submitBtn.disabled = false;
-    return;
-  }
-
   let data;
   try {
     const res = await fetch(`${WORKER_URL}/unlimited/guess`, {
@@ -125,7 +116,6 @@ async function submitGuess() {
         token,
         progress_token: progressToken,
         guess: cookie.cookie_name,
-        ...turnstileBodyExtra(),
       }),
     });
     data = await res.json();
@@ -149,7 +139,6 @@ async function submitGuess() {
     return;
   }
   if (data.progress_token) progressToken = data.progress_token;
-  resetTurnstile();
 
   const traitResults = [
     { label: 'Cookie', value: cookie.cookie_name, result: 'name' },
@@ -403,11 +392,6 @@ async function init() {
   submitBtn.disabled = false;
   input.focus();
 
-  try {
-    await initTurnstile();
-  } catch (e) {
-    console.warn('Turnstile unavailable:', e);
-  }
 }
 
 init();

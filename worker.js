@@ -9,17 +9,7 @@ import {
   verifyProgressToken,
 } from './worker/crypto.js';
 import { sanitizeInput } from './worker/sanitize.js';
-import { checkRateLimit, getClientIp, rateLimitConfig } from './worker/rate-limit.js';
-import { verifyTurnstile, DAILY_GUESS_PATHS } from './worker/turnstile.js';
-
-async function requireTurnstile(request, env, body) {
-  if (!env.TURNSTILE_SECRET) return null;
-  const token = sanitizeInput(body?.turnstile_token || '', 2048);
-  const ok = await verifyTurnstile(token, env.TURNSTILE_SECRET, getClientIp(request));
-  if (!ok)
-    return jsonResponse(request, { error: 'Bot check failed — refresh and try again.' }, 403);
-  return null;
-}
+import { checkRateLimit, rateLimitConfig } from './worker/rate-limit.js';
 
 // ─────────────────────────────────────────
 // EVALUATE A GUESS AGAINST TARGET
@@ -457,17 +447,6 @@ export default {
         if (!allowed) {
           return jsonResponse(request, { error: 'Too many requests — slow down.' }, 429);
         }
-      }
-
-      if (request.method === 'POST' && DAILY_GUESS_PATHS.has(url.pathname)) {
-        let peekBody;
-        try {
-          peekBody = await request.clone().json();
-        } catch {
-          peekBody = {};
-        }
-        const turnstileErr = await requireTurnstile(request, env, peekBody);
-        if (turnstileErr) return turnstileErr;
       }
 
       const handler = ROUTES.get(`${request.method} ${url.pathname}`);
