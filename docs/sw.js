@@ -17,26 +17,37 @@ const PRECACHE = [
 // Requests that must always go to the network (game API)
 function isApiRequest(url) {
   const API_PATHS = [
-    '/guess', '/hint', '/guess2', '/hint2', '/guess3', '/hint3',
-    '/daily-state', '/skill', '/skill-image', '/silhouette3-image',
-    '/unlimited/new', '/unlimited/guess', '/unlimited/hint',
-    '/roster', '/cookies', '/cookie-count', '/health',
+    '/guess',
+    '/hint',
+    '/guess2',
+    '/hint2',
+    '/guess3',
+    '/hint3',
+    '/daily-state',
+    '/skill',
+    '/skill-image',
+    '/silhouette3-image',
+    '/unlimited/new',
+    '/unlimited/guess',
+    '/unlimited/hint',
+    '/roster',
+    '/cookies',
+    '/cookie-count',
+    '/health',
   ];
   return API_PATHS.some((p) => url.pathname === p || url.pathname.startsWith(p + '?'));
 }
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE))
-  );
+  e.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    )
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
   );
   self.clients.claim();
 });

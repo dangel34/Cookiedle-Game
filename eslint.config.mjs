@@ -31,6 +31,20 @@ export default [
       sourceType: 'module',
     },
   },
+  // sw.js - service worker; needs self, caches, and standard browser APIs
+  {
+    files: ['docs/sw.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        self: 'readonly',
+        caches: 'readonly',
+        clients: 'readonly',
+      },
+      ecmaVersion: 2024,
+      sourceType: 'script',
+    },
+  },
   // shared.js - defines globals consumed by other pages; disable no-unused-vars
   {
     files: ['docs/shared.js'],

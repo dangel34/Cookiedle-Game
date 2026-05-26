@@ -119,7 +119,12 @@ async function handleUnlimitedGuess({ request, env }) {
   const result = evaluateGuess(guessCookie, target_u);
   const nextProgress = { ...progress, wrong: result.correct ? progress.wrong : progress.wrong + 1 };
   result.progress_token = await makeProgressToken(nextProgress, env.COOKIE_SECRET);
-  logEvent(env, { game: 'unlimited', outcome: result.correct ? 'win' : 'guess', wrong_count: nextProgress.wrong, hint_used: nextProgress.hint_used });
+  logEvent(env, {
+    game: 'unlimited',
+    outcome: result.correct ? 'win' : 'guess',
+    wrong_count: nextProgress.wrong,
+    hint_used: nextProgress.hint_used,
+  });
   if (result.correct) {
     result.cookie_name = target_u.cookie_name;
     result.skill_name = target_u.skill_name || '';
@@ -200,7 +205,12 @@ async function handleDailyBinaryGuess({ request, body, env, gameId, todayStr, ta
     return jsonResponse(request, { error: 'Invalid state token. Refresh to continue.' }, 400);
   const correct = guessName === target.cookie_name.toLowerCase();
   const nextState = { ...state, wrong: correct ? state.wrong : state.wrong + 1 };
-  logEvent(env, { game: gameId, outcome: correct ? 'win' : 'guess', wrong_count: nextState.wrong, hint_used: state.hint_used });
+  logEvent(env, {
+    game: gameId,
+    outcome: correct ? 'win' : 'guess',
+    wrong_count: nextState.wrong,
+    hint_used: state.hint_used,
+  });
   return jsonResponse(request, {
     correct,
     cookie_name: correct ? target.cookie_name : undefined,
@@ -232,7 +242,12 @@ async function handleGuess1({ request, env, target, todayStr }) {
     return jsonResponse(request, { error: 'Invalid state token. Refresh to continue.' }, 400);
   const nextState = { ...state, wrong: result.correct ? state.wrong : state.wrong + 1 };
   result.state_token = await makeProgressToken(nextState, env.COOKIE_SECRET);
-  logEvent(env, { game: 'daily1', outcome: result.correct ? 'win' : 'guess', wrong_count: nextState.wrong, hint_used: state.hint_used });
+  logEvent(env, {
+    game: 'daily1',
+    outcome: result.correct ? 'win' : 'guess',
+    wrong_count: nextState.wrong,
+    hint_used: state.hint_used,
+  });
   if (result.correct) {
     result.skill_name = target.skill_name || '';
     result.skill_cooldown = target.skill_cooldown || 0;

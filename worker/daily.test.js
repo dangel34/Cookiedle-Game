@@ -71,7 +71,10 @@ describe('getDailyTarget2 and getDailyTarget3 hash independence', () => {
     for (const date of ['2025-1-1', '2025-6-15', '2025-12-31']) {
       const g1 = await getDailyTarget(COOKIES, SECRET, date);
       const g2 = await getDailyTarget2(COOKIES, SECRET, date);
-      if (g1 !== g2) { foundDiff = true; break; }
+      if (g1 !== g2) {
+        foundDiff = true;
+        break;
+      }
     }
     expect(foundDiff).toBe(true);
   });

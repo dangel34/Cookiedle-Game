@@ -797,9 +797,7 @@ hintBtn2.addEventListener('click', async () => {
   hintBtn2.disabled = true;
   let data;
   try {
-    const res = await fetch(
-      api(`/hint2?state_token=${encodeURIComponent(g2.stateToken || '')}`)
-    );
+    const res = await fetch(api(`/hint2?state_token=${encodeURIComponent(g2.stateToken || '')}`));
     data = await res.json();
   } catch {
     showToast('Could not fetch hint - please try again.');
@@ -983,9 +981,7 @@ hintBtn3.addEventListener('click', async () => {
   hintBtn3.disabled = true;
   let data;
   try {
-    const res = await fetch(
-      api(`/hint3?state_token=${encodeURIComponent(g3.stateToken || '')}`)
-    );
+    const res = await fetch(api(`/hint3?state_token=${encodeURIComponent(g3.stateToken || '')}`));
     data = await res.json();
   } catch {
     showToast('Could not fetch hint - please try again.');
@@ -1249,7 +1245,8 @@ function showFinalVictory(animate) {
   if (!animate) finalVictory.style.animation = 'none';
   finalVictory.classList.add('show');
   announce(`Daily complete! All three games finished.`);
-  if (animate && !IS_ARCHIVE) recordCompletion(guesses.length + g2.guesses.length + g3.guesses.length);
+  if (animate && !IS_ARCHIVE)
+    recordCompletion(guesses.length + g2.guesses.length + g3.guesses.length);
   statsBtn.style.display = '';
   if (!IS_ARCHIVE) startNextCookieTimer();
 }
@@ -1299,10 +1296,18 @@ function drawRoundRect(ctx, x, y, w, h, r) {
 }
 
 function generateShareCanvas() {
-  const W = 420, PAD = 20, IW = W - PAD * 2;
-  const ACCENT_H = 4, HEADER_H = 56, DIVIDER_GAP = 12;
-  const LABEL_H = 28, CELL_H = 26, CELL_GAP = 5, ROW_H = CELL_H + CELL_GAP;
-  const SZ = 22, SG = 6;
+  const W = 420,
+    PAD = 20,
+    IW = W - PAD * 2;
+  const ACCENT_H = 4,
+    HEADER_H = 56,
+    DIVIDER_GAP = 12;
+  const LABEL_H = 28,
+    CELL_H = 26,
+    CELL_GAP = 5,
+    ROW_H = CELL_H + CELL_GAP;
+  const SZ = 22,
+    SG = 6;
   const SECTION_GAP = 14;
   const ITEMS_PER_LINE = Math.floor((IW + SG) / (SZ + SG));
 
@@ -1318,14 +1323,22 @@ function generateShareCanvas() {
     sectionData.push({
       label: `Game 2  ·  ${g2.guesses.length} guess${g2.guesses.length === 1 ? '' : 'es'}  ${g2.won ? '✅' : '❌'}`,
       type: 'indicators',
-      items: withHint(g2.guesses.map((n) => n === g2.victoryName), g2.hintUsed, g2.hintAfterGuess),
+      items: withHint(
+        g2.guesses.map((n) => n === g2.victoryName),
+        g2.hintUsed,
+        g2.hintAfterGuess
+      ),
     });
   }
   if (g3.started && g3.guesses.length > 0) {
     sectionData.push({
       label: `Game 3  ·  ${g3.guesses.length} guess${g3.guesses.length === 1 ? '' : 'es'}  ${g3.won ? '✅' : '❌'}`,
       type: 'indicators',
-      items: withHint(g3.guesses.map((n) => n === g3.victoryName), g3.hintUsed, g3.hintAfterGuess),
+      items: withHint(
+        g3.guesses.map((n) => n === g3.victoryName),
+        g3.hintUsed,
+        g3.hintAfterGuess
+      ),
     });
   }
 
@@ -1334,8 +1347,8 @@ function generateShareCanvas() {
     if (s.type === 'grid') return LABEL_H + s.rows.length * ROW_H;
     return LABEL_H + Math.ceil(s.items.length / ITEMS_PER_LINE) * (SZ + SG);
   });
-  const contentH = sectionHeights.reduce((a, h) => a + h, 0)
-    + Math.max(0, sectionData.length - 1) * SECTION_GAP;
+  const contentH =
+    sectionHeights.reduce((a, h) => a + h, 0) + Math.max(0, sectionData.length - 1) * SECTION_GAP;
   const H = ACCENT_H + PAD + HEADER_H + DIVIDER_GAP + contentH + SECTION_GAP + 46 + PAD;
 
   const canvas = document.createElement('canvas');
@@ -1409,8 +1422,12 @@ function generateShareCanvas() {
           return;
         }
         (results[item] || []).slice(1).forEach((trait, i) => {
-          ctx.fillStyle = trait.result === 'correct' ? '#4caf50'
-            : trait.result === 'partial' ? '#ff9800' : '#e94560';
+          ctx.fillStyle =
+            trait.result === 'correct'
+              ? '#4caf50'
+              : trait.result === 'partial'
+                ? '#ff9800'
+                : '#e94560';
           drawRoundRect(ctx, PAD + i * (CELL_W + CELL_GAP), y, CELL_W, CELL_H, 4);
           ctx.fill();
         });
@@ -1463,7 +1480,10 @@ async function shareResults() {
     return;
   }
   canvas.toBlob(async (blob) => {
-    if (!blob) { showToast('Could not generate image.'); return; }
+    if (!blob) {
+      showToast('Could not generate image.');
+      return;
+    }
     const file = new File([blob], 'cookiedle.png', { type: 'image/png' });
     if (navigator.canShare?.({ files: [file] })) {
       try {
@@ -1516,7 +1536,8 @@ async function init() {
       if (nextDay.toISOString().slice(0, 10) > todayISO) nextBtn.disabled = true;
       nextBtn.addEventListener('click', () => {
         const n = new Date(Date.UTC(ay, am - 1, ad + 1));
-        if (n.toISOString().slice(0, 10) <= todayISO) location.href = `/archive?date=${n.toISOString().slice(0, 10)}`;
+        if (n.toISOString().slice(0, 10) <= todayISO)
+          location.href = `/archive?date=${n.toISOString().slice(0, 10)}`;
       });
     }
   }
