@@ -10,4 +10,11 @@
     "directory": "docs",
     "binding": "ASSETS"
   },
+  "kv_namespaces": [
+    {
+      "binding": "COOKIEDLE_KV",
+      "id": "2f9cc0b9cf2448cc889446f4bd8731b8",
+      "remote": true
+    }
+  ]
 }

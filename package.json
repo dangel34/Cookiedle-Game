@@ -8,7 +8,8 @@
     "format": "prettier --write worker.js worker/**/*.js docs/**/*.js docs/**/*.css docs/**/*.html data/**/*.json",
     "format:check": "prettier --check worker.js worker/**/*.js docs/**/*.js docs/**/*.css docs/**/*.html data/**/*.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seed-kv": "wrangler kv key put \"cookies\" --binding COOKIEDLE_KV --path data/cookies.json"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

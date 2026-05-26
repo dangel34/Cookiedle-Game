@@ -1,5 +1,13 @@
 // worker.js - Cloudflare Worker entry
-import COOKIES from './data/cookies.json';
+import { getCookies } from './worker/cookies-kv.js';
+import {
+  checkAuth,
+  handleAdminGetCookies,
+  handleAdminAddCookie,
+  handleAdminUpdateCookie,
+  handleAdminDeleteCookie,
+  handleAdminSeedCookies,
+} from './worker/admin.js';
 import { getDailyTarget, getDailyTarget2, getDailyTarget3 } from './worker/daily.js';
 import { corsHeaders, jsonResponse } from './worker/cors.js';
 import {
@@ -52,7 +60,7 @@ function unbiasedRandomIndex(n) {
   return value % n;
 }
 
-async function handleUnlimitedNew({ request, env }) {
+async function handleUnlimitedNew({ request, env, COOKIES }) {
   const url = new URL(request.url);
   const rarity = url.searchParams.get('rarity') || '';
   const type = url.searchParams.get('type') || '';
@@ -75,7 +83,7 @@ async function handleUnlimitedNew({ request, env }) {
   return jsonResponse(request, { token, progress_token });
 }
 
-async function handleUnlimitedGuess({ request, env }) {
+async function handleUnlimitedGuess({ request, env, COOKIES }) {
   let body;
   try {
     body = await request.json();
@@ -133,7 +141,7 @@ async function handleUnlimitedGuess({ request, env }) {
   return jsonResponse(request, result);
 }
 
-async function handleUnlimitedHint({ request, env }) {
+async function handleUnlimitedHint({ request, env, COOKIES }) {
   let body;
   try {
     body = await request.json();
@@ -222,7 +230,7 @@ async function handleDailyBinaryGuess({ request, body, env, gameId, todayStr, ta
 // GAME 1 HANDLERS
 // ─────────────────────────────────────────
 
-async function handleGuess1({ request, env, target, todayStr }) {
+async function handleGuess1({ request, env, target, todayStr, COOKIES }) {
   let body;
   try {
     body = await request.json();
@@ -274,7 +282,7 @@ async function handleHint1({ request, url, env, target, todayStr }) {
 // ASSET & UTILITY HANDLERS
 // ─────────────────────────────────────────
 
-function handleRoster({ request }) {
+function handleRoster({ request, COOKIES }) {
   return new Response(JSON.stringify(COOKIES), {
     status: 200,
     headers: {
@@ -352,7 +360,7 @@ async function handleHint2({ request, url, env, target2, todayStr }) {
 // GAME 3 HANDLERS
 // ─────────────────────────────────────────
 
-async function handleGuess3({ request, env, target3, todayStr }) {
+async function handleGuess3({ request, env, target3, todayStr, COOKIES }) {
   let body;
   try {
     body = await request.json();
@@ -387,11 +395,11 @@ async function handleHint3({ request, url, env, target3, todayStr }) {
   });
 }
 
-function handleCookieCount({ request }) {
+function handleCookieCount({ request, COOKIES }) {
   return jsonResponse(request, { count: COOKIES.length });
 }
 
-function handleHealth({ request }) {
+function handleHealth({ request, COOKIES }) {
   const now = new Date();
   return jsonResponse(request, {
     ok: true,
@@ -441,6 +449,11 @@ const ROUTES = new Map([
   ['GET /cookie-count', handleCookieCount],
   ['GET /health', handleHealth],
   ['GET /daily-state', handleDailyState],
+  ['GET /admin/cookies', handleAdminGetCookies],
+  ['POST /admin/cookies', handleAdminAddCookie],
+  ['PUT /admin/cookies', handleAdminUpdateCookie],
+  ['DELETE /admin/cookies', handleAdminDeleteCookie],
+  ['POST /admin/cookies/seed', handleAdminSeedCookies],
 ]);
 
 export default {
@@ -454,6 +467,10 @@ export default {
 
       if (request.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders(request) });
+      }
+
+      if (url.pathname.startsWith('/admin/') && !checkAuth(request, env)) {
+        return jsonResponse(request, { error: 'Unauthorized' }, 401);
       }
 
       const now = new Date();
@@ -484,6 +501,8 @@ export default {
       const handler = ROUTES.get(`${request.method} ${url.pathname}`);
       if (!handler) return jsonResponse(request, { error: 'Not found' }, 404);
 
+      const COOKIES = await getCookies(env);
+
       const needsTarget1 = url.pathname === '/guess' || url.pathname === '/hint';
       const needsTarget2 =
         url.pathname === '/skill' ||
@@ -501,7 +520,7 @@ export default {
         needsTarget3 ? getDailyTarget3(COOKIES, env.COOKIE_SECRET, todayStr) : null,
       ]);
 
-      return handler({ request, env, url, target, target2, target3, todayStr });
+      return handler({ request, env, url, target, target2, target3, todayStr, COOKIES });
     } catch (err) {
       console.error(err);
       return jsonResponse(request, { error: 'Internal server error' }, 500);

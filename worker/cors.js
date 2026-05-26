@@ -10,8 +10,8 @@ export function corsHeaders(request) {
     origin && ALLOWED_ORIGINS.has(origin) ? origin : 'https://cookiedle.nappi.work';
   return {
     'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     Vary: 'Origin',
   };
 }

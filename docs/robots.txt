@@ -3,3 +3,5 @@
 User-agent: *
 Allow: /
 Disallow: /secret.html
+Disallow: /admin
+Disallow: /admin.html

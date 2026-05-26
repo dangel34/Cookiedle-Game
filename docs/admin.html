@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cookiedle Admin</title>
+    <link rel="icon" href="cookie_images/Princess_Cookie.webp" type="image/webp" />
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      .admin-login {
+        max-width: 360px;
+        margin: 60px auto;
+        text-align: center;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 36px 28px;
+      }
+      .admin-login h2 {
+        color: var(--gold);
+        font-size: 1.1rem;
+        font-weight: 900;
+        margin: 0 0 20px;
+      }
+      .admin-token-input {
+        width: 100%;
+        box-sizing: border-box;
+        background: var(--card);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+      }
+      .admin-token-input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .admin-login-btn {
+        width: 100%;
+        padding: 11px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .admin-login-btn:hover {
+        background: #c73650;
+      }
+      .admin-error {
+        color: var(--red);
+        font-size: 0.82rem;
+        font-weight: 700;
+        margin-top: 10px;
+      }
+      /* toolbar */
+      .admin-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .admin-search {
+        flex: 1;
+        min-width: 160px;
+        background: var(--card);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 8px 12px;
+      }
+      .admin-search:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .admin-count {
+        font-size: 0.8rem;
+        color: var(--muted);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .admin-add-btn {
+        padding: 9px 20px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 800;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .admin-add-btn:hover {
+        background: #c73650;
+      }
+      /* table */
+      .cookie-table-wrap {
+        overflow-x: auto;
+      }
+      .cookie-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8rem;
+      }
+      .cookie-table th {
+        text-align: left;
+        padding: 8px 10px;
+        background: var(--surface);
+        color: var(--muted);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-size: 0.68rem;
+        border-bottom: 2px solid var(--border);
+        white-space: nowrap;
+      }
+      .cookie-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+        font-weight: 600;
+        vertical-align: middle;
+      }
+      .cookie-table tr:hover td {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .tbl-name {
+        font-weight: 800;
+      }
+      .tbl-actions {
+        white-space: nowrap;
+      }
+      .tbl-edit-btn,
+      .tbl-del-btn {
+        border: none;
+        border-radius: 6px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 800;
+        cursor: pointer;
+        padding: 4px 10px;
+        margin-left: 4px;
+      }
+      .tbl-edit-btn {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .tbl-edit-btn:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .tbl-del-btn {
+        background: rgba(192, 57, 43, 0.12);
+        color: var(--red);
+        border: 1px solid rgba(192, 57, 43, 0.25);
+      }
+      .tbl-del-btn:hover {
+        background: rgba(192, 57, 43, 0.25);
+      }
+      /* dialog / form */
+      dialog.admin-dialog {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px 28px;
+        max-width: 500px;
+        width: calc(100vw - 32px);
+        color: var(--text);
+      }
+      dialog.admin-dialog::backdrop {
+        background: rgba(0, 0, 0, 0.7);
+      }
+      .dialog-title {
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--gold);
+        margin: 0 0 20px;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .form-group.full {
+        grid-column: 1 / -1;
+      }
+      .form-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--muted);
+      }
+      .form-input,
+      .form-select {
+        background: var(--card);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 8px 10px;
+        color-scheme: dark;
+      }
+      .form-input:focus,
+      .form-select:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .form-input.invalid,
+      .form-select.invalid {
+        border-color: var(--red);
+      }
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+      .btn-cancel {
+        padding: 10px 22px;
+        background: transparent;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        color: var(--muted);
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .btn-cancel:hover {
+        border-color: var(--text);
+        color: var(--text);
+      }
+      .btn-save {
+        padding: 10px 28px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .btn-save:hover {
+        background: #c73650;
+      }
+      .form-error {
+        color: var(--red);
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+      .logout-btn {
+        background: transparent;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        color: var(--muted);
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 800;
+        padding: 6px 14px;
+        cursor: pointer;
+      }
+      .logout-btn:hover {
+        border-color: var(--red);
+        color: var(--red);
+      }
+      .seed-btn {
+        padding: 9px 16px;
+        background: var(--card);
+        color: var(--gold);
+        border: 1px solid rgba(245, 166, 35, 0.35);
+        border-radius: 8px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 800;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .seed-btn:hover {
+        background: rgba(245, 166, 35, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="logo">🍪 Cookiedle Admin</div>
+        <div class="subtitle">Cookie Database Manager</div>
+      </header>
+
+      <!-- Login -->
+      <div id="loginSection">
+        <div class="admin-login">
+          <h2>Admin Access</h2>
+          <input
+            id="tokenInput"
+            class="admin-token-input"
+            type="password"
+            placeholder="Admin token..."
+            autocomplete="current-password"
+          />
+          <button class="admin-login-btn" id="loginBtn">Login</button>
+          <div class="admin-error" id="loginError"></div>
+        </div>
+      </div>
+
+      <!-- Main -->
+      <div id="mainSection" style="display: none">
+        <div class="admin-toolbar">
+          <input
+            id="searchInput"
+            class="admin-search"
+            type="search"
+            placeholder="Search cookies..."
+          />
+          <span class="admin-count" id="cookieCount"></span>
+          <button class="seed-btn" id="seedBtn" title="Seed KV from bundled cookies.json">
+            ↑ Seed KV
+          </button>
+          <button class="admin-add-btn" id="addBtn">+ Add Cookie</button>
+          <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+        <div class="cookie-table-wrap">
+          <table class="cookie-table" id="cookieTable">
+            <thead>
+              <tr>
+                <th>Cookie</th>
+                <th>Primary</th>
+                <th>Secondary</th>
+                <th>Rarity</th>
+                <th>Type</th>
+                <th>Position</th>
+                <th>Skill</th>
+                <th>CD</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add / Edit dialog -->
+    <dialog class="admin-dialog" id="cookieDialog">
+      <div class="dialog-title" id="dialogTitle">Add Cookie</div>
+      <div class="form-error" id="formError"></div>
+      <form id="cookieForm" method="dialog">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label" for="f_name">Cookie Name</label>
+            <input class="form-input" id="f_name" type="text" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f_primary">Primary Color</label>
+            <input class="form-input" id="f_primary" type="text" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f_secondary">Secondary Color</label>
+            <input class="form-input" id="f_secondary" type="text" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f_rarity">Rarity</label>
+            <select class="form-select" id="f_rarity">
+              <option>Common</option>
+              <option>Rare</option>
+              <option>Epic</option>
+              <option>Super Epic</option>
+              <option>Legendary</option>
+              <option>Ancient</option>
+              <option>Dragon</option>
+              <option>Beast</option>
+              <option>Special</option>
+              <option>Witch</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f_type">Type</label>
+            <select class="form-select" id="f_type">
+              <option>Ambush</option>
+              <option>Bomber</option>
+              <option>Charge</option>
+              <option>Defense</option>
+              <option>Healing</option>
+              <option>Magic</option>
+              <option>Ranged</option>
+              <option>Support</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f_position">Position</label>
+            <select class="form-select" id="f_position">
+              <option>Front</option>
+              <option>Middle</option>
+              <option>Rear</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f_cooldown">Skill Cooldown (s)</label>
+            <input class="form-input" id="f_cooldown" type="number" min="0" step="0.1" required />
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="f_skill">Skill Name</label>
+            <input class="form-input" id="f_skill" type="text" required />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+          <button type="button" class="btn-save" id="saveBtn">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const WORKER_URL =
+        location.hostname === 'cookiedle.nappi.work'
+          ? `${location.origin}/api`
+          : 'https://cookiedle-worker.personal-account-bc0.workers.dev';
+
+      let adminToken = sessionStorage.getItem('admin_token') || '';
+      let allCookies = [];
+      let editingName = null;
+
+      const $ = (id) => document.getElementById(id);
+
+      // ── TOAST ──
+      function toast(msg, ok = true) {
+        const el = $('toast');
+        el.textContent = msg;
+        el.style.background = ok ? 'var(--green)' : 'var(--red)';
+        el.style.color = '#fff';
+        el.style.display = 'block';
+        setTimeout(() => (el.style.display = 'none'), 2800);
+      }
+
+      // ── AUTH ──
+      async function tryLogin() {
+        const token = $('tokenInput').value.trim();
+        if (!token) return;
+        const ok = await loadCookies(token);
+        if (ok) {
+          adminToken = token;
+          sessionStorage.setItem('admin_token', token);
+          $('loginSection').style.display = 'none';
+          $('mainSection').style.display = '';
+        } else {
+          $('loginError').textContent = 'Invalid token or server error.';
+        }
+      }
+
+      $('loginBtn').addEventListener('click', tryLogin);
+      $('tokenInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') tryLogin();
+      });
+      $('logoutBtn').addEventListener('click', () => {
+        sessionStorage.removeItem('admin_token');
+        adminToken = '';
+        $('mainSection').style.display = 'none';
+        $('loginSection').style.display = '';
+        $('tokenInput').value = '';
+      });
+
+      // ── API HELPERS ──
+      function apiHeaders() {
+        return { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` };
+      }
+
+      async function loadCookies(token = adminToken) {
+        try {
+          const res = await fetch(`${WORKER_URL}/admin/cookies`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!res.ok) return false;
+          const data = await res.json();
+          allCookies = data.cookies;
+          renderTable($('searchInput').value);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      // ── TABLE ──
+      function renderTable(filter = '') {
+        const q = filter.toLowerCase();
+        const rows = allCookies.filter(
+          (c) =>
+            !q ||
+            c.cookie_name.toLowerCase().includes(q) ||
+            c.rarity.toLowerCase().includes(q) ||
+            c.type.toLowerCase().includes(q) ||
+            c.position.toLowerCase().includes(q)
+        );
+        $('cookieCount').textContent = `${rows.length} / ${allCookies.length} cookies`;
+        const tbody = $('tableBody');
+        tbody.innerHTML = '';
+        rows.forEach((c) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="tbl-name">${esc(c.cookie_name)}</td>
+            <td>${esc(c.primary_color)}</td>
+            <td>${esc(c.secondary_color)}</td>
+            <td>${esc(c.rarity)}</td>
+            <td>${esc(c.type)}</td>
+            <td>${esc(c.position)}</td>
+            <td>${esc(c.skill_name)}</td>
+            <td>${c.skill_cooldown}s</td>
+            <td class="tbl-actions">
+              <button class="tbl-edit-btn" data-name="${esc(c.cookie_name)}">Edit</button>
+              <button class="tbl-del-btn" data-name="${esc(c.cookie_name)}">Delete</button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+        tbody
+          .querySelectorAll('.tbl-edit-btn')
+          .forEach((btn) => btn.addEventListener('click', () => openDialog(btn.dataset.name)));
+        tbody
+          .querySelectorAll('.tbl-del-btn')
+          .forEach((btn) => btn.addEventListener('click', () => confirmDelete(btn.dataset.name)));
+      }
+
+      function esc(s) {
+        return String(s)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;');
+      }
+
+      $('searchInput').addEventListener('input', (e) => renderTable(e.target.value));
+
+      // ── DIALOG ──
+      function openDialog(name = null) {
+        editingName = name;
+        $('formError').textContent = '';
+        $('dialogTitle').textContent = name ? 'Edit Cookie' : 'Add Cookie';
+        if (name) {
+          const c = allCookies.find((x) => x.cookie_name === name);
+          if (!c) return;
+          $('f_name').value = c.cookie_name;
+          $('f_primary').value = c.primary_color;
+          $('f_secondary').value = c.secondary_color;
+          $('f_rarity').value = c.rarity;
+          $('f_type').value = c.type;
+          $('f_position').value = c.position;
+          $('f_skill').value = c.skill_name;
+          $('f_cooldown').value = c.skill_cooldown;
+        } else {
+          $('cookieForm').reset();
+        }
+        $('cookieDialog').showModal();
+      }
+
+      function closeDialog() {
+        $('cookieDialog').close();
+      }
+
+      $('addBtn').addEventListener('click', () => openDialog(null));
+      $('cancelBtn').addEventListener('click', closeDialog);
+      $('cookieDialog').addEventListener('click', (e) => {
+        if (e.target === $('cookieDialog')) closeDialog();
+      });
+
+      $('saveBtn').addEventListener('click', async () => {
+        $('formError').textContent = '';
+        const body = {
+          cookie_name: $('f_name').value.trim(),
+          primary_color: $('f_primary').value.trim(),
+          secondary_color: $('f_secondary').value.trim(),
+          rarity: $('f_rarity').value,
+          type: $('f_type').value,
+          position: $('f_position').value,
+          skill_name: $('f_skill').value.trim(),
+          skill_cooldown: Number.parseFloat($('f_cooldown').value),
+        };
+        if (!body.cookie_name || !body.primary_color || !body.secondary_color || !body.skill_name) {
+          $('formError').textContent = 'All text fields are required.';
+          return;
+        }
+        try {
+          let res;
+          if (editingName) {
+            res = await fetch(
+              `${WORKER_URL}/admin/cookies?name=${encodeURIComponent(editingName)}`,
+              { method: 'PUT', headers: apiHeaders(), body: JSON.stringify(body) }
+            );
+          } else {
+            res = await fetch(`${WORKER_URL}/admin/cookies`, {
+              method: 'POST',
+              headers: apiHeaders(),
+              body: JSON.stringify(body),
+            });
+          }
+          const data = await res.json();
+          if (!res.ok) {
+            $('formError').textContent = data.error || 'Save failed.';
+            return;
+          }
+          closeDialog();
+          await loadCookies();
+          toast(editingName ? 'Cookie updated.' : 'Cookie added.');
+        } catch {
+          $('formError').textContent = 'Network error.';
+        }
+      });
+
+      // ── DELETE ──
+      async function confirmDelete(name) {
+        if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+        try {
+          const res = await fetch(`${WORKER_URL}/admin/cookies?name=${encodeURIComponent(name)}`, {
+            method: 'DELETE',
+            headers: apiHeaders(),
+          });
+          if (!res.ok) {
+            const data = await res.json();
+            toast(data.error || 'Delete failed.', false);
+            return;
+          }
+          await loadCookies();
+          toast(`"${name}" deleted.`);
+        } catch {
+          toast('Network error.', false);
+        }
+      }
+
+      // ── SEED ──
+      $('seedBtn').addEventListener('click', async () => {
+        if (!confirm('Seed KV with the bundled cookies.json? This overwrites current KV data.'))
+          return;
+        try {
+          const res = await fetch(`${WORKER_URL}/admin/cookies/seed`, {
+            method: 'POST',
+            headers: apiHeaders(),
+          });
+          if (!res.ok) {
+            const d = await res.json();
+            toast(d.error || 'Seed failed.', false);
+            return;
+          }
+          await loadCookies();
+          toast('KV seeded from bundled data.');
+        } catch {
+          toast('Seed failed.', false);
+        }
+      });
+
+      // ── INIT ──
+      if (adminToken) {
+        loadCookies().then((ok) => {
+          if (ok) {
+            $('loginSection').style.display = 'none';
+            $('mainSection').style.display = '';
+          } else {
+            sessionStorage.removeItem('admin_token');
+            adminToken = '';
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
