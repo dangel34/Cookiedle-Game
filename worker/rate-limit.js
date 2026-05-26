@@ -23,6 +23,11 @@ const RATE_LIMITS = {
   'GET /roster': { limit: 20, windowSec: 60 },
   'GET /cookies': { limit: 20, windowSec: 60 },
   'GET /daily-state': { limit: 30, windowSec: 3600 },
+  'GET /admin/cookies': { limit: 20, windowSec: 60 },
+  'POST /admin/cookies': { limit: 10, windowSec: 60 },
+  'PUT /admin/cookies': { limit: 10, windowSec: 60 },
+  'DELETE /admin/cookies': { limit: 10, windowSec: 60 },
+  'POST /admin/cookies/seed': { limit: 3, windowSec: 3600 },
 };
 
 export function getClientIp(request) {

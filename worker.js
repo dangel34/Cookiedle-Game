@@ -469,7 +469,7 @@ export default {
         return new Response(null, { status: 204, headers: corsHeaders(request) });
       }
 
-      if (url.pathname.startsWith('/admin/') && !checkAuth(request, env)) {
+      if (url.pathname.startsWith('/admin') && !checkAuth(request, env)) {
         return jsonResponse(request, { error: 'Unauthorized' }, 401);
       }
 

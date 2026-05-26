@@ -460,15 +460,27 @@
       // ── AUTH ──
       async function tryLogin() {
         const token = $('tokenInput').value.trim();
-        if (!token) return;
+        if (!token) {
+          $('loginError').textContent = 'Please enter a token.';
+          return;
+        }
+        $('loginError').textContent = '';
+        $('loginBtn').textContent = 'Logging in…';
+        $('loginBtn').disabled = true;
         const ok = await loadCookies(token);
-        if (ok) {
+        $('loginBtn').textContent = 'Login';
+        $('loginBtn').disabled = false;
+        if (ok === true) {
           adminToken = token;
           sessionStorage.setItem('admin_token', token);
           $('loginSection').style.display = 'none';
           $('mainSection').style.display = '';
+        } else if (ok === 'unauthorized') {
+          $('loginError').textContent = '✕ Wrong token.';
+          $('tokenInput').select();
         } else {
-          $('loginError').textContent = 'Invalid token or server error.';
+          $('loginError').textContent = '✕ Could not reach the worker — is it deployed?';
+          $('tokenInput').select();
         }
       }
 
@@ -494,6 +506,7 @@
           const res = await fetch(`${WORKER_URL}/admin/cookies`, {
             headers: { Authorization: `Bearer ${token}` },
           });
+          if (res.status === 401) return 'unauthorized';
           if (!res.ok) return false;
           const data = await res.json();
           allCookies = data.cookies;
@@ -672,7 +685,7 @@
       // ── INIT ──
       if (adminToken) {
         loadCookies().then((ok) => {
-          if (ok) {
+          if (ok === true) {
             $('loginSection').style.display = 'none';
             $('mainSection').style.display = '';
           } else {
