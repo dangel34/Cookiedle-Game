@@ -486,10 +486,6 @@ export default {
         return new Response(null, { status: 204, headers: corsHeaders(request) });
       }
 
-      if (url.pathname.startsWith('/admin') && !checkAuth(request, env)) {
-        return jsonResponse(request, { error: 'Unauthorized' }, 401);
-      }
-
       const now = new Date();
       const todayStr =
         resolveArchiveDate(url, now) ||
@@ -502,6 +498,10 @@ export default {
         if (!allowed) {
           return jsonResponse(request, { error: 'Too many requests - slow down.' }, 429);
         }
+      }
+
+      if (url.pathname.startsWith('/admin') && !checkAuth(request, env)) {
+        return jsonResponse(request, { error: 'Unauthorized' }, 401);
       }
 
       const handler = ROUTES.get(`${request.method} ${url.pathname}`);

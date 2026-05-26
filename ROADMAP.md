@@ -74,25 +74,28 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ## Phase 4: Backend & Data Management
 
-### 4.1 Cookie Database in Cloudflare KV
-**Problem:** The cookie database is hardcoded in `worker.js`. Adding one new cookie requires editing the JS file and redeploying the entire worker. Worse, reordering cookies shifts all past daily answers (documented in README as a known footgun).
-
-**Solution:** Move the `COOKIES` array into a [Cloudflare KV](https://developers.cloudflare.com/kv/) namespace. The worker reads it at startup (KV reads are ~1ms). To add a cookie: upload a new JSON blob to KV; no redeployment needed. The index-shuffle problem goes away if cookies are keyed by stable ID rather than array position.
-
-**Effort:** Large - requires migrating the daily hash to use stable cookie IDs, updating all comparison logic, and setting up KV bindings.
+~~### 4.1 Cookie Database in Cloudflare KV~~ ✅ **Done (partial)** - `worker/cookies-kv.js` stores the cookie array in `COOKIEDLE_KV` under the key `cookies`, with a 60-second edge cache TTL. `getCookies(env)` falls back to the bundled `data/cookies.json` if KV is empty or unavailable, so the worker never hard-fails. `saveCookies(env, cookies)` updates KV and invalidates the in-process cache. The daily hash still uses array position as the index, so reordering the array shifts past daily answers (the stable-ID migration from the original spec is still pending and tracked separately).
 
 ---
 
-### 4.2 Admin Endpoint for Cookie Management
-**Problem:** There's no way to add, edit, or disable cookies without editing source code and deploying.
-
-**Solution:** Add a `POST /admin/cookie` endpoint protected by a separate `ADMIN_SECRET` header (similar to how `COOKIE_SECRET` works). Supports create, update, and soft-delete. Pairs with Phase 4.1 (KV storage). A minimal HTML admin page (`/admin.html`, blocked from robots.txt) would make this usable without a terminal.
-
-**Effort:** Large - depends on Phase 4.1.
+~~### 4.2 Admin Endpoint for Cookie Management~~ ✅ **Done** - `worker/admin.js` exposes `GET/POST/PUT/DELETE /admin/cookies` and `POST /admin/cookies/seed`, all gated behind `Authorization: Bearer <ADMIN_SECRET>`. Input is validated against `VALID_RARITIES`, `VALID_TYPES`, and `VALID_POSITIONS` before any write. `docs/admin.html` and `docs/admin.js` provide a full browser-based CRUD panel: login, search/filter table, add/edit dialog, delete with confirmation, and a "Seed KV" button that resets KV to the bundled `data/cookies.json`. Rate limiting now applies to all admin requests including unauthenticated ones, preventing token brute-force.
 
 ---
 
-~~### 4.3 Privacy-Respecting Analytics~~ ✅ **Done** - `worker/analytics.js` exports `logEvent(env, { game, outcome, wrong_count, hint_used })`. Called fire-and-forget after every guess in `handleGuess1`, `handleDailyBinaryGuess` (covers games 2 & 3), and `handleUnlimitedGuess`. No IP, no cookie names, no fingerprints. Query example: `SELECT blob1 AS game, blob2 AS outcome, SUM(_sample_interval) AS count FROM cookiedle_events WHERE timestamp > NOW() - INTERVAL '7' DAY GROUP BY game, outcome`. **Activation:** Analytics Engine must be enabled in the Cloudflare dashboard before adding the `analytics_engine_datasets` binding back to `wrangler.jsonc` — until then, `env.ANALYTICS?.writeDataPoint` silently no-ops.
+~~### 4.5 KV Sync Workflow~~ ✅ **Done** - `.github/workflows/sync-cookies-kv.yml` (manual `workflow_dispatch`) pulls the live `cookies` key from KV via the Cloudflare REST API, pretty-prints it with `jq`, writes it to `data/cookies.json`, and commits with `[skip ci]` if the file changed. Keeps the repo in sync after admin-panel edits without requiring a manual JSON edit or redeployment.
+
+---
+
+### 4.6 Cloudflare Access for Admin Panel
+**Problem:** The admin panel is protected by a Bearer token stored as a Cloudflare Worker secret. The token can be guessed (rate-limited to 10-20 attempts per minute per IP) and must be rotated manually if compromised.
+
+**Solution:** Put `/admin*` behind [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/), which enforces a zero-trust identity check (email OTP, Google OAuth, or similar) at the CDN edge before a single request reaches the worker. This eliminates the token-guessing attack surface entirely.
+
+**Effort:** Small - no code changes; configured entirely in the Cloudflare Zero Trust dashboard. The existing `ADMIN_SECRET` header check can remain as a second layer.
+
+---
+
+~~### 4.3 Privacy-Respecting Analytics~~ ✅ **Done** - `worker/analytics.js` exports `logEvent(env, { game, outcome, wrong_count, hint_used })`. Called fire-and-forget after every guess in `handleGuess1`, `handleDailyBinaryGuess` (covers games 2 & 3), and `handleUnlimitedGuess`. No IP, no cookie names, no fingerprints. Query example: `SELECT blob1 AS game, blob2 AS outcome, SUM(_sample_interval) AS count FROM cookiedle_events WHERE timestamp > NOW() - INTERVAL '7' DAY GROUP BY game, outcome`. **Activation:** Analytics Engine must be enabled in the Cloudflare dashboard before adding the `analytics_engine_datasets` binding back to `wrangler.jsonc`; until then, `env.ANALYTICS?.writeDataPoint` silently no-ops.
 
 ---
 
@@ -179,10 +182,12 @@ These ideas need more design work or have significant tradeoffs:
 | 3.2 | Cookie collection | Content | Medium | Low | ✅ Done |
 | 3.3 | Unlimited filters | Content | Medium | Low | ✅ Done |
 | 3.4 | Puzzle archive | Content | Large | Medium | ✅ Done |
-| 4.1 | KV cookie database | Backend | Large | High | |
-| 4.2 | Admin endpoint | Backend | Large | High | |
+| 4.1 | KV cookie database | Backend | Large | High | ✅ Done (stable IDs pending) |
+| 4.2 | Admin endpoint + panel | Backend | Large | High | ✅ Done |
 | 4.3 | Analytics Engine | Backend | Medium | Low | ✅ Done (needs CF dashboard activation) |
 | 4.4 | Automated cookie sync | Backend | Large | Medium | |
+| 4.5 | KV sync workflow | Backend | Small | Low | ✅ Done |
+| 4.6 | Cloudflare Access for admin | Security | Small | Low | |
 | 5.1 | PWA / installable | PWA | Medium | Low | |
 | 5.2 | Push notifications | PWA | Very Large | High | |
 | 6.0 | SonarQube analysis + cleanup | Quality | Small | Low | ✅ Done |

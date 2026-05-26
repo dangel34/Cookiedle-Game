@@ -49,7 +49,7 @@ After completing all three daily games a **Share** button generates a combined e
 - **Cookie collection**: win a game to add that cookie to your collection; view all discovered cookies in the header modal
 - **Unlimited mode**: endless random rounds with HMAC-signed tokens (expire after 2 hours)
 - **Accessible**: native `<dialog>` modals with focus-trap, ARIA labels on all guess tiles, screen reader live region for guess and victory announcements, visible keyboard focus rings
-- **Bot protection**: Cloudflare Turnstile on daily guess endpoints; per-IP rate limiting on all routes via worker Cache API
+- **Per-IP rate limiting** on all routes via worker Cache API; rate limits apply before auth checks to prevent admin token brute-force
 - **170+ cookies** in the database
 - **Mobile friendly**: responsive layout
 - **Easter egg**: keep an eye on the bottom right 👀
@@ -92,52 +92,58 @@ Skill images and silhouettes are served through opaque worker proxy endpoints (`
 
 ### Adding cookie images
 
-**1. Install Python dependencies:**
+**1. Create and activate a Python virtual environment:**
+```bash
+python -m venv .venv
+.venv\Scripts\Activate.ps1   # Windows
+# source .venv/bin/activate  # macOS / Linux
+```
+
+**2. Install Python dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-**2. Download cookie artwork from noff.gg:**
+**3. Download cookie artwork from noff.gg:**
 ```bash
-python cookie_images_scraper.py
+python scripts/cookie_images_scraper.py
 ```
-Images are saved to `docs/cookie_images/` as `Cookie_Name.webp`.
+Images are saved to `docs/cookie_images/` as `Cookie_Name.webp`. Already-downloaded images are skipped automatically.
 
-**3. Download cookie skill images:**
+**4. Download cookie skill images:**
 ```bash
-python cookie_skill_scraper.py
+python scripts/cookie_skill_scraper.py
 ```
-Images are saved to `docs/cookie_skill_images/` as `Cookie_Name.webp`.
+Images are saved to `docs/cookie_skill_images/` as `Cookie_Name.webp`. Already-downloaded images are skipped automatically.
 
-**4. Generate silhouettes for Game 3:**
+**5. Generate silhouettes for Game 3:**
 ```bash
-python make_silhouettes.py
+python scripts/make_silhouettes.py
 ```
-Silhouettes are saved to `docs/cookie_silhouettes/` with matching filenames.
+Silhouettes are saved to `docs/cookie_silhouettes/` with matching filenames. Already-generated silhouettes are skipped automatically.
 
-**5. Commit all asset folders to the repo** so they are included in the next deployment.
+**6. Commit all asset folders to the repo** so they are included in the next deployment.
 
 ### Updating the cookie database
 
-**1. Edit `data/cookies.json`** to add new cookie entries.
+There are two ways to add or edit cookies. Use whichever fits your workflow.
 
-**2. Deploy the worker** (and assets if images changed):
-```bash
-npm run deploy
-```
+**Option A: Admin panel (recommended for live edits)**
 
-**3. Push to GitHub:**
-```bash
-git add .
-git commit -m "Add new cookies"
-git push origin master
-```
+1. Open `https://cookiedle.nappi.work/admin.html` and log in with your `ADMIN_SECRET`.
+2. Use the Add / Edit / Delete controls to manage cookies. Changes write directly to KV.
+3. Run the "Sync cookies.json from KV" GitHub Actions workflow (`sync-cookies-kv.yml`) to pull the updated data back into `data/cookies.json` in the repo.
 
-> **Note:** Reordering the JSON array changes daily hash results. Prefer appending new cookies at the end.
+**Option B: Edit the JSON directly**
+
+1. Edit `data/cookies.json` to add or update entries.
+2. Push to GitHub. The `deploy-worker.yml` workflow redeploys the worker and seeds KV on the next request.
+
+> **Note:** Reordering the `data/cookies.json` array changes daily hash results. Always append new cookies at the end.
 
 ### Automated deployment (GitHub Actions)
 
-Two workflows run automatically on push to `master`:
+Three workflows run automatically on push to `master`:
 
 **`deploy.yml`** (frontend only, self-hosted Pi runner):
 1. Rsyncs `docs/` to `/var/www/cookiedle/` on the Raspberry Pi
@@ -147,20 +153,26 @@ Two workflows run automatically on push to `master`:
 1. Installs dependencies with `npm ci --ignore-scripts`
 2. Runs `npm run deploy` (wrangler) to publish the worker and all `docs/` assets to Cloudflare Workers
 
+**`sync-cookies-kv.yml`** (manual only, `workflow_dispatch`):
+1. Fetches the live `cookies` key from KV via the Cloudflare REST API
+2. Writes it to `data/cookies.json` and commits with `[skip ci]` if the content changed
+3. Use this after making changes in the admin panel to keep the repo in sync
+
 #### Required GitHub Actions secrets
 
 | Secret | Used by | Where to get it |
 |--------|---------|----------------|
-| `CLOUDFLARE_API_TOKEN` | both workflows | Cloudflare Dashboard > My Profile > API Tokens. Needs Zone > Cache Purge (for `deploy.yml`) and Workers Scripts > Edit (for `deploy-worker.yml`) permissions |
+| `CLOUDFLARE_API_TOKEN` | all three workflows | Cloudflare Dashboard > My Profile > API Tokens. Needs Zone > Cache Purge (for `deploy.yml`) and Workers Scripts > Edit (for `deploy-worker.yml` and `sync-cookies-kv.yml`) permissions |
 | `CF_ZONE_ID` | `deploy.yml` | Cloudflare Dashboard > nappi.work zone > Overview > Zone ID (right sidebar) |
-| `CLOUDFLARE_ACCOUNT_ID` | `deploy-worker.yml` | Cloudflare Dashboard > account home > Account ID (right sidebar) |
-| `TURNSTILE_SITE_KEY` | `deploy.yml` | Turnstile widget **Site Key** (injected into `index.html` on deploy) |
-
-Set the Turnstile **Secret Key** on the worker manually: `npx wrangler secret put TURNSTILE_SECRET` (not stored in GitHub).
+| `CLOUDFLARE_ACCOUNT_ID` | `deploy-worker.yml`, `sync-cookies-kv.yml` | Cloudflare Dashboard > account home > Account ID (right sidebar) |
 
 Secrets are passed to shell steps via `env:` variables rather than inline `${{ secrets.* }}` expansion, which prevents accidental injection if a secret value contains shell metacharacters.
 
-**Turnstile test keys** (always pass): site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`. Replace with real keys from the Cloudflare Turnstile dashboard for production.
+Set worker-only secrets with wrangler (not stored in GitHub):
+```bash
+npx wrangler secret put COOKIE_SECRET   # required - daily hash salt
+npx wrangler secret put ADMIN_SECRET    # optional - admin panel access
+```
 
 ### First-time setup
 ```bash
@@ -222,36 +234,59 @@ If frontend and worker versions are out of sync, users may see token errors. Dep
 ```
 Cookiedle-Game/
 ├── .github/workflows/
-│   ├── deploy.yml          # GitHub Actions: rsync docs/ to Pi + CDN cache purge
-│   ├── deploy-worker.yml   # GitHub Actions: wrangler deploy on worker.js / wrangler.jsonc changes
-│   └── lint.yml            # GitHub Actions: ESLint + Prettier check on every push and PR
-├── worker.js               # Cloudflare Worker (all backend logic)
-├── wrangler.jsonc          # Wrangler config (assets directory, bindings)
-├── package.json            # npm scripts (deploy)
-├── package-lock.json       # Lockfile; commit this
-├── cookie_images_scraper.py # Downloads cookie artwork from noff.gg
-├── cookie_skill_scraper.py  # Downloads cookie skill images from noff.gg
-├── make_silhouettes.py      # Generates black silhouettes from cookie images
-├── requirements.txt         # Python dependencies for the scrapers
-├── cookies_rows.csv        # Cookie database (source of truth)
+│   ├── deploy.yml            # rsync docs/ to Pi + CDN cache purge
+│   ├── deploy-worker.yml     # wrangler deploy on worker/data/docs changes
+│   ├── lint.yml              # ESLint + Prettier on every push and PR
+│   └── sync-cookies-kv.yml  # manual: pull KV into data/cookies.json
+├── worker.js                 # Cloudflare Worker entry point (routing, game logic)
+├── worker/
+│   ├── admin.js              # Admin CRUD endpoints (GET/POST/PUT/DELETE /admin/cookies)
+│   ├── analytics.js          # Privacy-respecting event logging (Cloudflare Analytics Engine)
+│   ├── cookies-kv.js         # KV read/write with in-process cache and JSON fallback
+│   ├── cors.js               # CORS headers + jsonResponse helper
+│   ├── crypto.js             # HMAC token sign/verify (unlimited + daily progress tokens)
+│   ├── daily.js              # Deterministic daily target via SHA-256(date + suffix + secret)
+│   ├── rate-limit.js         # Sliding-window per-IP rate limiting via Cache API
+│   ├── sanitize.js           # Input sanitization
+│   ├── crypto.test.js        # Vitest: token round-trip, tamper, TTL, hint gate
+│   └── daily.test.js         # Vitest: daily target determinism
+├── data/
+│   └── cookies.json          # Cookie database (fallback + seed source; append-only)
+├── scripts/
+│   ├── cookie_images_scraper.py  # Downloads cookie artwork from noff.gg
+│   ├── cookie_skill_scraper.py   # Downloads skill icons from noff.gg
+│   └── make_silhouettes.py       # Generates silhouettes from cookie artwork
+├── nginx/
+│   ├── security-headers-cookiedle.conf  # CSP, X-Frame-Options, etc.
+│   └── cookiedle-rewrites.conf          # URL rewrite rules (e.g. /archive redirect)
+├── wrangler.jsonc            # Wrangler config (assets binding, KV namespace)
+├── package.json              # npm scripts (deploy, lint, format, test)
+├── requirements.txt          # Python deps for scrapers
 ├── .gitignore
 ├── README.md
-└── docs/                   # Static frontend (served by Cloudflare + GitHub Pages)
-    ├── index.html          # Main web app (3 daily games)
-    ├── unlimited.html      # Unlimited mode
-    ├── secret.html         # 👀
-    ├── shared.js           # Shared JS (WORKER_URL, cookie list, autocomplete)
-    ├── game.js             # Daily game logic
-    ├── unlimited.js        # Unlimited mode logic
-    ├── turnstile.js        # Cloudflare Turnstile explicit-render widget (shared)
-    ├── shared.css          # Shared styles (variables, sr-only, focus-visible)
-    ├── game.css            # Daily game styles
-    ├── unlimited.css       # Unlimited mode styles
-    ├── _headers            # Cloudflare security headers (CSP, X-Frame-Options, etc.)
-    ├── robots.txt          # Blocks secret.html from search engines
-    ├── cookie_images/      # Cookie artwork (.webp)
-    ├── cookie_skill_images/# Skill icons (.webp)
-    └── cookie_silhouettes/ # Generated silhouette images (.webp)
+├── ROADMAP.md
+└── docs/                     # Static frontend (Cloudflare CDN + Pi nginx)
+    ├── index.html            # Main daily game page (3 games)
+    ├── unlimited.html        # Unlimited mode
+    ├── archive.html          # Historical puzzle archive (/archive?date=YYYY-MM-DD)
+    ├── admin.html            # Cookie database admin panel (requires ADMIN_SECRET)
+    ├── secret.html           # 👀
+    ├── shared.js             # WORKER_URL, COOKIES array, autocomplete, toast helpers
+    ├── game.js               # Daily game logic (all 3 games, session, share card)
+    ├── unlimited.js          # Unlimited mode logic
+    ├── admin.js              # Admin panel logic
+    ├── shared.css            # Global styles (variables, sr-only, focus ring)
+    ├── game.css              # Daily game styles
+    ├── unlimited.css         # Unlimited mode styles
+    ├── _headers              # Cloudflare security headers
+    ├── robots.txt            # Blocks secret.html from search engines
+    ├── manifest.json         # PWA manifest
+    ├── sw.js                 # Service worker (cache-first for app shell)
+    ├── cookie_images/        # Cookie artwork (.webp)
+    ├── cookie_skill_images/  # Skill icons (.webp)
+    ├── cookie_silhouettes/   # Generated silhouettes (.webp)
+    ├── icons/                # PWA icons (192px, 512px)
+    └── fonts/                # Nunito font (woff2)
 ```
 
 ---
@@ -263,12 +298,12 @@ Cookiedle-Game/
 - Hints require at least 5 server-verified wrong guesses (signed `state_token`)
 - Skill/silhouette images proxied via `env.ASSETS.fetch()` - filenames never exposed to the client
 - Unlimited mode uses HMAC-SHA256 tokens; cookie names never leave the server
-- `COOKIE_SECRET` (and optional `TURNSTILE_SECRET`) are Cloudflare Worker secrets only
-- Production CSP via **`/etc/nginx/snippets/security-headers-cookiedle.conf`** (`connect-src 'self'`, Turnstile allowed)
+- `COOKIE_SECRET` and `ADMIN_SECRET` are Cloudflare Worker secrets only, never in the repo
+- Admin endpoints (`/admin/*`) are rate-limited before the auth check, so token brute-force is capped at 10-20 attempts per minute per IP
+- Production CSP via `/etc/nginx/snippets/security-headers-cookiedle.conf` (`connect-src 'self'`)
 - Same-origin `/api/` nginx proxy to the worker (configured on the Pi, not in this repo)
-- Per-IP rate limits on guess endpoints (worker Cache API)
-- Optional Cloudflare Turnstile on daily guesses (`docs/turnstile.js` + meta site key)
-- `npm test` - Vitest coverage for token signing and hint progress
+- Per-IP rate limits on all routes via worker Cache API
+- `npm test` runs Vitest coverage for token signing and hint progress
 - `secret.html` is excluded from search engine indexing via `robots.txt` (not access control)
 
 ---
