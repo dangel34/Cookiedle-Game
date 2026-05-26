@@ -1368,7 +1368,6 @@ async function init() {
   restoreSession();
 
   if (!localStorage.getItem('seen_tutorial')) openTutorial();
-
 }
 
 init();

@@ -391,7 +391,6 @@ async function init() {
   input.disabled = false;
   submitBtn.disabled = false;
   input.focus();
-
 }
 
 init();
