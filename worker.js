@@ -324,13 +324,16 @@ async function handleSilhouette3Image({ request, env, target3 }) {
 // GAME 2 HANDLERS
 // ─────────────────────────────────────────
 
-async function handleGuess2({ request, env, target2, todayStr }) {
+async function handleGuess2({ request, env, target2, todayStr, COOKIES }) {
   let body;
   try {
     body = await request.json();
   } catch {
     return jsonResponse(request, { error: 'Invalid JSON' }, 400);
   }
+  const guessName = sanitizeInput(body.guess || '').toLowerCase();
+  if (guessName && !COOKIES.some((c) => c.cookie_name.toLowerCase() === guessName))
+    return jsonResponse(request, { error: 'Cookie not found' }, 404);
   return handleDailyBinaryGuess({
     request,
     body,
@@ -456,6 +459,20 @@ const ROUTES = new Map([
   ['POST /admin/cookies/seed', handleAdminSeedCookies],
 ]);
 
+// Returns a validated past-or-today date string from ?date=, or null if absent/invalid.
+function resolveArchiveDate(url, now) {
+  const dateParam = url.searchParams.get('date');
+  if (!dateParam || !/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateParam)) return null;
+  const [py, pm, pd] = dateParam.split('-').map(Number);
+  const parsed = new Date(Date.UTC(py, pm - 1, pd));
+  const isValid =
+    parsed.getUTCFullYear() === py &&
+    parsed.getUTCMonth() === pm - 1 &&
+    parsed.getUTCDate() === pd &&
+    parsed.getTime() <= Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return isValid ? dateParam : null;
+}
+
 export default {
   async fetch(request, env) {
     try {
@@ -474,20 +491,9 @@ export default {
       }
 
       const now = new Date();
-      let todayStr = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}`;
-      const dateParam = url.searchParams.get('date');
-      if (dateParam && /^\d{4}-\d{1,2}-\d{1,2}$/.test(dateParam)) {
-        const [py, pm, pd] = dateParam.split('-').map(Number);
-        const parsed = new Date(Date.UTC(py, pm - 1, pd));
-        if (
-          parsed.getUTCFullYear() === py &&
-          parsed.getUTCMonth() === pm - 1 &&
-          parsed.getUTCDate() === pd &&
-          parsed.getTime() <= Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-        ) {
-          todayStr = dateParam;
-        }
-      }
+      const todayStr =
+        resolveArchiveDate(url, now) ||
+        `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}`;
 
       const routeKey = `${request.method} ${url.pathname}`;
       const rateCfg = rateLimitConfig(request.method, url.pathname);

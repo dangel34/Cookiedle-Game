@@ -16,6 +16,7 @@ export async function getCookies(env) {
 }
 
 export async function saveCookies(env, cookies) {
+  if (!env.COOKIEDLE_KV) throw new Error('COOKIEDLE_KV binding is not configured');
   await env.COOKIEDLE_KV.put(KV_KEY, JSON.stringify(cookies));
   _cache = cookies;
 }

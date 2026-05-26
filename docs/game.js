@@ -116,11 +116,11 @@ let guesses = saved.guesses || [];
 let results = saved.results || {};
 let won = saved.won || false;
 let hintUsed = saved.hintUsed || false;
-let hintTrait = saved.hintTrait || null;
-let hintValue = saved.hintValue || null;
-let hintAfterGuess = saved.hintAfterGuess || null;
-let victoryData = saved.victoryData || null;
-let g1StateToken = saved.g1StateToken || null;
+let hintTrait = saved.hintTrait ?? null;
+let hintValue = saved.hintValue ?? null;
+let hintAfterGuess = saved.hintAfterGuess ?? null;
+let victoryData = saved.victoryData ?? null;
+let g1StateToken = saved.g1StateToken ?? null;
 
 // Games 2 & 3 use factory-created state objects; future games follow this same pattern
 const g2 = createGameState({
@@ -1260,10 +1260,7 @@ function tickNextCookieTimer() {
   const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
   const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
   const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-  nextTimerEl.textContent = 'Next cookies in ';
-  const timerSpan = document.createElement('span');
-  timerSpan.textContent = `${h}:${m}:${s}`;
-  nextTimerEl.appendChild(timerSpan);
+  nextTimerEl.textContent = `Next cookies in ${h}:${m}:${s}`;
 }
 
 function startNextCookieTimer() {

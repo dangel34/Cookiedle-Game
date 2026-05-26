@@ -57,6 +57,15 @@ export default [
       'no-unused-vars': 'off',
     },
   },
+  // admin.js - standalone browser script, no shared.js globals
+  {
+    files: ['docs/admin.js'],
+    languageOptions: {
+      globals: globals.browser,
+      ecmaVersion: 2024,
+      sourceType: 'script',
+    },
+  },
   // game.js and unlimited.js - consume globals from shared.js
   {
     files: ['docs/game.js', 'docs/unlimited.js'],
