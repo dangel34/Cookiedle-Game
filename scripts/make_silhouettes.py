@@ -29,6 +29,9 @@ def main():
     for filename in sorted(files):
         src  = os.path.join(INPUT_DIR,  filename)
         dest = os.path.join(OUTPUT_DIR, filename)
+        if os.path.exists(dest):
+            print(f'  [skip] {filename}')
+            continue
         try:
             make_silhouette(src, dest)
             print(f'  [ok]   {filename}')
