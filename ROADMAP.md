@@ -12,30 +12,11 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-### 1.2 Bot Protection (Cloudflare Turnstile)
-**Problem:** The daily guess endpoints (`/guess`, `/guess2`, `/guess3`) can be hit by scripts with no friction; anyone can brute-force the daily answer programmatically.
-
-**Solution:** Re-add [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) invisible widget to the daily game page. The frontend generates a one-time token on page load and attaches it to every guess request; the worker verifies it against `TURNSTILE_SECRET` via the Cloudflare siteverify API.
-
-**Previous attempt:** Removed in May 2026 after the widget's `async` loading caused a race condition where the token callback fired before `game.js` had defined the handler, leaving `turnstileToken` permanently null. A pre-defined queue in an inline `<script>` was tried but didn't resolve the issue reliably.
-
-**Recommended re-approach:**
-- Load the Turnstile script as `defer` (not `async defer`) so it always executes after inline scripts
-- Or use the [Turnstile explicit render API](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/#explicitly-render-the-turnstile-widget) (`turnstile.render()`) called from inside `game.js` after it loads, eliminating the race entirely
-- Set `TURNSTILE_SECRET` as a Cloudflare Worker secret (`npx wrangler secret put TURNSTILE_SECRET`)
-
-**Effort:** Small - ~20 lines across `index.html`, `game.js`, and `worker.js`.
+~~### 1.2 Bot Protection (Cloudflare Turnstile)~~ ✅ **Done** - Explicit render API (`turnstile.render()`) used to eliminate the previous race condition. `docs/turnstile.js` handles lazy script loading, widget render, token capture, and reset after each guess. `ensureTurnstileToken()` / `resetTurnstile()` called in `game.js` and `unlimited.js` around every guess POST. Worker verifies via `worker/turnstile.js` → Cloudflare siteverify. Disabled gracefully when `TURNSTILE_SITE_KEY` meta tag is empty (local dev).
 
 ---
 
-### 1.3 Rate Limiting on the Worker
-**Problem:** The unlimited mode and daily guess endpoints have no rate limiting. A script could brute-force the unlimited mode or spam guesses.
-
-**Solution:** Use Cloudflare's built-in [Rate Limiting rules](https://developers.cloudflare.com/waf/rate-limiting-rules/) on the worker routes, or implement a lightweight token-bucket counter in a Cloudflare KV namespace (keyed by IP). Suggested limits:
-- `/unlimited/new` - 60 req/min per IP
-- `/guess`, `/guess2`, `/guess3` - 30 req/min per IP
-
-**Effort:** Medium - KV-based approach requires ~30 lines in `worker.js`.
+~~### 1.3 Rate Limiting on the Worker~~ ✅ **Done** - Sliding-window counter via Cache API (no KV required). `worker/rate-limit.js` defines per-route limits (e.g. `/guess` 30/min, `/unlimited/new` 60/min, `/daily-state` 30/hr). `checkRateLimit()` called in the main fetch handler before route dispatch; returns 429 on breach. Known limitation: read-check-write is non-atomic, so burst over-allowance equals truly concurrent requests — acceptable without Durable Objects.
 
 ---
 
@@ -43,16 +24,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-### 1.4 Unit Tests for Worker Token Logic
-**Problem:** The HMAC token system is the backbone of cheat prevention. There are zero automated tests; a refactor or typo could silently break hint gating.
-
-**Solution:** Add a test suite using [Vitest](https://vitest.dev/) (works with Cloudflare Worker module syntax). Cover:
-- `signToken` / `verifyToken` round-trip
-- Token tamper rejection
-- Hint gate: 4 wrong guesses → blocked, 5 wrong → allowed
-- Daily hash determinism (same date → same cookie index)
-
-**Effort:** Medium - ~150 lines of tests, no changes to production code.
+~~### 1.4 Unit Tests for Worker Token Logic~~ ✅ **Done** - `worker/crypto.test.js` with Vitest covers: `signMessage` determinism, `makeToken`/`verifyAndDecodeToken` round-trip, tamper rejection, out-of-range index rejection, progress token round-trip, hint gate (4 wrong → blocked, 5 wrong → allowed), and empty/null token rejection.
 
 ---
 
@@ -66,16 +38,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-### 2.3 Accessibility Pass
-**Problem:** The game uses color and emoji as its primary feedback mechanism with no ARIA labels or keyboard-only navigation beyond the autocomplete input.
-
-**Solution:**
-- Add `aria-label` attributes to all game tiles (e.g., `aria-label="Primary Color: correct"`)
-- Add `role="status"` live region for guess result announcements
-- Ensure all interactive elements are focusable and keyboard-operable
-- Add visible focus rings (currently suppressed by some CSS)
-
-**Effort:** Medium - no logic changes, only HTML/CSS/minimal JS.
+~~### 2.3 Accessibility Pass~~ ✅ **Done** - All three modals converted from `<div role="dialog">` to native `<dialog>` elements (built-in focus-trap, Escape-to-close, `::backdrop`; manual Escape keydown handler removed). `aria-label` added to all three guess inputs and all modal close buttons. Every guess tile gets a descriptive `aria-label` (e.g. `"Primary: Brown — correct"`), falling back to index-based labels for restored localStorage data. `<output>` live region announces guess summaries and victory to screen readers. Game 2/3 emoji icons marked `aria-hidden="true"` to avoid double-reading. `.sr-only` utility class and global `:focus-visible` ring (3px accent outline) added to `shared.css`.
 
 ---
 
@@ -92,12 +55,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-### 2.6 "Cookie of the Day" Spotlight on Win
-**Problem:** After a correct guess the cookie artwork appears, but there's no context; new players may not know who the cookie is.
-
-**Solution:** On win, show a small card below the artwork with the cookie's name, rarity, type, and position. Data is already available from the guess result. Optionally link to noff.gg for more info.
-
-**Effort:** Small - ~15 lines of JS + CSS.
+~~### 2.6 "Cookie of the Day" Spotlight on Win~~ ✅ **Done** - On win, `showVictory()` in `game.js` renders rarity, type, and position as `spotlight-chip` elements below the cookie artwork. Data pulled from the `COOKIES` array client-side by `cookie_name`.
 
 ---
 
@@ -120,16 +78,11 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-~~### 3.2 Cookie Collection Tracker~~ ✅ **Done** - After each daily game win, the cookie is added to `localStorage` key `collection`. `🍪 Collection` button in the header (and in the final victory section) opens a modal grid showing all cookies; identified ones in full color, unidentified ones greyed out with a count (`X / Y identified`).
+~~### 3.2 Cookie Collection Tracker~~ ✅ **Done** - After each daily game win, the cookie is added to `localStorage` key `collection`. `🍪 Collection` button in the header (and in the final victory section) opens a modal grid showing all cookies; identified ones in full color, unidentified ones as a CSS placeholder (no image loaded). Count shown as `X / Y identified`. **503 fix:** unidentified cookie images are no longer fetched at all — only found cookies load lazily via IntersectionObserver, eliminating burst-request 503s on modal open.
 
 ---
 
-### 3.3 Unlimited Mode: Filtered Practice
-**Problem:** Unlimited mode picks cookies completely at random, which isn't helpful if a player wants to practice a specific rarity or type.
-
-**Solution:** Add filter chips to the unlimited mode UI: Rarity (Common → Beast), Type (Ambush, Support, etc.). Send selected filters to the worker via `GET /unlimited/new?type=Support&rarity=Epic`. Worker filters the cookie pool before hashing the random index.
-
-**Effort:** Medium - small worker change + UI filter components.
+~~### 3.3 Unlimited Mode: Filtered Practice~~ ✅ **Done** - Two `<select>` dropdowns (Rarity, Type) added between the round counter and the guess input in `unlimited.html`. On "New Cookie", `fetchNewToken` appends `?rarity=&type=` query params. Worker builds `filteredIndices` from `COOKIES`, picks one via `unbiasedRandomIndex`, and returns 400 if the combination is empty. A "(applies next round)" note appears when a filter is changed mid-game. On 400/network error, the input stays disabled with a prompt to adjust filters rather than leaving `token = null` in a broken guessable state.
 
 ---
 
@@ -260,19 +213,19 @@ These ideas need more design work or have significant tradeoffs:
 | # | Item | Phase | Effort | Risk | Status |
 |---|------|-------|--------|------|--------|
 | 1.1 | Automate worker CI/CD | Foundation | Small | Low | ✅ Done |
-| 1.2 | Bot protection (Turnstile) | Foundation | Small | Low | |
-| 1.3 | Rate limiting | Foundation | Medium | Low | |
+| 1.2 | Bot protection (Turnstile) | Foundation | Small | Low | ✅ Done |
+| 1.3 | Rate limiting | Foundation | Medium | Low | ✅ Done |
 | 1.4 | Health check endpoint | Foundation | Trivial | Low | ✅ Done |
-| 1.5 | Unit tests for token logic | Foundation | Medium | Low | |
+| 1.5 | Unit tests for token logic | Foundation | Medium | Low | ✅ Done |
 | 2.1 | Tutorial modal | UX | Medium | Low | ✅ Done |
 | 2.2 | Countdown timer | UX | Small | Low | ✅ Done |
-| 2.3 | Accessibility pass | UX | Medium | Low | |
+| 2.3 | Accessibility pass | UX | Medium | Low | ✅ Done |
 | 2.4 | Canvas share card | UX | Large | Low | |
 | 2.5 | Tile flip animations | UX | Small | Low | ✅ Done |
-| 2.6 | Winner spotlight card | UX | Small | Low | |
+| 2.6 | Winner spotlight card | UX | Small | Low | ✅ Done |
 | 3.1 | Game 4: Cooldown | Content | Large | Medium | |
 | 3.2 | Cookie collection | Content | Medium | Low | ✅ Done |
-| 3.3 | Unlimited filters | Content | Medium | Low | |
+| 3.3 | Unlimited filters | Content | Medium | Low | ✅ Done |
 | 3.4 | Puzzle archive | Content | Large | Medium | |
 | 4.1 | KV cookie database | Backend | Large | High | |
 | 4.2 | Admin endpoint | Backend | Large | High | |

@@ -72,3 +72,51 @@
   color: var(--gold);
   font-weight: 800;
 }
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filter-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-select {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus {
+  border-color: var(--accent);
+}
+
+.filter-select:focus-visible {
+  outline: none;
+}
+
+.filter-select option {
+  background: var(--surface);
+}
+
+.filter-note {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-left: 4px;
+}

@@ -1,3 +1,14 @@
+const CELL_LABELS = ['Cookie', 'Primary', 'Secondary', 'Rarity', 'Type', 'Position'];
+
+function announce(msg) {
+  const el = document.getElementById('srAnnounce');
+  if (!el) return;
+  el.textContent = '';
+  requestAnimationFrame(() => {
+    el.textContent = msg;
+  });
+}
+
 // ─────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────
@@ -141,18 +152,23 @@ async function submitGuess() {
   resetTurnstile();
 
   const traitResults = [
-    { value: cookie.cookie_name, result: 'name' },
-    { value: cookie.primary_color, result: data.primary_color },
-    { value: cookie.secondary_color, result: data.secondary_color },
-    { value: cookie.rarity, result: data.rarity },
-    { value: cookie.type, result: data.type },
-    { value: cookie.position, result: data.position },
+    { label: 'Cookie', value: cookie.cookie_name, result: 'name' },
+    { label: 'Primary', value: cookie.primary_color, result: data.primary_color },
+    { label: 'Secondary', value: cookie.secondary_color, result: data.secondary_color },
+    { label: 'Rarity', value: cookie.rarity, result: data.rarity },
+    { label: 'Type', value: cookie.type, result: data.type },
+    { label: 'Position', value: cookie.position, result: data.position },
   ];
 
   guesses.push(cookie.cookie_name);
   input.value = '';
   hideSuggestions(suggestBox);
   addGuessRow(traitResults, true);
+  const summary = traitResults
+    .slice(1)
+    .map((t) => `${t.label} ${t.value} ${t.result === 'partial' ? 'close' : t.result}`)
+    .join(', ');
+  announce(`Guessed ${cookie.cookie_name}: ${summary}`);
   updateMeta();
   updateHint();
 
@@ -176,6 +192,10 @@ function addGuessRow(traitResults, animate) {
     const cell = document.createElement('div');
     cell.className = `cell cell-${trait.result}`;
     cell.textContent = trait.value;
+    const label = trait.label ?? CELL_LABELS[i] ?? '';
+    const resultWord = trait.result === 'partial' ? 'close' : trait.result;
+    const resultText = trait.result === 'name' ? '' : ` — ${resultWord}`;
+    cell.setAttribute('aria-label', `${label}: ${trait.value}${resultText}`);
     if (animate) setTimeout(() => cell.classList.add('revealed'), i * 700);
     else cell.classList.add('instant');
     row.appendChild(cell);
@@ -276,6 +296,9 @@ function showVictory(data) {
   victoryImg.style.animation = '';
   victoryImg.style.display = '';
   victoryEl.classList.add('show');
+  const guessCount =
+    guesses.length === 1 ? 'Got it in 1 guess!' : `Got it in ${guesses.length} guesses!`;
+  announce(`Correct! The cookie was ${data.cookie_name}. ${guessCount}`);
 }
 
 newCookieBtn.addEventListener('click', startNewRound);
@@ -310,9 +333,10 @@ async function startNewRound() {
   submitBtn.disabled = true;
   input.placeholder = 'Loading...';
 
-  await fetchNewToken();
+  const ok = await fetchNewToken();
+  input.placeholder = ok ? 'Type a cookie name...' : 'Adjust filters and try again...';
+  if (!ok) return;
 
-  input.placeholder = 'Type a cookie name...';
   input.disabled = false;
   submitBtn.disabled = false;
   input.focus();
@@ -322,14 +346,37 @@ async function startNewRound() {
 // ─────────────────────────────────────────
 // TOKEN FETCH
 // ─────────────────────────────────────────
+const filterRarityEl = document.getElementById('filterRarity');
+const filterTypeEl = document.getElementById('filterType');
+const filterNoteEl = document.getElementById('filterNote');
+
+[filterRarityEl, filterTypeEl].forEach((sel) => {
+  sel.addEventListener('change', () => {
+    const active = filterRarityEl.value || filterTypeEl.value;
+    filterNoteEl.textContent = active && !won ? '(applies next round)' : '';
+  });
+});
+
 async function fetchNewToken() {
+  const params = new URLSearchParams();
+  if (filterRarityEl.value) params.set('rarity', filterRarityEl.value);
+  if (filterTypeEl.value) params.set('type', filterTypeEl.value);
+  const qs = params.toString() ? `?${params}` : '';
   try {
-    const res = await fetch(`${WORKER_URL}/unlimited/new`);
+    const res = await fetch(`${WORKER_URL}/unlimited/new${qs}`);
+    if (res.status === 400) {
+      const err = await res.json();
+      showToast(err.error || 'No cookies match those filters.');
+      return false;
+    }
     const data = await res.json();
     token = data.token;
     progressToken = data.progress_token || null;
+    filterNoteEl.textContent = '';
+    return true;
   } catch {
     showToast('Could not load a new cookie — please refresh.');
+    return false;
   }
 }
 
@@ -348,9 +395,10 @@ async function init() {
     return;
   }
 
-  await fetchNewToken();
+  const ok = await fetchNewToken();
+  input.placeholder = ok ? 'Type a cookie name...' : 'Could not load — please refresh.';
+  if (!ok) return;
 
-  input.placeholder = 'Type a cookie name...';
   input.disabled = false;
   submitBtn.disabled = false;
   input.focus();

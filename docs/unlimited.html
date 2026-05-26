@@ -56,6 +56,36 @@
         Round <span id="roundNum">1</span> · Solved: <span id="solvedNum">0</span>
       </div>
 
+      <div class="filter-bar">
+        <label class="filter-label" for="filterRarity">Rarity</label>
+        <select id="filterRarity" class="filter-select">
+          <option value="">All</option>
+          <option value="Common">Common</option>
+          <option value="Rare">Rare</option>
+          <option value="Epic">Epic</option>
+          <option value="Super Epic">Super Epic</option>
+          <option value="Legendary">Legendary</option>
+          <option value="Ancient">Ancient</option>
+          <option value="Dragon">Dragon</option>
+          <option value="Beast">Beast</option>
+          <option value="Special">Special</option>
+          <option value="Witch">Witch</option>
+        </select>
+        <label class="filter-label" for="filterType">Type</label>
+        <select id="filterType" class="filter-select">
+          <option value="">All</option>
+          <option value="Ambush">Ambush</option>
+          <option value="Bomber">Bomber</option>
+          <option value="Charge">Charge</option>
+          <option value="Defense">Defense</option>
+          <option value="Healing">Healing</option>
+          <option value="Magic">Magic</option>
+          <option value="Ranged">Ranged</option>
+          <option value="Support">Support</option>
+        </select>
+        <span class="filter-note" id="filterNote"></span>
+      </div>
+
       <div class="guess-section">
         <div class="input-wrap">
           <input
@@ -65,6 +95,7 @@
             placeholder="Loading..."
             autocomplete="off"
             spellcheck="false"
+            aria-label="Type a cookie name to guess"
             disabled
           />
           <button class="submit-btn" id="submitBtn" disabled>Guess</button>
@@ -120,6 +151,7 @@
 
     <a class="easter-egg" href="secret.html">psst...</a>
     <div class="toast" id="toast"></div>
+    <output id="srAnnounce" aria-live="polite" aria-atomic="true" class="sr-only"></output>
 
     <script src="shared.js"></script>
     <script src="turnstile.js"></script>

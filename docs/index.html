@@ -40,10 +40,10 @@
       </header>
 
       <!-- ── STATS MODAL ── -->
-      <div class="modal-overlay" id="statsModal">
+      <dialog class="modal-overlay" id="statsModal" aria-labelledby="statsModalTitle">
         <div class="modal">
-          <button class="modal-close" id="modalClose">✕</button>
-          <div class="modal-title">📊 Your Stats</div>
+          <button class="modal-close" id="modalClose" aria-label="Close stats">✕</button>
+          <div class="modal-title" id="statsModalTitle">📊 Your Stats</div>
           <div class="stats-grid">
             <div class="stat-box">
               <div class="stat-value streak-fire" id="statStreak">0</div>
@@ -63,13 +63,13 @@
             </div>
           </div>
         </div>
-      </div>
+      </dialog>
 
       <!-- ── TUTORIAL MODAL ── -->
-      <div class="modal-overlay" id="tutorialModal">
+      <dialog class="modal-overlay" id="tutorialModal" aria-labelledby="tutorialModalTitle">
         <div class="modal tutorial-modal">
-          <button class="modal-close" id="tutorialClose">✕</button>
-          <div class="modal-title">🍪 How to Play Cookiedle</div>
+          <button class="modal-close" id="tutorialClose" aria-label="Close tutorial">✕</button>
+          <div class="modal-title" id="tutorialModalTitle">🍪 How to Play Cookiedle</div>
 
           <div class="tutorial-section">
             <div class="tutorial-game-label">Game 1 — Cookie Guesser</div>
@@ -131,17 +131,17 @@
 
           <button class="submit-btn tutorial-got-it" id="tutorialGotIt">Got it!</button>
         </div>
-      </div>
+      </dialog>
 
       <!-- ── COLLECTION MODAL ── -->
-      <div class="modal-overlay" id="collectionModal">
+      <dialog class="modal-overlay" id="collectionModal" aria-labelledby="collectionModalTitle">
         <div class="modal collection-modal">
-          <button class="modal-close" id="collectionClose">✕</button>
-          <div class="modal-title">🍪 Cookie Collection</div>
+          <button class="modal-close" id="collectionClose" aria-label="Close collection">✕</button>
+          <div class="modal-title" id="collectionModalTitle">🍪 Cookie Collection</div>
           <div class="collection-count" id="collectionCount"></div>
           <div class="collection-grid" id="collectionGrid"></div>
         </div>
-      </div>
+      </dialog>
 
       <!-- ── GAME 1 ── -->
       <div class="how-to">
@@ -172,6 +172,7 @@
             placeholder="Type a cookie name..."
             autocomplete="off"
             spellcheck="false"
+            aria-label="Game 1: type a cookie name to guess"
           />
           <button class="submit-btn" id="submitBtn">Guess</button>
           <div class="suggestions" id="suggestions" style="display: none"></div>
@@ -255,6 +256,7 @@
               placeholder="Type a cookie name..."
               autocomplete="off"
               spellcheck="false"
+              aria-label="Game 2: type a cookie name to guess"
             />
             <button class="submit-btn" id="submitBtn2">Guess</button>
             <div class="suggestions" id="suggestions2" style="display: none"></div>
@@ -318,6 +320,7 @@
               placeholder="Type a cookie name..."
               autocomplete="off"
               spellcheck="false"
+              aria-label="Game 3: type a cookie name to guess"
             />
             <button class="submit-btn" id="submitBtn3">Guess</button>
             <div class="suggestions" id="suggestions3" style="display: none"></div>
@@ -361,6 +364,7 @@
 
     <a class="easter-egg" href="secret.html">psst...</a>
     <div class="toast" id="toast"></div>
+    <output id="srAnnounce" aria-live="polite" aria-atomic="true" class="sr-only"></output>
 
     <script src="shared.js"></script>
     <script src="turnstile.js"></script>

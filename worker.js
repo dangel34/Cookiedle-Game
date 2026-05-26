@@ -62,7 +62,20 @@ function unbiasedRandomIndex(n) {
 }
 
 async function handleUnlimitedNew({ request, env }) {
-  const cookieIndex = unbiasedRandomIndex(COOKIES.length);
+  const url = new URL(request.url);
+  const rarity = url.searchParams.get('rarity') || '';
+  const type = url.searchParams.get('type') || '';
+
+  const filteredIndices = COOKIES.reduce((acc, c, i) => {
+    if ((!rarity || c.rarity === rarity) && (!type || c.type === type)) acc.push(i);
+    return acc;
+  }, []);
+
+  if (filteredIndices.length === 0) {
+    return jsonResponse(request, { error: 'No cookies match the selected filters.' }, 400);
+  }
+
+  const cookieIndex = filteredIndices[unbiasedRandomIndex(filteredIndices.length)];
   const token = await makeToken(cookieIndex, env.COOKIE_SECRET);
   const progress_token = await makeProgressToken(
     { game: 'unlimited', date: 'rolling', wrong: 0, hint_used: false, token_bind: token },

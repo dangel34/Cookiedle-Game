@@ -46,7 +46,10 @@ After completing all three daily games a **Share** button generates a combined e
 - **Fuzzy autocomplete**: smart search as you type
 - **Session persistence**: your guesses and revealed images survive page refreshes
 - **Streak & stats**: tracks your current streak, best streak, win rate, and avg guesses
+- **Cookie collection**: win a game to add that cookie to your collection; view all discovered cookies in the header modal
 - **Unlimited mode**: endless random rounds with HMAC-signed tokens (expire after 2 hours)
+- **Accessible**: native `<dialog>` modals with focus-trap, ARIA labels on all guess tiles, screen reader live region for guess and victory announcements, visible keyboard focus rings
+- **Bot protection**: Cloudflare Turnstile on daily guess endpoints; per-IP rate limiting on all routes via worker Cache API
 - **170+ cookies** in the database
 - **Mobile friendly**: responsive layout
 - **Easter egg**: keep an eye on the bottom right 👀
@@ -240,7 +243,8 @@ Cookiedle-Game/
     ├── shared.js           # Shared JS (WORKER_URL, cookie list, autocomplete)
     ├── game.js             # Daily game logic
     ├── unlimited.js        # Unlimited mode logic
-    ├── shared.css          # Shared styles
+    ├── turnstile.js        # Cloudflare Turnstile explicit-render widget (shared)
+    ├── shared.css          # Shared styles (variables, sr-only, focus-visible)
     ├── game.css            # Daily game styles
     ├── unlimited.css       # Unlimited mode styles
     ├── _headers            # Cloudflare security headers (CSP, X-Frame-Options, etc.)

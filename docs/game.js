@@ -409,12 +409,12 @@ async function submitGuess() {
   resetTurnstile();
 
   const traitResults = [
-    { value: cookie.cookie_name, result: 'name' },
-    { value: cookie.primary_color, result: data.primary_color },
-    { value: cookie.secondary_color, result: data.secondary_color },
-    { value: cookie.rarity, result: data.rarity },
-    { value: cookie.type, result: data.type },
-    { value: cookie.position, result: data.position },
+    { label: 'Cookie', value: cookie.cookie_name, result: 'name' },
+    { label: 'Primary', value: cookie.primary_color, result: data.primary_color },
+    { label: 'Secondary', value: cookie.secondary_color, result: data.secondary_color },
+    { label: 'Rarity', value: cookie.rarity, result: data.rarity },
+    { label: 'Type', value: cookie.type, result: data.type },
+    { label: 'Position', value: cookie.position, result: data.position },
   ];
 
   guesses.push(cookie.cookie_name);
@@ -423,6 +423,11 @@ async function submitGuess() {
   hideSuggestions(suggestBox);
 
   addGuessRow(traitResults, true);
+  const summary = traitResults
+    .slice(1)
+    .map((t) => `${t.label} ${t.value} ${t.result === 'partial' ? 'close' : t.result}`)
+    .join(', ');
+  announce(`Guessed ${cookie.cookie_name}: ${summary}`);
   updateMeta();
   updateHint();
 
@@ -444,6 +449,17 @@ async function submitGuess() {
   }
 }
 
+const CELL_LABELS = ['Cookie', 'Primary', 'Secondary', 'Rarity', 'Type', 'Position'];
+
+function announce(msg) {
+  const el = document.getElementById('srAnnounce');
+  if (!el) return;
+  el.textContent = '';
+  requestAnimationFrame(() => {
+    el.textContent = msg;
+  });
+}
+
 function addGuessRow(traitResults, animate) {
   const row = document.createElement('div');
   row.className = 'guess-row';
@@ -451,6 +467,10 @@ function addGuessRow(traitResults, animate) {
     const cell = document.createElement('div');
     cell.className = `cell cell-${trait.result}`;
     cell.textContent = trait.value;
+    const label = trait.label ?? CELL_LABELS[i] ?? '';
+    const resultWord = trait.result === 'partial' ? 'close' : trait.result;
+    const resultText = trait.result === 'name' ? '' : ` — ${resultWord}`;
+    cell.setAttribute('aria-label', `${label}: ${trait.value}${resultText}`);
     if (animate) setTimeout(() => cell.classList.add('revealed'), i * 700);
     else cell.classList.add('instant');
     row.appendChild(cell);
@@ -557,6 +577,9 @@ function showVictory1(animate) {
   victoryImg.style.display = '';
   if (!animate) victoryEl.style.animation = 'none';
   victoryEl.classList.add('show');
+  const guessCount =
+    guesses.length === 1 ? 'Got it in 1 guess!' : `Got it in ${guesses.length} guesses!`;
+  announce(`Correct! The cookie was ${victoryData.name}. ${guessCount}`);
 
   vicSpotlightEl.textContent = '';
   const cookieData = COOKIES.find((c) => c.cookie_name === victoryData.name);
@@ -712,15 +735,18 @@ async function submitGuess2() {
 function addGame2Row(name, correct, animate) {
   const row = document.createElement('div');
   row.className = `game2-row ${correct ? 'correct' : 'wrong'}`;
+  row.setAttribute('aria-label', `${name}: ${correct ? 'correct' : 'wrong'}`);
   if (!animate) row.style.animation = 'none';
   const icon = document.createElement('span');
   icon.className = 'g2-icon';
+  icon.setAttribute('aria-hidden', 'true');
   icon.textContent = correct ? '✅' : '❌';
   const label = document.createElement('span');
   label.className = 'g2-name';
   label.textContent = name;
   row.append(icon, label);
   game2History.prepend(row);
+  announce(`Guessed ${name}: ${correct ? 'correct' : 'wrong'}`);
 }
 
 // ─────────────────────────────────────────
@@ -908,15 +934,18 @@ async function submitGuess3() {
 function addGame3Row(name, correct, animate) {
   const row = document.createElement('div');
   row.className = `game2-row ${correct ? 'correct' : 'wrong'}`;
+  row.setAttribute('aria-label', `${name}: ${correct ? 'correct' : 'wrong'}`);
   if (!animate) row.style.animation = 'none';
   const icon = document.createElement('span');
   icon.className = 'g2-icon';
+  icon.setAttribute('aria-hidden', 'true');
   icon.textContent = correct ? '✅' : '❌';
   const label = document.createElement('span');
   label.className = 'g2-name';
   label.textContent = name;
   row.append(icon, label);
   game3History.prepend(row);
+  announce(`Guessed ${name}: ${correct ? 'correct' : 'wrong'}`);
 }
 
 // ─────────────────────────────────────────
@@ -1126,26 +1155,36 @@ function renderCollection() {
     const iFound = found.has(c.cookie_name);
     item.className = `collection-item ${iFound ? 'found' : 'missing'}`;
     item.title = iFound ? c.cookie_name : '???';
-    const img = document.createElement('img');
-    img.alt = iFound ? c.cookie_name : '';
-    img.width = 64;
-    img.height = 64;
-    img.dataset.lazySrc = cookieImgSrc(c.cookie_name);
-    observer.observe(img);
+
+    if (iFound) {
+      const img = document.createElement('img');
+      img.alt = c.cookie_name;
+      img.width = 64;
+      img.height = 64;
+      img.dataset.lazySrc = cookieImgSrc(c.cookie_name);
+      observer.observe(img);
+      item.appendChild(img);
+    } else {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'collection-placeholder';
+      placeholder.setAttribute('aria-hidden', 'true');
+      item.appendChild(placeholder);
+    }
+
     const label = document.createElement('div');
     label.className = 'collection-name';
     label.textContent = iFound ? c.cookie_name : '???';
-    item.append(img, label);
+    item.appendChild(label);
     collectionGrid.appendChild(item);
   });
 }
 
 function openCollection() {
   renderCollection();
-  collectionModal.classList.add('show');
+  collectionModal.showModal();
 }
 function closeCollection() {
-  collectionModal.classList.remove('show');
+  collectionModal.close();
 }
 
 collectionBtn.addEventListener('click', openCollection);
@@ -1164,10 +1203,10 @@ const tutorialClose = document.getElementById('tutorialClose');
 const tutorialGotIt = document.getElementById('tutorialGotIt');
 
 function openTutorial() {
-  tutorialModal.classList.add('show');
+  tutorialModal.showModal();
 }
 function closeTutorial() {
-  tutorialModal.classList.remove('show');
+  tutorialModal.close();
 }
 
 tutorialBtn.addEventListener('click', openTutorial);
@@ -1179,20 +1218,12 @@ tutorialGotIt.addEventListener('click', () => {
 tutorialModal.addEventListener('click', (e) => {
   if (e.target === tutorialModal) closeTutorial();
 });
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeTutorial();
-    closeStats();
-    closeCollection();
-  }
-});
-
 function openStats() {
   renderStats();
-  statsModal.classList.add('show');
+  statsModal.showModal();
 }
 function closeStats() {
-  statsModal.classList.remove('show');
+  statsModal.close();
 }
 
 statsBtn.addEventListener('click', openStats);
@@ -1230,6 +1261,7 @@ function showFinalVictory(animate) {
   finalCookieEl.textContent = `🍪 ${g3victoryName}`;
   if (!animate) finalVictory.style.animation = 'none';
   finalVictory.classList.add('show');
+  announce(`Daily complete! All three games finished.`);
   if (animate) recordCompletion(guesses.length + g2guesses.length + g3guesses.length);
   statsBtn.style.display = '';
   startNextCookieTimer();
