@@ -92,7 +92,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-~~### 4.3 Privacy-Respecting Analytics~~ ✅ **Done** - `worker/analytics.js` exports `logEvent(env, { game, outcome, wrong_count, hint_used })`. Called fire-and-forget after every guess in `handleGuess1`, `handleDailyBinaryGuess` (covers games 2 & 3), and `handleUnlimitedGuess`. `wrangler.jsonc` binds `ANALYTICS` → dataset `cookiedle_events`. No IP, no cookie names, no fingerprints. Query example: `SELECT blob1 AS game, blob2 AS outcome, SUM(_sample_interval) AS count FROM cookiedle_events WHERE timestamp > NOW() - INTERVAL '7' DAY GROUP BY game, outcome`.
+~~### 4.3 Privacy-Respecting Analytics~~ ✅ **Done** - `worker/analytics.js` exports `logEvent(env, { game, outcome, wrong_count, hint_used })`. Called fire-and-forget after every guess in `handleGuess1`, `handleDailyBinaryGuess` (covers games 2 & 3), and `handleUnlimitedGuess`. No IP, no cookie names, no fingerprints. Query example: `SELECT blob1 AS game, blob2 AS outcome, SUM(_sample_interval) AS count FROM cookiedle_events WHERE timestamp > NOW() - INTERVAL '7' DAY GROUP BY game, outcome`. **Activation:** Analytics Engine must be enabled in the Cloudflare dashboard before adding the `analytics_engine_datasets` binding back to `wrangler.jsonc` — until then, `env.ANALYTICS?.writeDataPoint` silently no-ops.
 
 ---
 
@@ -181,7 +181,7 @@ These ideas need more design work or have significant tradeoffs:
 | 3.4 | Puzzle archive | Content | Large | Medium | ✅ Done |
 | 4.1 | KV cookie database | Backend | Large | High | |
 | 4.2 | Admin endpoint | Backend | Large | High | |
-| 4.3 | Analytics Engine | Backend | Medium | Low | |
+| 4.3 | Analytics Engine | Backend | Medium | Low | ✅ Done (needs CF dashboard activation) |
 | 4.4 | Automated cookie sync | Backend | Large | Medium | |
 | 5.1 | PWA / installable | PWA | Medium | Low | |
 | 5.2 | Push notifications | PWA | Very Large | High | |
