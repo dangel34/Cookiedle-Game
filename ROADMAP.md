@@ -188,11 +188,11 @@ These ideas need more design work or have significant tradeoffs:
 | 4.4 | Automated cookie sync | Backend | Large | Medium | |
 | 4.5 | KV sync workflow | Backend | Small | Low | ✅ Done |
 | 4.6 | Cloudflare Access for admin | Security | Small | Low | |
-| 5.1 | PWA / installable | PWA | Medium | Low | |
+| 5.1 | PWA / installable | PWA | Medium | Low | ✅ Done |
 | 5.2 | Push notifications | PWA | Very Large | High | |
 | 6.0 | SonarQube analysis + cleanup | Quality | Small | Low | ✅ Done |
 | 6.1 | Deduplicate worker handlers | Quality | Medium | Low | ✅ Done |
-| 6.2 | Frontend state manager | Quality | Medium | Low | |
+| 6.2 | Frontend state manager | Quality | Medium | Low | ✅ Done |
 | 6.3 | ESLint + Prettier | Quality | Small | Low | ✅ Done |
 | 6.4 | Fix skill/silhouette image proxy | Quality | Small | Low | ✅ Done |
 | 6.5 | Fix tutorial "Got it!" click | Quality | Trivial | Low | ✅ Done |
