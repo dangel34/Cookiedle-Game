@@ -1,10 +1,33 @@
 // ─────────────────────────────────────────
+// ARCHIVE MODE
+// ─────────────────────────────────────────
+const _archiveParam = new URLSearchParams(location.search).get('date');
+const IS_ARCHIVE = (() => {
+  if (!_archiveParam || !/^\d{4}-\d{2}-\d{2}$/.test(_archiveParam)) return false;
+  if (!location.pathname.includes('archive')) return false;
+  const [y, m, d] = _archiveParam.split('-').map(Number);
+  return (
+    Date.UTC(y, m - 1, d) <=
+    Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())
+  );
+})();
+const ARCHIVE_DATE = IS_ARCHIVE ? _archiveParam.split('-').map(Number).join('-') : null;
+
+// ─────────────────────────────────────────
 // SESSION KEY
 // ─────────────────────────────────────────
-const TODAY_KEY = (() => {
-  const d = new Date();
-  return `cookiedle-${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`;
-})();
+const TODAY_KEY = IS_ARCHIVE
+  ? `cookiedle-archive-${ARCHIVE_DATE}`
+  : (() => {
+      const d = new Date();
+      return `cookiedle-${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`;
+    })();
+
+function api(path) {
+  if (!IS_ARCHIVE) return `${WORKER_URL}${path}`;
+  const sep = path.includes('?') ? '&' : '?';
+  return `${WORKER_URL}${path}${sep}date=${ARCHIVE_DATE}`;
+}
 
 // ─────────────────────────────────────────
 // STATE PERSISTENCE
@@ -20,7 +43,6 @@ function loadState() {
 
 function defaultState() {
   return {
-    // Game 1
     guesses: [],
     results: {},
     won: false,
@@ -30,24 +52,22 @@ function defaultState() {
     hintAfterGuess: null,
     victoryData: null,
     g1StateToken: null,
-    // Game 2
-    g2started: false,
-    g2guesses: [],
-    g2won: false,
-    g2hintUsed: false,
-    g2hintValue: null,
-    g2hintAfterGuess: null,
-    g2victoryName: null,
-    g2StateToken: null,
-    // Game 3
-    g3started: false,
-    g3guesses: [],
-    g3won: false,
-    g3hintUsed: false,
-    g3hintValue: null,
-    g3hintAfterGuess: null,
-    g3victoryName: null,
-    g3StateToken: null,
+  };
+}
+
+function createGameState(saved = {}) {
+  return {
+    started: saved.started || false,
+    guesses: saved.guesses || [],
+    won: saved.won || false,
+    hintUsed: saved.hintUsed || false,
+    hintValue: saved.hintValue ?? null,
+    hintAfterGuess: saved.hintAfterGuess ?? null,
+    victoryName: saved.victoryName || null,
+    stateToken: saved.stateToken || null,
+    get wrongCount() {
+      return this.won ? this.guesses.length - 1 : this.guesses.length;
+    },
   };
 }
 
@@ -65,22 +85,22 @@ function saveState() {
         hintAfterGuess,
         victoryData,
         g1StateToken,
-        g2started,
-        g2guesses,
-        g2won,
-        g2hintUsed,
-        g2hintValue,
-        g2hintAfterGuess,
-        g2victoryName,
-        g2StateToken,
-        g3started,
-        g3guesses,
-        g3won,
-        g3hintUsed,
-        g3hintValue,
-        g3hintAfterGuess,
-        g3victoryName,
-        g3StateToken,
+        g2started: g2.started,
+        g2guesses: g2.guesses,
+        g2won: g2.won,
+        g2hintUsed: g2.hintUsed,
+        g2hintValue: g2.hintValue,
+        g2hintAfterGuess: g2.hintAfterGuess,
+        g2victoryName: g2.victoryName,
+        g2StateToken: g2.stateToken,
+        g3started: g3.started,
+        g3guesses: g3.guesses,
+        g3won: g3.won,
+        g3hintUsed: g3.hintUsed,
+        g3hintValue: g3.hintValue,
+        g3hintAfterGuess: g3.hintAfterGuess,
+        g3victoryName: g3.victoryName,
+        g3StateToken: g3.stateToken,
       })
     );
   } catch {}
@@ -102,25 +122,27 @@ let hintAfterGuess = saved.hintAfterGuess || null;
 let victoryData = saved.victoryData || null;
 let g1StateToken = saved.g1StateToken || null;
 
-// Game 2
-let g2started = saved.g2started || false;
-let g2guesses = saved.g2guesses || [];
-let g2won = saved.g2won || false;
-let g2hintUsed = saved.g2hintUsed || false;
-let g2hintValue = saved.g2hintValue || null;
-let g2hintAfterGuess = saved.g2hintAfterGuess || null;
-let g2victoryName = saved.g2victoryName || null;
-let g2StateToken = saved.g2StateToken || null;
-
-// Game 3
-let g3started = saved.g3started || false;
-let g3guesses = saved.g3guesses || [];
-let g3won = saved.g3won || false;
-let g3hintUsed = saved.g3hintUsed || false;
-let g3hintValue = saved.g3hintValue || null;
-let g3hintAfterGuess = saved.g3hintAfterGuess || null;
-let g3victoryName = saved.g3victoryName || null;
-let g3StateToken = saved.g3StateToken || null;
+// Games 2 & 3 use factory-created state objects; future games follow this same pattern
+const g2 = createGameState({
+  started: saved.g2started,
+  guesses: saved.g2guesses,
+  won: saved.g2won,
+  hintUsed: saved.g2hintUsed,
+  hintValue: saved.g2hintValue,
+  hintAfterGuess: saved.g2hintAfterGuess,
+  victoryName: saved.g2victoryName,
+  stateToken: saved.g2StateToken,
+});
+const g3 = createGameState({
+  started: saved.g3started,
+  guesses: saved.g3guesses,
+  won: saved.g3won,
+  hintUsed: saved.g3hintUsed,
+  hintValue: saved.g3hintValue,
+  hintAfterGuess: saved.g3hintAfterGuess,
+  victoryName: saved.g3victoryName,
+  stateToken: saved.g3StateToken,
+});
 
 // Game 2 skill data (fetched from worker)
 let skillData = null;
@@ -202,21 +224,21 @@ bindSuggestionBox(input3, suggestBox3);
 // ─────────────────────────────────────────
 function restoreGame2Session() {
   showGame2();
-  g2guesses.forEach((name) => addGame2Row(name, name === g2victoryName, false));
+  g2.guesses.forEach((name) => addGame2Row(name, name === g2.victoryName, false));
   updateMeta2();
   updateHint2();
-  if (g2won) {
+  if (g2.won) {
     input2.disabled = true;
     submitBtn2.disabled = true;
-    if (!g3started) {
+    if (!g3.started) {
       document.getElementById('g2VicCount').textContent =
-        g2guesses.length === 1
+        g2.guesses.length === 1
           ? 'Got it in just 1 guess!'
-          : `Got it in ${g2guesses.length} guesses!`;
-      document.getElementById('g2VicName').textContent = `🍪 ${g2victoryName}`;
+          : `Got it in ${g2.guesses.length} guesses!`;
+      document.getElementById('g2VicName').textContent = `🍪 ${g2.victoryName}`;
       const g2Img = document.getElementById('g2VictoryImg');
-      g2Img.src = cookieImgSrc(g2victoryName);
-      g2Img.alt = g2victoryName;
+      g2Img.src = cookieImgSrc(g2.victoryName);
+      g2Img.alt = g2.victoryName;
       g2Img.style.animation = 'none';
       g2Img.style.display = '';
       g2NextPrompt.classList.add('show');
@@ -226,10 +248,10 @@ function restoreGame2Session() {
 
 function restoreGame3Session() {
   showGame3();
-  g3guesses.forEach((name) => addGame3Row(name, name === g3victoryName, false));
+  g3.guesses.forEach((name) => addGame3Row(name, name === g3.victoryName, false));
   updateMeta3();
   updateHint3();
-  if (g3won) {
+  if (g3.won) {
     input3.disabled = true;
     submitBtn3.disabled = true;
     showFinalVictory(false);
@@ -253,8 +275,8 @@ function restoreSession() {
     victoryImg.style.animation = 'none';
   }
 
-  if (g2started) restoreGame2Session();
-  if (g3started) restoreGame3Session();
+  if (g2.started) restoreGame2Session();
+  if (g3.started) restoreGame3Session();
 }
 
 // ─────────────────────────────────────────
@@ -291,7 +313,7 @@ input.addEventListener('keydown', (e) => {
 input2.addEventListener('input', () => {
   activeSuggestion2 = -1;
   alreadyEl2.textContent = '';
-  buildSuggestions(input2.value.trim(), g2guesses, suggestBox2);
+  buildSuggestions(input2.value.trim(), g2.guesses, suggestBox2);
 });
 
 input2.addEventListener('keydown', (e) => {
@@ -319,7 +341,7 @@ input2.addEventListener('keydown', (e) => {
 input3.addEventListener('input', () => {
   activeSuggestion3 = -1;
   alreadyEl3.textContent = '';
-  buildSuggestions(input3.value.trim(), g3guesses, suggestBox3);
+  buildSuggestions(input3.value.trim(), g3.guesses, suggestBox3);
 });
 
 input3.addEventListener('keydown', (e) => {
@@ -377,7 +399,7 @@ async function submitGuess() {
 
   let data;
   try {
-    const res = await fetch(`${WORKER_URL}/guess`, {
+    const res = await fetch(api('/guess'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -513,7 +535,7 @@ hintPicker.querySelectorAll('.hint-choice').forEach((btn) => {
     let value;
     try {
       const res = await fetch(
-        `${WORKER_URL}/hint?trait=${trait}&state_token=${encodeURIComponent(g1StateToken || '')}`
+        api(`/hint?trait=${trait}&state_token=${encodeURIComponent(g1StateToken || '')}`)
       );
       const data = await res.json();
       if (data.error) {
@@ -595,7 +617,7 @@ function showVictory1(animate) {
 }
 
 nextGameBtn.addEventListener('click', async () => {
-  g2started = true;
+  g2.started = true;
   saveState();
   await showGame2();
 });
@@ -611,23 +633,23 @@ async function showGame2() {
     skillNameEl.textContent = 'Loading...';
     skillCdEl.textContent = '';
     try {
-      const res = await fetch(`${WORKER_URL}/skill`);
+      const res = await fetch(api('/skill'));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       skillData = await res.json();
     } catch {
       showToast('Could not load skill - please refresh.');
-      if (!g2won) reenableWhenReady(input2, submitBtn2);
+      if (!g2.won) reenableWhenReady(input2, submitBtn2);
       return;
     }
   }
 
   skillNameEl.textContent = skillData.skill_name;
   skillCdEl.textContent = `Cooldown: ${skillData.skill_cooldown}s`;
-  skillImgEl.src = `${WORKER_URL}/skill-image`;
+  skillImgEl.src = api('/skill-image');
   skillImgEl.alt = skillData.skill_name;
   skillImgEl.style.display = '';
 
-  if (!g2won) {
+  if (!g2.won) {
     reenableWhenReady(input2, submitBtn2);
     input2.focus();
   }
@@ -639,7 +661,7 @@ async function showGame2() {
 submitBtn2.addEventListener('click', submitGuess2);
 
 async function submitGuess2() {
-  if (g2won) return;
+  if (g2.won) return;
   const raw = input2.value.trim();
   if (!raw) return;
 
@@ -648,7 +670,7 @@ async function submitGuess2() {
     showToast('Cookie not found - check your spelling!');
     return;
   }
-  if (g2guesses.includes(cookie.cookie_name)) {
+  if (g2.guesses.includes(cookie.cookie_name)) {
     alreadyEl2.textContent = `Already guessed ${cookie.cookie_name}!`;
     return;
   }
@@ -658,12 +680,12 @@ async function submitGuess2() {
 
   let data;
   try {
-    const res = await fetch(`${WORKER_URL}/guess2`, {
+    const res = await fetch(api('/guess2'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         guess: cookie.cookie_name,
-        state_token: g2StateToken,
+        state_token: g2.stateToken,
       }),
     });
     data = await res.json();
@@ -678,9 +700,9 @@ async function submitGuess2() {
     reenableWhenReady(input2, submitBtn2);
     return;
   }
-  if (data.state_token) g2StateToken = data.state_token;
+  if (data.state_token) g2.stateToken = data.state_token;
 
-  g2guesses.push(cookie.cookie_name);
+  g2.guesses.push(cookie.cookie_name);
   input2.value = '';
   hideSuggestions(suggestBox2);
 
@@ -689,17 +711,17 @@ async function submitGuess2() {
   updateHint2();
 
   if (data.correct) {
-    g2won = true;
+    g2.won = true;
     addToCollection(data.cookie_name);
-    g2victoryName = data.cookie_name;
+    g2.victoryName = data.cookie_name;
     saveState();
     input2.disabled = true;
     submitBtn2.disabled = true;
     setTimeout(() => {
       document.getElementById('g2VicCount').textContent =
-        g2guesses.length === 1
+        g2.guesses.length === 1
           ? 'Got it in just 1 guess!'
-          : `Got it in ${g2guesses.length} guesses!`;
+          : `Got it in ${g2.guesses.length} guesses!`;
       document.getElementById('g2VicName').textContent = `🍪 ${data.cookie_name}`;
       const g2Img = document.getElementById('g2VictoryImg');
       g2Img.src = cookieImgSrc(data.cookie_name);
@@ -734,17 +756,13 @@ function addGame2Row(name, correct, animate) {
 // ─────────────────────────────────────────
 // GAME 2 - META & HINT
 // ─────────────────────────────────────────
-function g2wrongCount() {
-  return g2won ? g2guesses.length - 1 : g2guesses.length;
-}
-
 function updateMeta2() {
-  if (!g2guesses.length) {
+  if (!g2.guesses.length) {
     metaEl2.textContent = '';
     return;
   }
   metaEl2.textContent =
-    g2guesses.length === 1 ? '1 guess so far' : `${g2guesses.length} guesses so far`;
+    g2.guesses.length === 1 ? '1 guess so far' : `${g2.guesses.length} guesses so far`;
 }
 
 function renderHint2(el, hintData) {
@@ -759,14 +777,14 @@ function renderHint2(el, hintData) {
 }
 
 function updateHint2() {
-  if (g2won) {
+  if (g2.won) {
     hintSection2.classList.remove('show');
     return;
   }
-  hintSection2.classList.toggle('show', g2wrongCount() >= 5);
-  if (g2hintUsed && g2hintValue && typeof g2hintValue === 'object') {
+  hintSection2.classList.toggle('show', g2.wrongCount >= 5);
+  if (g2.hintUsed && g2.hintValue && typeof g2.hintValue === 'object') {
     hintBtn2.style.display = 'none';
-    renderHint2(hintReveal2, g2hintValue);
+    renderHint2(hintReveal2, g2.hintValue);
     hintReveal2.classList.add('show');
   } else {
     hintBtn2.style.display = '';
@@ -775,12 +793,12 @@ function updateHint2() {
 }
 
 hintBtn2.addEventListener('click', async () => {
-  if (g2hintUsed) return;
+  if (g2.hintUsed) return;
   hintBtn2.disabled = true;
   let data;
   try {
     const res = await fetch(
-      `${WORKER_URL}/hint2?state_token=${encodeURIComponent(g2StateToken || '')}`
+      api(`/hint2?state_token=${encodeURIComponent(g2.stateToken || '')}`)
     );
     data = await res.json();
   } catch {
@@ -793,13 +811,13 @@ hintBtn2.addEventListener('click', async () => {
     hintBtn2.disabled = false;
     return;
   }
-  if (data.state_token) g2StateToken = data.state_token;
-  g2hintUsed = true;
-  g2hintValue = { rarity: data.rarity, type: data.type, position: data.position };
-  g2hintAfterGuess = g2guesses.length;
+  if (data.state_token) g2.stateToken = data.state_token;
+  g2.hintUsed = true;
+  g2.hintValue = { rarity: data.rarity, type: data.type, position: data.position };
+  g2.hintAfterGuess = g2.guesses.length;
   saveState();
   hintBtn2.style.display = 'none';
-  renderHint2(hintReveal2, g2hintValue);
+  renderHint2(hintReveal2, g2.hintValue);
   hintReveal2.classList.add('show');
 });
 
@@ -807,7 +825,7 @@ hintBtn2.addEventListener('click', async () => {
 // GAME 3 - SHOW & LOAD SILHOUETTE
 // ─────────────────────────────────────────
 document.getElementById('g3NextBtn').addEventListener('click', async () => {
-  g3started = true;
+  g3.started = true;
   saveState();
   await showGame3();
 });
@@ -816,10 +834,10 @@ async function showGame3() {
   game3Section.classList.add('show');
   game3Section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  silhouetteImg.src = g3won ? cookieImgSrc(g3victoryName) : `${WORKER_URL}/silhouette3-image`;
+  silhouetteImg.src = g3.won ? cookieImgSrc(g3.victoryName) : api('/silhouette3-image');
   silhouetteImg.style.display = '';
 
-  if (!g3won) {
+  if (!g3.won) {
     reenableWhenReady(input3, submitBtn3);
     input3.focus();
   }
@@ -831,7 +849,7 @@ async function showGame3() {
 submitBtn3.addEventListener('click', submitGuess3);
 
 async function submitGuess3() {
-  if (g3won) return;
+  if (g3.won) return;
   const raw = input3.value.trim();
   if (!raw) return;
 
@@ -840,7 +858,7 @@ async function submitGuess3() {
     showToast('Cookie not found - check your spelling!');
     return;
   }
-  if (g3guesses.includes(cookie.cookie_name)) {
+  if (g3.guesses.includes(cookie.cookie_name)) {
     alreadyEl3.textContent = `Already guessed ${cookie.cookie_name}!`;
     return;
   }
@@ -850,12 +868,12 @@ async function submitGuess3() {
 
   let data;
   try {
-    const res = await fetch(`${WORKER_URL}/guess3`, {
+    const res = await fetch(api('/guess3'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         guess: cookie.cookie_name,
-        state_token: g3StateToken,
+        state_token: g3.stateToken,
       }),
     });
     data = await res.json();
@@ -870,9 +888,9 @@ async function submitGuess3() {
     reenableWhenReady(input3, submitBtn3);
     return;
   }
-  if (data.state_token) g3StateToken = data.state_token;
+  if (data.state_token) g3.stateToken = data.state_token;
 
-  g3guesses.push(cookie.cookie_name);
+  g3.guesses.push(cookie.cookie_name);
   input3.value = '';
   hideSuggestions(suggestBox3);
 
@@ -881,9 +899,9 @@ async function submitGuess3() {
   updateHint3();
 
   if (data.correct) {
-    g3won = true;
+    g3.won = true;
     addToCollection(data.cookie_name);
-    g3victoryName = data.cookie_name;
+    g3.victoryName = data.cookie_name;
     saveState();
     input3.disabled = true;
     submitBtn3.disabled = true;
@@ -924,17 +942,13 @@ function addGame3Row(name, correct, animate) {
 // ─────────────────────────────────────────
 // GAME 3 - META & HINT
 // ─────────────────────────────────────────
-function g3wrongCount() {
-  return g3won ? g3guesses.length - 1 : g3guesses.length;
-}
-
 function updateMeta3() {
-  if (!g3guesses.length) {
+  if (!g3.guesses.length) {
     metaEl3.textContent = '';
     return;
   }
   metaEl3.textContent =
-    g3guesses.length === 1 ? '1 guess so far' : `${g3guesses.length} guesses so far`;
+    g3.guesses.length === 1 ? '1 guess so far' : `${g3.guesses.length} guesses so far`;
 }
 
 function renderHint3(el, hintData) {
@@ -949,14 +963,14 @@ function renderHint3(el, hintData) {
 }
 
 function updateHint3() {
-  if (g3won) {
+  if (g3.won) {
     hintSection3.classList.remove('show');
     return;
   }
-  hintSection3.classList.toggle('show', g3wrongCount() >= 5);
-  if (g3hintUsed && g3hintValue && typeof g3hintValue === 'object') {
+  hintSection3.classList.toggle('show', g3.wrongCount >= 5);
+  if (g3.hintUsed && g3.hintValue && typeof g3.hintValue === 'object') {
     hintBtn3.style.display = 'none';
-    renderHint3(hintReveal3, g3hintValue);
+    renderHint3(hintReveal3, g3.hintValue);
     hintReveal3.classList.add('show');
   } else {
     hintBtn3.style.display = '';
@@ -965,12 +979,12 @@ function updateHint3() {
 }
 
 hintBtn3.addEventListener('click', async () => {
-  if (g3hintUsed) return;
+  if (g3.hintUsed) return;
   hintBtn3.disabled = true;
   let data;
   try {
     const res = await fetch(
-      `${WORKER_URL}/hint3?state_token=${encodeURIComponent(g3StateToken || '')}`
+      api(`/hint3?state_token=${encodeURIComponent(g3.stateToken || '')}`)
     );
     data = await res.json();
   } catch {
@@ -983,13 +997,13 @@ hintBtn3.addEventListener('click', async () => {
     hintBtn3.disabled = false;
     return;
   }
-  if (data.state_token) g3StateToken = data.state_token;
-  g3hintUsed = true;
-  g3hintValue = { primary_color: data.primary_color, type: data.type, rarity: data.rarity };
-  g3hintAfterGuess = g3guesses.length;
+  if (data.state_token) g3.stateToken = data.state_token;
+  g3.hintUsed = true;
+  g3.hintValue = { primary_color: data.primary_color, type: data.type, rarity: data.rarity };
+  g3.hintAfterGuess = g3.guesses.length;
   saveState();
   hintBtn3.style.display = 'none';
-  renderHint3(hintReveal3, g3hintValue);
+  renderHint3(hintReveal3, g3.hintValue);
   hintReveal3.classList.add('show');
 });
 
@@ -1230,14 +1244,14 @@ function startHeaderCountdown() {
 // FINAL VICTORY & SHARE
 // ─────────────────────────────────────────
 function showFinalVictory(animate) {
-  finalSub.textContent = `Game 1: ${guesses.length} guess${guesses.length === 1 ? '' : 'es'} · Game 2: ${g2guesses.length} guess${g2guesses.length === 1 ? '' : 'es'} · Game 3: ${g3guesses.length} guess${g3guesses.length === 1 ? '' : 'es'}`;
-  finalCookieEl.textContent = `🍪 ${g3victoryName}`;
+  finalSub.textContent = `Game 1: ${guesses.length} guess${guesses.length === 1 ? '' : 'es'} · Game 2: ${g2.guesses.length} guess${g2.guesses.length === 1 ? '' : 'es'} · Game 3: ${g3.guesses.length} guess${g3.guesses.length === 1 ? '' : 'es'}`;
+  finalCookieEl.textContent = `🍪 ${g3.victoryName}`;
   if (!animate) finalVictory.style.animation = 'none';
   finalVictory.classList.add('show');
   announce(`Daily complete! All three games finished.`);
-  if (animate) recordCompletion(guesses.length + g2guesses.length + g3guesses.length);
+  if (animate && !IS_ARCHIVE) recordCompletion(guesses.length + g2.guesses.length + g3.guesses.length);
   statsBtn.style.display = '';
-  startNextCookieTimer();
+  if (!IS_ARCHIVE) startNextCookieTimer();
 }
 
 function tickNextCookieTimer() {
@@ -1267,61 +1281,245 @@ function withHint(lines, hintUsedFlag, hintAfterGuessNum) {
   return out;
 }
 
-function traitResultEmoji(result) {
-  if (result === 'correct') return '🟩';
-  if (result === 'partial') return '🟨';
-  return '🟥';
+// ─────────────────────────────────────────
+// SHARE CARD (Canvas)
+// ─────────────────────────────────────────
+function drawRoundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
-shareBtn.addEventListener('click', () => {
-  const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const s = loadStats();
-  const sections = [`Cookiedle ${date} 🍪`];
+function generateShareCanvas() {
+  const W = 420, PAD = 20, IW = W - PAD * 2;
+  const ACCENT_H = 4, HEADER_H = 56, DIVIDER_GAP = 12;
+  const LABEL_H = 28, CELL_H = 26, CELL_GAP = 5, ROW_H = CELL_H + CELL_GAP;
+  const SZ = 22, SG = 6;
+  const SECTION_GAP = 14;
+  const ITEMS_PER_LINE = Math.floor((IW + SG) / (SZ + SG));
 
+  const sectionData = [];
   if (guesses.length > 0) {
-    const n = guesses.length;
-    const outcome = won ? '✅' : '❌';
-    sections.push(`\nGame 1 - ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
-    const rows = guesses.map((name) => {
-      const traitCells = (results[name] || []).slice(1);
-      return traitCells.map((t) => traitResultEmoji(t.result)).join('');
+    sectionData.push({
+      label: `Game 1  ·  ${guesses.length} guess${guesses.length === 1 ? '' : 'es'}  ${won ? '✅' : '❌'}`,
+      type: 'grid',
+      rows: withHint([...guesses], hintUsed, hintAfterGuess),
     });
-    sections.push(...withHint(rows, hintUsed, hintAfterGuess));
+  }
+  if (g2.started && g2.guesses.length > 0) {
+    sectionData.push({
+      label: `Game 2  ·  ${g2.guesses.length} guess${g2.guesses.length === 1 ? '' : 'es'}  ${g2.won ? '✅' : '❌'}`,
+      type: 'indicators',
+      items: withHint(g2.guesses.map((n) => n === g2.victoryName), g2.hintUsed, g2.hintAfterGuess),
+    });
+  }
+  if (g3.started && g3.guesses.length > 0) {
+    sectionData.push({
+      label: `Game 3  ·  ${g3.guesses.length} guess${g3.guesses.length === 1 ? '' : 'es'}  ${g3.won ? '✅' : '❌'}`,
+      type: 'indicators',
+      items: withHint(g3.guesses.map((n) => n === g3.victoryName), g3.hintUsed, g3.hintAfterGuess),
+    });
   }
 
-  if (g2started && g2guesses.length > 0) {
-    const n = g2guesses.length;
-    const outcome = g2won ? '✅' : '❌';
-    sections.push(`\nGame 2 - ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
-    const rows = g2guesses.map((name) => (name === g2victoryName ? '✅' : '❌'));
-    sections.push(...withHint(rows, g2hintUsed, g2hintAfterGuess));
+  // Compute canvas height
+  const sectionHeights = sectionData.map((s) => {
+    if (s.type === 'grid') return LABEL_H + s.rows.length * ROW_H;
+    return LABEL_H + Math.ceil(s.items.length / ITEMS_PER_LINE) * (SZ + SG);
+  });
+  const contentH = sectionHeights.reduce((a, h) => a + h, 0)
+    + Math.max(0, sectionData.length - 1) * SECTION_GAP;
+  const H = ACCENT_H + PAD + HEADER_H + DIVIDER_GAP + contentH + SECTION_GAP + 46 + PAD;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, 0, W, H);
+
+  // Accent gradient bar
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, '#e94560');
+  grad.addColorStop(0.5, '#f5a623');
+  grad.addColorStop(1, '#e94560');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, ACCENT_H);
+
+  let y = ACCENT_H + PAD;
+
+  // Header: logo icon + title + date
+  const logoImg = document.querySelector('.logo-icon');
+  if (logoImg?.complete && logoImg.naturalWidth > 0) {
+    ctx.drawImage(logoImg, PAD, y + 6, 40, 40);
   }
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#e0e0e0';
+  ctx.font = 'bold 26px system-ui, sans-serif';
+  ctx.fillText('Cookiedle', PAD + 52, y + 12);
+  ctx.fillStyle = '#7a8aa0';
+  ctx.font = '13px system-ui, sans-serif';
+  ctx.textAlign = 'right';
+  const shareDate = IS_ARCHIVE
+    ? (() => {
+        const [sy, sm, sd] = ARCHIVE_DATE.split('-').map(Number);
+        return (
+          new Date(Date.UTC(sy, sm - 1, sd)).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          }) + ' (Archive)'
+        );
+      })()
+    : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  ctx.fillText(shareDate, W - PAD, y + 14);
+  ctx.textAlign = 'left';
+  y += HEADER_H;
 
-  if (g3started && g3guesses.length > 0) {
-    const n = g3guesses.length;
-    const outcome = g3won ? '✅' : '❌';
-    sections.push(`\nGame 3 - ${n} guess${n === 1 ? '' : 'es'} ${outcome}`);
-    const rows = g3guesses.map((name) => (name === g3victoryName ? '✅' : '❌'));
-    sections.push(...withHint(rows, g3hintUsed, g3hintAfterGuess));
+  // Divider
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(PAD, y, IW, 1);
+  y += DIVIDER_GAP;
+
+  // Game sections
+  sectionData.forEach((section, si) => {
+    if (si > 0) y += SECTION_GAP;
+
+    ctx.fillStyle = '#7a8aa0';
+    ctx.font = '600 13px system-ui, sans-serif';
+    ctx.fillText(section.label, PAD, y);
+    y += LABEL_H;
+
+    if (section.type === 'grid') {
+      const CELL_W = (IW - 4 * CELL_GAP) / 5;
+      section.rows.forEach((item) => {
+        if (item === '💡') {
+          ctx.fillStyle = '#f5a623';
+          ctx.font = '12px system-ui, sans-serif';
+          ctx.fillText('— hint used —', PAD, y + 7);
+          y += ROW_H;
+          return;
+        }
+        (results[item] || []).slice(1).forEach((trait, i) => {
+          ctx.fillStyle = trait.result === 'correct' ? '#4caf50'
+            : trait.result === 'partial' ? '#ff9800' : '#e94560';
+          drawRoundRect(ctx, PAD + i * (CELL_W + CELL_GAP), y, CELL_W, CELL_H, 4);
+          ctx.fill();
+        });
+        y += ROW_H;
+      });
+    } else {
+      const startY = y;
+      section.items.forEach((item, idx) => {
+        const col = idx % ITEMS_PER_LINE;
+        const row = Math.floor(idx / ITEMS_PER_LINE);
+        const ix = PAD + col * (SZ + SG);
+        const iy = startY + row * (SZ + SG);
+        if (item === '💡') {
+          ctx.fillStyle = '#f5a623';
+          ctx.font = 'bold 15px system-ui, sans-serif';
+          ctx.fillText('💡', ix + 2, iy + 2);
+        } else {
+          ctx.fillStyle = item ? '#4caf50' : '#e94560';
+          drawRoundRect(ctx, ix, iy, SZ, SZ, 4);
+          ctx.fill();
+        }
+      });
+      y += Math.ceil(section.items.length / ITEMS_PER_LINE) * (SZ + SG);
+    }
+  });
+
+  // Footer
+  y += SECTION_GAP;
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(PAD, y, IW, 1);
+  y += 12;
+  ctx.fillStyle = '#f5a623';
+  ctx.font = '600 14px system-ui, sans-serif';
+  ctx.fillText(IS_ARCHIVE ? '📅 Archive' : `🔥 Streak: ${loadStats().currentStreak}`, PAD, y);
+  ctx.fillStyle = '#7a8aa0';
+  ctx.font = '13px system-ui, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('cookiedle.nappi.work', W - PAD, y);
+  ctx.textAlign = 'left';
+
+  return canvas;
+}
+
+async function shareResults() {
+  let canvas;
+  try {
+    canvas = generateShareCanvas();
+  } catch {
+    showToast('Could not generate share card.');
+    return;
   }
+  canvas.toBlob(async (blob) => {
+    if (!blob) { showToast('Could not generate image.'); return; }
+    const file = new File([blob], 'cookiedle.png', { type: 'image/png' });
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Cookiedle' });
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+      }
+    }
+    // Fallback: download the image
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cookiedle-${new Date().toISOString().slice(0, 10)}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Image saved!');
+  }, 'image/png');
+}
 
-  sections.push(
-    `\nStreak: ${s.currentStreak} 🔥`,
-    `\nThink you can do better? Play Cookiedle!\nhttps://cookiedle.nappi.work`
-  );
-
-  const text = sections.join('\n');
-  navigator.clipboard
-    .writeText(text)
-    .then(() => showToast('Results copied!'))
-    .catch(() => showToast('Could not copy - try again.'));
-});
+shareBtn.addEventListener('click', shareResults);
 
 // ─────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────
 async function init() {
-  startHeaderCountdown();
+  if (!IS_ARCHIVE) {
+    startHeaderCountdown();
+  } else {
+    const [ay, am, ad] = ARCHIVE_DATE.split('-').map(Number);
+    const todayISO = new Date().toISOString().slice(0, 10);
+    const picker = document.getElementById('archiveDatePicker');
+    if (picker) {
+      picker.value = `${ay}-${String(am).padStart(2, '0')}-${String(ad).padStart(2, '0')}`;
+      picker.max = todayISO;
+      picker.addEventListener('change', () => {
+        if (picker.value) location.href = `/archive?date=${picker.value}`;
+      });
+    }
+    const prevBtn = document.getElementById('archivePrev');
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        const prev = new Date(Date.UTC(ay, am - 1, ad - 1));
+        location.href = `/archive?date=${prev.toISOString().slice(0, 10)}`;
+      });
+    }
+    const nextBtn = document.getElementById('archiveNext');
+    if (nextBtn) {
+      const nextDay = new Date(Date.UTC(ay, am - 1, ad + 1));
+      if (nextDay.toISOString().slice(0, 10) > todayISO) nextBtn.disabled = true;
+      nextBtn.addEventListener('click', () => {
+        const n = new Date(Date.UTC(ay, am - 1, ad + 1));
+        if (n.toISOString().slice(0, 10) <= todayISO) location.href = `/archive?date=${n.toISOString().slice(0, 10)}`;
+      });
+    }
+  }
 
   input.disabled = true;
   submitBtn.disabled = true;
@@ -1342,14 +1540,14 @@ async function init() {
 
   // Fetch initial signed state tokens for all three daily games if not already stored.
   // This ensures every guess carries a server-validated token, preventing hint-gate resets.
-  if (!g1StateToken || !g2StateToken || !g3StateToken) {
+  if (!g1StateToken || !g2.stateToken || !g3.stateToken) {
     try {
-      const res = await fetch(`${WORKER_URL}/daily-state`);
+      const res = await fetch(api('/daily-state'));
       if (res.ok) {
         const data = await res.json();
         if (!g1StateToken && data.g1) g1StateToken = data.g1;
-        if (!g2StateToken && data.g2) g2StateToken = data.g2;
-        if (!g3StateToken && data.g3) g3StateToken = data.g3;
+        if (!g2.stateToken && data.g2) g2.stateToken = data.g2;
+        if (!g3.stateToken && data.g3) g3.stateToken = data.g3;
         saveState();
       }
     } catch {}
@@ -1361,13 +1559,13 @@ async function init() {
   }
 
   try {
-    const res = await fetch(`${WORKER_URL}/skill`);
+    const res = await fetch(api('/skill'));
     if (res.ok) skillData = await res.json();
   } catch {}
 
   restoreSession();
 
-  if (!localStorage.getItem('seen_tutorial')) openTutorial();
+  if (!IS_ARCHIVE && !localStorage.getItem('seen_tutorial')) openTutorial();
 }
 
 init();

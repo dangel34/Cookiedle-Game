@@ -1,6 +1,9 @@
 // ─────────────────────────────────────────
 // SHARED - loaded on every page
 // ─────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 
 // Production: same-origin /api/ nginx proxy on cookiedle.nappi.work. Dev: workers.dev directly.
 const WORKER_URL =

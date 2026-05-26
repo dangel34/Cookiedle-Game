@@ -3,18 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cookiedle</title>
+    <title>Cookiedle - Archive</title>
     <meta
       name="description"
-      content="Daily Cookie Run: Kingdom guessing game - three puzzles per day."
+      content="Play past Cookiedle daily puzzles from the archive."
     />
-    <meta property="og:title" content="Cookiedle" />
+    <meta property="og:title" content="Cookiedle - Archive" />
     <meta
       property="og:description"
-      content="Daily Cookie Run: Kingdom guessing game - three puzzles per day."
+      content="Play past Cookiedle daily puzzles from the archive."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://cookiedle.nappi.work/" />
+    <meta property="og:url" content="https://cookiedle.nappi.work/archive" />
     <meta
       property="og:image"
       content="https://cookiedle.nappi.work/cookie_images/Princess_Cookie.webp"
@@ -25,6 +25,19 @@
     <meta name="theme-color" content="#1a1a2e" />
     <link rel="stylesheet" href="shared.css" />
     <link rel="stylesheet" href="game.css" />
+    <script>
+      (function () {
+        var p = new URLSearchParams(location.search);
+        if (!p.get('date')) {
+          var now = new Date();
+          var yest = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
+          var y = yest.getUTCFullYear();
+          var m = String(yest.getUTCMonth() + 1).padStart(2, '0');
+          var d = String(yest.getUTCDate()).padStart(2, '0');
+          location.replace('/archive?date=' + y + '-' + m + '-' + d);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div class="wrap">
@@ -34,10 +47,13 @@
           Cookiedle
         </div>
         <div class="subtitle">Cookie Run Kingdom · Guessing Game</div>
-        <div class="countdown-bar">Next cookies in <span id="headerCountdown">--:--:--</span></div>
+        <div class="archive-bar">
+          <button class="archive-nav" id="archivePrev" aria-label="Previous day">←</button>
+          <input type="date" id="archiveDatePicker" class="archive-date-input" aria-label="Select archive date" />
+          <button class="archive-nav" id="archiveNext" aria-label="Next day">→</button>
+        </div>
         <div class="header-actions">
-          <a class="header-btn" href="/unlimited">♾️ Unlimited</a>
-          <a class="header-btn" href="/archive">📅 Archive</a>
+          <a class="header-btn" href="/">← Daily</a>
           <button class="header-btn" id="tutorialBtn">? How to Play</button>
           <button class="header-btn" id="collectionBtn">🍪 Collection</button>
           <button class="header-btn" id="statsBtn" style="display: none">📊 Stats</button>
@@ -345,7 +361,7 @@
       <!-- ── FINAL VICTORY ── -->
       <div class="final-victory" id="finalVictory">
         <div class="victory-emoji">🏆</div>
-        <div class="victory-title" style="color: var(--gold)">Daily Complete!</div>
+        <div class="victory-title" style="color: var(--gold)">Archive Complete!</div>
         <div class="victory-sub" id="finalSub"></div>
         <div class="victory-cookie" id="finalCookieName" style="margin-bottom: 20px"></div>
         <button class="share-btn" id="shareBtn">Share Results 🖼️</button>

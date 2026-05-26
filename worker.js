@@ -10,6 +10,7 @@ import {
 } from './worker/crypto.js';
 import { sanitizeInput } from './worker/sanitize.js';
 import { checkRateLimit, rateLimitConfig } from './worker/rate-limit.js';
+import { logEvent } from './worker/analytics.js';
 
 // ─────────────────────────────────────────
 // EVALUATE A GUESS AGAINST TARGET
@@ -118,6 +119,7 @@ async function handleUnlimitedGuess({ request, env }) {
   const result = evaluateGuess(guessCookie, target_u);
   const nextProgress = { ...progress, wrong: result.correct ? progress.wrong : progress.wrong + 1 };
   result.progress_token = await makeProgressToken(nextProgress, env.COOKIE_SECRET);
+  logEvent(env, { game: 'unlimited', outcome: result.correct ? 'win' : 'guess', wrong_count: nextProgress.wrong, hint_used: nextProgress.hint_used });
   if (result.correct) {
     result.cookie_name = target_u.cookie_name;
     result.skill_name = target_u.skill_name || '';
@@ -198,6 +200,7 @@ async function handleDailyBinaryGuess({ request, body, env, gameId, todayStr, ta
     return jsonResponse(request, { error: 'Invalid state token. Refresh to continue.' }, 400);
   const correct = guessName === target.cookie_name.toLowerCase();
   const nextState = { ...state, wrong: correct ? state.wrong : state.wrong + 1 };
+  logEvent(env, { game: gameId, outcome: correct ? 'win' : 'guess', wrong_count: nextState.wrong, hint_used: state.hint_used });
   return jsonResponse(request, {
     correct,
     cookie_name: correct ? target.cookie_name : undefined,
@@ -229,6 +232,7 @@ async function handleGuess1({ request, env, target, todayStr }) {
     return jsonResponse(request, { error: 'Invalid state token. Refresh to continue.' }, 400);
   const nextState = { ...state, wrong: result.correct ? state.wrong : state.wrong + 1 };
   result.state_token = await makeProgressToken(nextState, env.COOKIE_SECRET);
+  logEvent(env, { game: 'daily1', outcome: result.correct ? 'win' : 'guess', wrong_count: nextState.wrong, hint_used: state.hint_used });
   if (result.correct) {
     result.skill_name = target.skill_name || '';
     result.skill_cooldown = target.skill_cooldown || 0;
@@ -438,7 +442,20 @@ export default {
       }
 
       const now = new Date();
-      const todayStr = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}`;
+      let todayStr = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}`;
+      const dateParam = url.searchParams.get('date');
+      if (dateParam && /^\d{4}-\d{1,2}-\d{1,2}$/.test(dateParam)) {
+        const [py, pm, pd] = dateParam.split('-').map(Number);
+        const parsed = new Date(Date.UTC(py, pm - 1, pd));
+        if (
+          parsed.getUTCFullYear() === py &&
+          parsed.getUTCMonth() === pm - 1 &&
+          parsed.getUTCDate() === pd &&
+          parsed.getTime() <= Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+        ) {
+          todayStr = dateParam;
+        }
+      }
 
       const routeKey = `${request.method} ${url.pathname}`;
       const rateCfg = rateLimitConfig(request.method, url.pathname);
@@ -464,9 +481,9 @@ export default {
         url.pathname === '/hint3';
 
       const [target, target2, target3] = await Promise.all([
-        needsTarget1 ? getDailyTarget(COOKIES, env.COOKIE_SECRET) : null,
-        needsTarget2 ? getDailyTarget2(COOKIES, env.COOKIE_SECRET) : null,
-        needsTarget3 ? getDailyTarget3(COOKIES, env.COOKIE_SECRET) : null,
+        needsTarget1 ? getDailyTarget(COOKIES, env.COOKIE_SECRET, todayStr) : null,
+        needsTarget2 ? getDailyTarget2(COOKIES, env.COOKIE_SECRET, todayStr) : null,
+        needsTarget3 ? getDailyTarget3(COOKIES, env.COOKIE_SECRET, todayStr) : null,
       ]);
 
       return handler({ request, env, url, target, target2, target3, todayStr });

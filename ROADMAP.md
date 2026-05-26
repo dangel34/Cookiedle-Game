@@ -42,12 +42,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-### 2.4 Improved Share Card
-**Problem:** The current share output is plain emoji text. It looks fine in Discord/iMessage but is hard to read without context.
-
-**Solution:** Generate a proper share image client-side using the [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API). The image would show the Cookiedle logo, date, and colored guess tiles for all three games, shareable as a PNG download or `navigator.share()` on mobile.
-
-**Effort:** Large - ~100 lines of canvas code + image assets.
+~~### 2.4 Improved Share Card~~ ✅ **Done** - `generateShareCanvas()` in `game.js` draws a 420px PNG card: accent gradient bar, Princess Cookie logo + "Cookiedle" + date in the header, one section per active game (Game 1: 5 coloured trait cells per row in green/orange/red; Games 2 & 3: green/red indicator squares), hint-used marker (`💡`) injected at the right row via `withHint()`, footer with streak and URL. `shareResults()` calls `navigator.share({ files })` on mobile (native share sheet) and falls back to downloading the PNG on desktop. "Share Results 📋" button updated to 🖼️. Old clipboard text share removed.
 
 ---
 
@@ -61,20 +56,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ## Phase 3: New Game Content
 
-### 3.1 Game 4: Cooldown Guesser
-**Problem:** Only three daily games means returning players finish quickly.
-
-**Solution:** Add a fourth daily game: display a skill cooldown time (e.g., "12 seconds") and ask the player to identify the cookie. The answer check is binary (correct/wrong). Hints after 5 wrong guesses reveal Rarity and Type.
-
-**Implementation Notes:**
-- New endpoint: `GET /cooldown4` (returns cooldown value)
-- New endpoint: `POST /guess4`
-- New endpoint: `GET /hint4`
-- Frontend: new section in `index.html`, handler in `game.js`
-- Worker: new daily hash suffix `-cooldown`
-- Edge case: multiple cookies share the same cooldown; need to handle ambiguity (either exclude shared cooldowns from the pool, or accept any matching cookie as correct)
-
-**Effort:** Large - significant worker + frontend work, but follows the established Game 2/3 pattern exactly.
+### ~~3.1 Game 4: Cooldown Guesser~~ ❌ **Dropped** - Too ambiguous: 29 cookies share a 12-second cooldown, 43 share 15 seconds. Guessing a cooldown value is not a meaningful puzzle. Moved to parking lot.
 
 ---
 
@@ -86,12 +68,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-### 3.4 Historical Puzzle Archive
-**Problem:** New players can't go back and play previous days' puzzles. The daily hash is deterministic, so past answers are computable.
-
-**Solution:** Add a date-picker UI (`/archive?date=2025-12-01`). The worker already computes daily targets from the date string; just pass a `?date=` query param instead of using `today`. Add a localStorage namespace per date so archive progress is saved separately.
-
-**Effort:** Large - requires careful state isolation in frontend to avoid polluting today's localStorage keys.
+~~### 3.4 Historical Puzzle Archive~~ ✅ **Done** - `/archive?date=YYYY-MM-DD` page plays any past daily puzzle. Worker accepts `?date=YYYY-M-D` query param (validated: not future, not before 2024), passes the date override to `getDailyTarget*` so the same deterministic hash runs for any date. `game.js` detects archive mode via `IS_ARCHIVE`/`ARCHIVE_DATE` constants; uses `cookiedle-archive-{date}` as the localStorage key so archive plays are isolated from today's state. All API calls routed through `api(path)` helper that appends `?date=` in archive mode. Guards: `recordCompletion`, `startNextCookieTimer`, and tutorial auto-show are skipped for archive plays; collection still populates normally. Archive bar shows ←/→ day navigation and a date picker. Bare `/archive` redirects to yesterday.
 
 ---
 
@@ -115,16 +92,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ---
 
-### 4.3 Privacy-Respecting Analytics
-**Problem:** There's no visibility into how many people play, which games they finish, what the average guess count is, or whether new cookies are being identified.
-
-**Solution:** Log aggregated events to [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) (free, no PII). Track:
-- Game played (1/2/3/unlimited), result (win/loss), guess count, whether hint was used
-- No IP, no fingerprint, no cookie name guessed
-
-View results in the Cloudflare dashboard or via the Analytics Engine SQL API.
-
-**Effort:** Medium - ~30 lines in `worker.js`, no frontend changes.
+~~### 4.3 Privacy-Respecting Analytics~~ ✅ **Done** - `worker/analytics.js` exports `logEvent(env, { game, outcome, wrong_count, hint_used })`. Called fire-and-forget after every guess in `handleGuess1`, `handleDailyBinaryGuess` (covers games 2 & 3), and `handleUnlimitedGuess`. `wrangler.jsonc` binds `ANALYTICS` → dataset `cookiedle_events`. No IP, no cookie names, no fingerprints. Query example: `SELECT blob1 AS game, blob2 AS outcome, SUM(_sample_interval) AS count FROM cookiedle_events WHERE timestamp > NOW() - INTERVAL '7' DAY GROUP BY game, outcome`.
 
 ---
 
@@ -145,18 +113,7 @@ View results in the Cloudflare dashboard or via the Analytics Engine SQL API.
 
 ## Phase 5: Progressive Web App (PWA)
 
-### 5.1 Installable PWA
-**Problem:** Mobile players must navigate to the URL every day. There's no home screen icon, no offline support, and no push notification capability.
-
-**Solution:**
-- Add a `manifest.json` (name, icons, theme color, `display: standalone`)
-- Add a Service Worker (`sw.js`) that caches static assets (JS, CSS, images) with a cache-first strategy, and network-first for API calls
-- Add `<link rel="manifest">` to all HTML pages
-- Generate app icons (192×192, 512×512) from the cookie logo
-
-**Benefit:** Players can "Add to Home Screen" on iOS/Android. Static assets load instantly even offline. Lays groundwork for push notifications (daily puzzle reminder).
-
-**Effort:** Medium - ~80 lines for service worker, ~20 lines for manifest.
+~~### 5.1 Installable PWA~~ ✅ **Done** - `docs/manifest.json` (name, short_name, standalone display, `#1a1a2e` theme/background, 192×192 + 512×512 PNG icons). `docs/sw.js`: install pre-caches the app shell (HTML, CSS, JS, manifest, icons); activate purges old caches; fetch uses cache-first for all same-origin non-API requests, passes API calls (`/guess`, `/hint`, `/daily-state`, etc.) straight to the network. SW registered in `shared.js` so it runs on every page. `<link rel="manifest">`, `<meta name="theme-color">`, and `<link rel="apple-touch-icon">` added to `index.html` and `unlimited.html`. Icons generated from `Princess_Cookie.webp` via Pillow into `docs/icons/`.
 
 ---
 
@@ -183,12 +140,7 @@ View results in the Cloudflare dashboard or via the Analytics Engine SQL API.
 
 ---
 
-### 6.2 Shared State Manager for Frontend
-**Problem:** `game.js` has many parallel variables (`wrong1`, `wrong2`, `wrong3`, `guesses1`, `guesses2`...) and localStorage keys for each game. Adding Game 4 (Phase 3.1) would require duplicating this pattern again.
-
-**Solution:** Extract a `createGameState(gameId)` factory function that returns a consistent state object with `{ wrong, guesses, solved, stateToken, load(), save() }`. Each game uses its own instance.
-
-**Effort:** Medium - refactor only. The public API of each game section stays identical; only internal variable management changes.
+~~### 6.2 Shared State Manager for Frontend~~ ✅ **Done** - `createGameState(saved)` factory added to `game.js`. Returns `{ started, guesses, won, hintUsed, hintValue, hintAfterGuess, victoryName, stateToken, wrongCount (getter) }`. Games 2 & 3 now use `const g2 = createGameState(...)` / `const g3 = createGameState(...)` instead of 16 scattered `let` variables. `saveState()` serializes from the objects back to the original flat key names for full localStorage backward compatibility. Game 1 kept as-is (trait-grid hints and `results` object are genuinely different). Game 4 can be wired in with one `createGameState()` call.
 
 ---
 
@@ -220,13 +172,13 @@ These ideas need more design work or have significant tradeoffs:
 | 2.1 | Tutorial modal | UX | Medium | Low | ✅ Done |
 | 2.2 | Countdown timer | UX | Small | Low | ✅ Done |
 | 2.3 | Accessibility pass | UX | Medium | Low | ✅ Done |
-| 2.4 | Canvas share card | UX | Large | Low | |
+| 2.4 | Canvas share card | UX | Large | Low | ✅ Done |
 | 2.5 | Tile flip animations | UX | Small | Low | ✅ Done |
 | 2.6 | Winner spotlight card | UX | Small | Low | ✅ Done |
 | 3.1 | Game 4: Cooldown | Content | Large | Medium | |
 | 3.2 | Cookie collection | Content | Medium | Low | ✅ Done |
 | 3.3 | Unlimited filters | Content | Medium | Low | ✅ Done |
-| 3.4 | Puzzle archive | Content | Large | Medium | |
+| 3.4 | Puzzle archive | Content | Large | Medium | ✅ Done |
 | 4.1 | KV cookie database | Backend | Large | High | |
 | 4.2 | Admin endpoint | Backend | Large | High | |
 | 4.3 | Analytics Engine | Backend | Medium | Low | |

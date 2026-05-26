@@ -139,10 +139,21 @@ header {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   font-size: clamp(1.8rem, 5vw, 2.6rem);
   font-weight: 800;
   color: var(--text);
   letter-spacing: 0.5px;
+}
+
+.logo-icon {
+  width: clamp(40px, 6vw, 56px);
+  height: clamp(40px, 6vw, 56px);
+  object-fit: contain;
+  border-radius: 10px;
 }
 
 .subtitle {
