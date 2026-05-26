@@ -52,8 +52,17 @@ function evaluateGuess(guess, target) {
 // ─────────────────────────────────────────
 // ROUTE HANDLERS
 // ─────────────────────────────────────────
+function unbiasedRandomIndex(n) {
+  const limit = 2 ** 32 - (2 ** 32 % n);
+  let value;
+  do {
+    value = crypto.getRandomValues(new Uint32Array(1))[0];
+  } while (value >= limit);
+  return value % n;
+}
+
 async function handleUnlimitedNew({ request, env }) {
-  const cookieIndex = crypto.getRandomValues(new Uint32Array(1))[0] % COOKIES.length;
+  const cookieIndex = unbiasedRandomIndex(COOKIES.length);
   const token = await makeToken(cookieIndex, env.COOKIE_SECRET);
   const progress_token = await makeProgressToken(
     { game: 'unlimited', date: 'rolling', wrong: 0, hint_used: false, token_bind: token },
