@@ -1698,5 +1698,55 @@
     "position": "Middle",
     "skill_name": "Magic Storm",
     "skill_cooldown": 13
+  },
+  {
+    "cookie_name": "Zoey Cookie",
+    "primary_color": "Blue",
+    "secondary_color": "Brown",
+    "rarity": "Special",
+    "type": "Ranged",
+    "position": "Rear",
+    "skill_name": "Zoey Time!",
+    "skill_cooldown": 11
+  },
+  {
+    "cookie_name": "Mira Cookie",
+    "primary_color": "Pink",
+    "secondary_color": "Brown",
+    "rarity": "Special",
+    "type": "Charge",
+    "position": "Front",
+    "skill_name": "Unchained Hunter",
+    "skill_cooldown": 16
+  },
+  {
+    "cookie_name": "Rumi Cookie",
+    "primary_color": "Purple",
+    "secondary_color": "Yellow",
+    "rarity": "Special",
+    "type": "Ambush",
+    "position": "Front",
+    "skill_name": "Demon Slayage!",
+    "skill_cooldown": 16
+  },
+  {
+    "cookie_name": "Ash Salt Cookie",
+    "primary_color": "Black",
+    "secondary_color": "Gray",
+    "rarity": "Epic",
+    "type": "Ambush",
+    "position": "Front",
+    "skill_name": "Ashen Assassin",
+    "skill_cooldown": 14
+  },
+  {
+    "cookie_name": "Timekeeper Cookie",
+    "primary_color": "Yellow",
+    "secondary_color": "Brown",
+    "rarity": "Legendary",
+    "type": "Magic",
+    "position": "Middle",
+    "skill_name": "Temporal Stabilization",
+    "skill_cooldown": 15
   }
 ]
