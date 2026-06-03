@@ -2,7 +2,7 @@
 
 A daily Cookie Run Kingdom guessing game inspired by Wordle, Loldle, and Pokedle, now fully playable in the browser.
 
-**[▶ Play Now](https://cookiedle.nappi.work)**
+**[▶ Play Now](https://cookiedle.nappi.work)** | **[Status](https://status.nappi.work/status/cookiedle)**
 
 ---
 
