@@ -678,6 +678,19 @@ header {
   color: var(--text);
 }
 
+.footer-sep {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin: 0 6px;
+}
+
+.footer-note {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin: 8px 0 0;
+  padding: 0;
+}
+
 /* ── MOBILE ── */
 @media (max-width: 600px) {
   .table-header,
