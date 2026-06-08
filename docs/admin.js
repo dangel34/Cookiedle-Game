@@ -160,6 +160,26 @@ $('cookieDialog').addEventListener('click', (e) => {
   if (e.target === $('cookieDialog')) closeDialog();
 });
 
+// ── CONFIRM DIALOG ──
+function showConfirm(msg) {
+  return new Promise((resolve) => {
+    $('confirmMsg').textContent = msg;
+    $('confirmDialog').showModal();
+    function onOk() { cleanup(); resolve(true); }
+    function onCancel() { cleanup(); resolve(false); }
+    function onBdClick(e) { if (e.target === $('confirmDialog')) { cleanup(); resolve(false); } }
+    function cleanup() {
+      $('confirmOkBtn').removeEventListener('click', onOk);
+      $('confirmCancelBtn').removeEventListener('click', onCancel);
+      $('confirmDialog').removeEventListener('click', onBdClick);
+      $('confirmDialog').close();
+    }
+    $('confirmOkBtn').addEventListener('click', onOk);
+    $('confirmCancelBtn').addEventListener('click', onCancel);
+    $('confirmDialog').addEventListener('click', onBdClick);
+  });
+}
+
 $('saveBtn').addEventListener('click', async () => {
   $('formError').textContent = '';
   const body = {
@@ -176,6 +196,8 @@ $('saveBtn').addEventListener('click', async () => {
     $('formError').textContent = 'All text fields are required.';
     return;
   }
+  $('saveBtn').textContent = 'Saving…';
+  $('saveBtn').disabled = true;
   try {
     let res;
     if (editingName) {
@@ -196,17 +218,28 @@ $('saveBtn').addEventListener('click', async () => {
       $('formError').textContent = data.error || 'Save failed.';
       return;
     }
+    if (editingName) {
+      const idx = allCookies.findIndex(
+        (c) => c.cookie_name.toLowerCase() === editingName.toLowerCase()
+      );
+      if (idx !== -1) allCookies[idx] = data.cookie;
+    } else {
+      allCookies.push(data.cookie);
+    }
+    renderTable($('searchInput').value);
     closeDialog();
-    await loadCookies();
     toast(editingName ? 'Cookie updated.' : 'Cookie added.');
   } catch {
     $('formError').textContent = 'Network error.';
+  } finally {
+    $('saveBtn').textContent = 'Save';
+    $('saveBtn').disabled = false;
   }
 });
 
 // ── DELETE ──
 async function confirmDelete(name) {
-  if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+  if (!await showConfirm(`Delete "${name}"? This cannot be undone.`)) return;
   try {
     const res = await fetch(`${WORKER_URL}/admin/cookies?name=${encodeURIComponent(name)}`, {
       method: 'DELETE',
@@ -217,7 +250,8 @@ async function confirmDelete(name) {
       toast(data.error || 'Delete failed.', false);
       return;
     }
-    await loadCookies();
+    allCookies = allCookies.filter((c) => c.cookie_name !== name);
+    renderTable($('searchInput').value);
     toast(`"${name}" deleted.`);
   } catch {
     toast('Network error.', false);
@@ -226,19 +260,19 @@ async function confirmDelete(name) {
 
 // ── SEED ──
 $('seedBtn').addEventListener('click', async () => {
-  if (!confirm('Seed KV with the bundled cookies.json? This overwrites current KV data.')) return;
+  if (!await showConfirm('Seed KV with the bundled cookies.json? This overwrites current KV data.')) return;
   try {
     const res = await fetch(`${WORKER_URL}/admin/cookies/seed`, {
       method: 'POST',
       headers: apiHeaders(),
     });
+    const d = await res.json();
     if (!res.ok) {
-      const d = await res.json();
       toast(d.error || 'Seed failed.', false);
       return;
     }
     await loadCookies();
-    toast('KV seeded from bundled data.');
+    toast(`KV seeded — ${d.count} cookies.`);
   } catch {
     toast('Seed failed.', false);
   }

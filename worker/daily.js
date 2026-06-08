@@ -6,7 +6,9 @@ async function computeDailyTarget(cookies, secret, dateOverride, suffix) {
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashInt = hashArray.slice(0, 4).reduce((acc, b) => (acc * 256 + b) >>> 0, 0);
-  return cookies[hashInt % cookies.length];
+  // Sort by stable id so reordering the KV array never shifts daily answers.
+  const sorted = [...cookies].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+  return sorted[hashInt % sorted.length];
 }
 
 export const getDailyTarget = (cookies, secret, dateOverride) =>

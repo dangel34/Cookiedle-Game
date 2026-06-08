@@ -51,8 +51,9 @@ function validateCookie(c) {
   return null;
 }
 
-function shapeCookie(body) {
+function shapeCookie(body, id) {
   return {
+    id,
     cookie_name: body.cookie_name.trim(),
     primary_color: body.primary_color.trim(),
     secondary_color: body.secondary_color.trim(),
@@ -81,8 +82,13 @@ export async function handleAdminAddCookie({ request, env }) {
   const cookies = await getCookies(env);
   if (cookies.some((c) => c.cookie_name.toLowerCase() === body.cookie_name.trim().toLowerCase()))
     return jsonResponse(request, { error: 'Cookie already exists' }, 409);
-  const entry = shapeCookie(body);
-  await saveCookies(env, [...cookies, entry]);
+  const maxId = cookies.reduce((m, c) => Math.max(m, c.id ?? 0), 0);
+  const entry = shapeCookie(body, maxId + 1);
+  try {
+    await saveCookies(env, [...cookies, entry]);
+  } catch {
+    return jsonResponse(request, { error: 'Failed to write to KV' }, 500);
+  }
   return jsonResponse(request, { ok: true, cookie: entry }, 201);
 }
 
@@ -100,10 +106,14 @@ export async function handleAdminUpdateCookie({ request, env, url }) {
   const cookies = await getCookies(env);
   const idx = cookies.findIndex((c) => c.cookie_name.toLowerCase() === name.toLowerCase());
   if (idx === -1) return jsonResponse(request, { error: 'Cookie not found' }, 404);
-  const updated = shapeCookie(body);
+  const updated = shapeCookie(body, cookies[idx].id);
   const newList = [...cookies];
   newList[idx] = updated;
-  await saveCookies(env, newList);
+  try {
+    await saveCookies(env, newList);
+  } catch {
+    return jsonResponse(request, { error: 'Failed to write to KV' }, 500);
+  }
   return jsonResponse(request, { ok: true, cookie: updated });
 }
 
@@ -113,14 +123,19 @@ export async function handleAdminDeleteCookie({ request, env, url }) {
   const cookies = await getCookies(env);
   const idx = cookies.findIndex((c) => c.cookie_name.toLowerCase() === name.toLowerCase());
   if (idx === -1) return jsonResponse(request, { error: 'Cookie not found' }, 404);
-  await saveCookies(
-    env,
-    cookies.filter((_, i) => i !== idx)
-  );
+  try {
+    await saveCookies(env, cookies.filter((_, i) => i !== idx));
+  } catch {
+    return jsonResponse(request, { error: 'Failed to write to KV' }, 500);
+  }
   return jsonResponse(request, { ok: true });
 }
 
 export async function handleAdminSeedCookies({ request, env }) {
-  await saveCookies(env, INITIAL_COOKIES);
+  try {
+    await saveCookies(env, INITIAL_COOKIES);
+  } catch {
+    return jsonResponse(request, { error: 'Failed to seed KV' }, 500);
+  }
   return jsonResponse(request, { ok: true, count: INITIAL_COOKIES.length });
 }

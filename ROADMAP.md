@@ -74,7 +74,7 @@ These are improvements that pay dividends across all future work and carry no ri
 
 ## Phase 4: Backend & Data Management
 
-~~### 4.1 Cookie Database in Cloudflare KV~~ ✅ **Done (partial)** - `worker/cookies-kv.js` stores the cookie array in `COOKIEDLE_KV` under the key `cookies`, with a 60-second edge cache TTL. `getCookies(env)` falls back to the bundled `data/cookies.json` if KV is empty or unavailable, so the worker never hard-fails. `saveCookies(env, cookies)` updates KV and invalidates the in-process cache. The daily hash still uses array position as the index, so reordering the array shifts past daily answers (the stable-ID migration from the original spec is still pending and tracked separately).
+~~### 4.1 Cookie Database in Cloudflare KV~~ ✅ **Done** - `worker/cookies-kv.js` stores the cookie array in `COOKIEDLE_KV` under the key `cookies`, with a 60-second edge cache TTL. `getCookies(env)` falls back to the bundled `data/cookies.json` if KV is empty or unavailable, so the worker never hard-fails. `saveCookies(env, cookies)` updates KV and invalidates the in-process cache. **Stable IDs added:** each cookie now has a numeric `id` field (1-based, assigned in original array order). `computeDailyTarget` sorts by `id` before picking, so reordering the KV array never shifts daily answers. New cookies added via the admin panel auto-receive `id = max + 1`; updates preserve the existing id.
 
 ---
 
@@ -182,7 +182,7 @@ These ideas need more design work or have significant tradeoffs:
 | 3.2 | Cookie collection | Content | Medium | Low | ✅ Done |
 | 3.3 | Unlimited filters | Content | Medium | Low | ✅ Done |
 | 3.4 | Puzzle archive | Content | Large | Medium | ✅ Done |
-| 4.1 | KV cookie database | Backend | Large | High | ✅ Done (stable IDs pending) |
+| 4.1 | KV cookie database | Backend | Large | High | ✅ Done |
 | 4.2 | Admin endpoint + panel | Backend | Large | High | ✅ Done |
 | 4.3 | Analytics Engine | Backend | Medium | Low | ✅ Done (needs CF dashboard activation) |
 | 4.4 | Automated cookie sync | Backend | Large | Medium | |

@@ -3,8 +3,8 @@ import { getDailyTarget, getDailyTarget2, getDailyTarget3 } from './daily.js';
 
 const SECRET = 'test-secret-for-vitest-only';
 
-// Minimal cookie array — only the index matters for these tests.
-const COOKIES = Array.from({ length: 170 }, (_, i) => ({ cookie_name: `Cookie${i}` }));
+// Minimal cookie array — id is required for stable sort in computeDailyTarget.
+const COOKIES = Array.from({ length: 170 }, (_, i) => ({ id: i + 1, cookie_name: `Cookie${i}` }));
 
 describe('getDailyTarget with dateOverride', () => {
   it('returns a cookie from the array', async () => {
