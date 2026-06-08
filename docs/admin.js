@@ -165,9 +165,20 @@ function showConfirm(msg) {
   return new Promise((resolve) => {
     $('confirmMsg').textContent = msg;
     $('confirmDialog').showModal();
-    function onOk() { cleanup(); resolve(true); }
-    function onCancel() { cleanup(); resolve(false); }
-    function onBdClick(e) { if (e.target === $('confirmDialog')) { cleanup(); resolve(false); } }
+    function onOk() {
+      cleanup();
+      resolve(true);
+    }
+    function onCancel() {
+      cleanup();
+      resolve(false);
+    }
+    function onBdClick(e) {
+      if (e.target === $('confirmDialog')) {
+        cleanup();
+        resolve(false);
+      }
+    }
     function cleanup() {
       $('confirmOkBtn').removeEventListener('click', onOk);
       $('confirmCancelBtn').removeEventListener('click', onCancel);
@@ -239,7 +250,7 @@ $('saveBtn').addEventListener('click', async () => {
 
 // ── DELETE ──
 async function confirmDelete(name) {
-  if (!await showConfirm(`Delete "${name}"? This cannot be undone.`)) return;
+  if (!(await showConfirm(`Delete "${name}"? This cannot be undone.`))) return;
   try {
     const res = await fetch(`${WORKER_URL}/admin/cookies?name=${encodeURIComponent(name)}`, {
       method: 'DELETE',
@@ -260,7 +271,10 @@ async function confirmDelete(name) {
 
 // ── SEED ──
 $('seedBtn').addEventListener('click', async () => {
-  if (!await showConfirm('Seed KV with the bundled cookies.json? This overwrites current KV data.')) return;
+  if (
+    !(await showConfirm('Seed KV with the bundled cookies.json? This overwrites current KV data.'))
+  )
+    return;
   try {
     const res = await fetch(`${WORKER_URL}/admin/cookies/seed`, {
       method: 'POST',

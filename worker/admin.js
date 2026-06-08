@@ -124,7 +124,10 @@ export async function handleAdminDeleteCookie({ request, env, url }) {
   const idx = cookies.findIndex((c) => c.cookie_name.toLowerCase() === name.toLowerCase());
   if (idx === -1) return jsonResponse(request, { error: 'Cookie not found' }, 404);
   try {
-    await saveCookies(env, cookies.filter((_, i) => i !== idx));
+    await saveCookies(
+      env,
+      cookies.filter((_, i) => i !== idx)
+    );
   } catch {
     return jsonResponse(request, { error: 'Failed to write to KV' }, 500);
   }
