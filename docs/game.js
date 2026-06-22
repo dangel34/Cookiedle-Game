@@ -1292,22 +1292,7 @@ function drawRoundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function generateShareCanvas() {
-  const W = 420,
-    PAD = 20,
-    IW = W - PAD * 2;
-  const ACCENT_H = 4,
-    HEADER_H = 56,
-    DIVIDER_GAP = 12;
-  const LABEL_H = 28,
-    CELL_H = 26,
-    CELL_GAP = 5,
-    ROW_H = CELL_H + CELL_GAP;
-  const SZ = 22,
-    SG = 6;
-  const SECTION_GAP = 14;
-  const ITEMS_PER_LINE = Math.floor((IW + SG) / (SZ + SG));
-
+function buildShareSections() {
   const sectionData = [];
   if (guesses.length > 0) {
     sectionData.push({
@@ -1338,6 +1323,40 @@ function generateShareCanvas() {
       ),
     });
   }
+  return sectionData;
+}
+
+function shareDateLabel() {
+  return IS_ARCHIVE
+    ? (() => {
+        const [sy, sm, sd] = ARCHIVE_DATE.split('-').map(Number);
+        return (
+          new Date(Date.UTC(sy, sm - 1, sd)).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          }) + ' (Archive)'
+        );
+      })()
+    : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function generateShareCanvas() {
+  const W = 420,
+    PAD = 20,
+    IW = W - PAD * 2;
+  const ACCENT_H = 4,
+    HEADER_H = 56,
+    DIVIDER_GAP = 12;
+  const LABEL_H = 28,
+    CELL_H = 26,
+    CELL_GAP = 5,
+    ROW_H = CELL_H + CELL_GAP;
+  const SZ = 22,
+    SG = 6;
+  const SECTION_GAP = 14;
+  const ITEMS_PER_LINE = Math.floor((IW + SG) / (SZ + SG));
+
+  const sectionData = buildShareSections();
 
   // Compute canvas height
   const sectionHeights = sectionData.map((s) => {
@@ -1379,18 +1398,7 @@ function generateShareCanvas() {
   ctx.fillStyle = '#7a8aa0';
   ctx.font = '13px system-ui, sans-serif';
   ctx.textAlign = 'right';
-  const shareDate = IS_ARCHIVE
-    ? (() => {
-        const [sy, sm, sd] = ARCHIVE_DATE.split('-').map(Number);
-        return (
-          new Date(Date.UTC(sy, sm - 1, sd)).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-          }) + ' (Archive)'
-        );
-      })()
-    : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  ctx.fillText(shareDate, W - PAD, y + 14);
+  ctx.fillText(shareDateLabel(), W - PAD, y + 14);
   ctx.textAlign = 'left';
   y += HEADER_H;
 
@@ -1468,23 +1476,75 @@ function generateShareCanvas() {
   return canvas;
 }
 
+function generateShareText() {
+  const TEXT_ITEMS_PER_LINE = 8;
+  const sectionData = buildShareSections();
+  const lines = [`Cookiedle ${shareDateLabel()}`, ''];
+
+  sectionData.forEach((section, si) => {
+    if (si > 0) lines.push('');
+    lines.push(section.label.replace(/\s{2,}/g, ' '));
+    if (section.type === 'grid') {
+      section.rows.forEach((item) => {
+        if (item === '💡') {
+          lines.push('💡 hint used');
+          return;
+        }
+        lines.push(
+          (results[item] || [])
+            .slice(1)
+            .map((trait) =>
+              trait.result === 'correct' ? '🟩' : trait.result === 'partial' ? '🟧' : '🟥'
+            )
+            .join('')
+        );
+      });
+    } else {
+      for (let i = 0; i < section.items.length; i += TEXT_ITEMS_PER_LINE) {
+        lines.push(
+          section.items
+            .slice(i, i + TEXT_ITEMS_PER_LINE)
+            .map((item) => (item === '💡' ? '💡' : item ? '✅' : '❌'))
+            .join('')
+        );
+      }
+    }
+  });
+
+  lines.push('');
+  lines.push(IS_ARCHIVE ? '📅 Archive' : `🔥 Streak: ${loadStats().currentStreak}`);
+  lines.push('cookiedle.nappi.work');
+
+  return lines.join('\n');
+}
+
 async function shareResults() {
+  const shareText = generateShareText();
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(shareText);
+    copied = true;
+  } catch {
+    // Clipboard unavailable/denied - still proceed with the image share below.
+  }
+
   let canvas;
   try {
     canvas = generateShareCanvas();
   } catch {
-    showToast('Could not generate share card.');
+    showToast(copied ? 'Results copied to clipboard!' : 'Could not generate share card.');
     return;
   }
   canvas.toBlob(async (blob) => {
     if (!blob) {
-      showToast('Could not generate image.');
+      showToast(copied ? 'Results copied to clipboard!' : 'Could not generate image.');
       return;
     }
     const file = new File([blob], 'cookiedle.png', { type: 'image/png' });
     if (navigator.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: 'Cookiedle' });
+        await navigator.share({ files: [file], title: 'Cookiedle', text: shareText });
+        if (copied) showToast('Results also copied to clipboard!');
         return;
       } catch (e) {
         if (e.name === 'AbortError') return;
@@ -1497,7 +1557,7 @@ async function shareResults() {
     a.download = `cookiedle-${new Date().toISOString().slice(0, 10)}.png`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Image saved!');
+    showToast(copied ? 'Image saved & results copied to clipboard!' : 'Image saved!');
   }, 'image/png');
 }
 
