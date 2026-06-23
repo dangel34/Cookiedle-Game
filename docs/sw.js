@@ -1,4 +1,4 @@
-const CACHE = 'cookiedle-v1';
+const CACHE = 'cookiedle-v2';
 
 const PRECACHE = [
   '/',
@@ -14,28 +14,11 @@ const PRECACHE = [
   '/icons/icon-512.png',
 ];
 
-// Requests that must always go to the network (game API)
+// Requests that must always go to the network (game API).
+// Production proxies the worker at same-origin /api/* (see shared.js WORKER_URL),
+// so any same-origin request under /api/ is the game API, never static content.
 function isApiRequest(url) {
-  const API_PATHS = [
-    '/guess',
-    '/hint',
-    '/guess2',
-    '/hint2',
-    '/guess3',
-    '/hint3',
-    '/daily-state',
-    '/skill',
-    '/skill-image',
-    '/silhouette3-image',
-    '/unlimited/new',
-    '/unlimited/guess',
-    '/unlimited/hint',
-    '/roster',
-    '/cookies',
-    '/cookie-count',
-    '/health',
-  ];
-  return API_PATHS.some((p) => url.pathname === p || url.pathname.startsWith(p + '?'));
+  return url.pathname.startsWith('/api/');
 }
 
 self.addEventListener('install', (e) => {
